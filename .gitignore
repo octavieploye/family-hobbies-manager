@@ -1,0 +1,48 @@
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# IDE
+.idea/
+*.iml
+*.iws
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+.factorypath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+*.env.local
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+.npm
+npm-debug.log*
+yarn-error.log*
+
+# Test
+coverage/
+test-results/
+playwright-report/
+
+# Docker
+docker/*.env
+
+# Lombok
+.apt_generated/
