@@ -24,11 +24,11 @@ public class JwtTokenProvider {
      * Throws ExpiredJwtException if expired, JwtException if invalid.
      */
     public Claims validateToken(String token) {
-        return Jwts.parserBuilder()
-            .setSigningKey(signingKey)
+        return Jwts.parser()
+            .verifyWith(signingKey)
             .build()
-            .parseClaimsJws(token)
-            .getBody();
+            .parseSignedClaims(token)
+            .getPayload();
     }
 
     /**

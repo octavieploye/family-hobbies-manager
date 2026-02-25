@@ -6,7 +6,7 @@ import com.familyhobbies.userservice.entity.UserStatus;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -136,10 +136,10 @@ class JwtTokenProviderTest {
         Date expiredDate = new Date(System.currentTimeMillis() - 3_600_000); // 1 hour ago
 
         String expiredToken = Jwts.builder()
-            .setSubject("1")
-            .setIssuedAt(pastDate)
-            .setExpiration(expiredDate)
-            .signWith(key, SignatureAlgorithm.HS256)
+            .subject("1")
+            .issuedAt(pastDate)
+            .expiration(expiredDate)
+            .signWith(key, Jwts.SIG.HS256)
             .compact();
 
         // when & then

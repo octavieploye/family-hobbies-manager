@@ -3,7 +3,6 @@ package com.familyhobbies.userservice.security;
 import com.familyhobbies.userservice.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -34,15 +33,15 @@ public class JwtTokenProvider {
         Date expiry = new Date(now.getTime() + ACCESS_TOKEN_VALIDITY_MS);
 
         return Jwts.builder()
-            .setId(UUID.randomUUID().toString())
-            .setSubject(String.valueOf(user.getId()))
+            .id(UUID.randomUUID().toString())
+            .subject(String.valueOf(user.getId()))
             .claim("email", user.getEmail())
             .claim("roles", List.of(user.getRole().name()))
             .claim("firstName", user.getFirstName())
             .claim("lastName", user.getLastName())
-            .setIssuedAt(now)
-            .setExpiration(expiry)
-            .signWith(signingKey, SignatureAlgorithm.HS256)
+            .issuedAt(now)
+            .expiration(expiry)
+            .signWith(signingKey, Jwts.SIG.HS256)
             .compact();
     }
 
@@ -58,11 +57,11 @@ public class JwtTokenProvider {
      * Throws ExpiredJwtException if expired, JwtException if invalid.
      */
     public Claims validateToken(String token) {
-        return Jwts.parserBuilder()
-            .setSigningKey(signingKey)
+        return Jwts.parser()
+            .verifyWith(signingKey)
             .build()
-            .parseClaimsJws(token)
-            .getBody();
+            .parseSignedClaims(token)
+            .getPayload();
     }
 
     /**

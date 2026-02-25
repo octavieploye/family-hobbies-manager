@@ -3,7 +3,7 @@ package com.familyhobbies.apigateway.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -84,8 +84,7 @@ class JwtAuthenticationFilterTest {
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
         // Mock JwtTokenProvider to return valid claims
-        Claims claims = new DefaultClaims();
-        claims.setSubject("42");
+        Claims claims = Jwts.claims().subject("42").build();
         when(jwtTokenProvider.validateToken("valid-token")).thenReturn(claims);
         when(jwtTokenProvider.getRolesFromToken("valid-token")).thenReturn(List.of("FAMILY"));
 
