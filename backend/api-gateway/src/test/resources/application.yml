@@ -1,0 +1,11 @@
+jwt:
+  secret: test-secret-key-that-is-at-least-256-bits-long-for-hmac-sha256-signing
+
+eureka:
+  client:
+    enabled: false
+
+spring:
+  cloud:
+    gateway:
+      routes: []

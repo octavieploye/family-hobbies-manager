@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # --- user-service routes (Sprint 0) ---
+        - id: auth-routes
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/auth/**
+
+        - id: user-routes
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**
+
+        - id: family-routes
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/families/**
+
+        - id: rgpd-routes
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/rgpd/**
+
+        # --- association-service routes added in Sprint 2 ---
+        # --- payment-service routes added in Sprint 5 ---
+        # --- notification-service routes added in Sprint 6 ---
+
+jwt:
+  secret: ${JWT_SECRET:default-dev-secret-that-is-at-least-256-bits-long-for-hmac-sha256}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

@@ -1,0 +1,36 @@
+{
+  "name": "family-hobbies-manager-frontend",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Family Hobbies Manager - Angular 17+ frontend",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "@angular/animations": "^17.3.0",
+    "@angular/cdk": "^17.3.0",
+    "@angular/common": "^17.3.0",
+    "@angular/compiler": "^17.3.0",
+    "@angular/core": "^17.3.0",
+    "@angular/forms": "^17.3.0",
+    "@angular/material": "^17.3.0",
+    "@angular/platform-browser": "^17.3.0",
+    "@angular/platform-browser-dynamic": "^17.3.0",
+    "@angular/router": "^17.3.0",
+    "@ngrx/effects": "^17.2.0",
+    "@ngrx/store": "^17.2.0",
+    "rxjs": "^7.8.1",
+    "tslib": "^2.6.2",
+    "zone.js": "^0.14.4"
+  },
+  "devDependencies": {
+    "@angular/compiler-cli": "^17.3.0",
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "jest-preset-angular": "^14.0.3",
+    "ts-jest": "^29.1.2",
+    "typescript": "~5.3.3"
+  }
+}

@@ -3,15 +3,15 @@ root = true
 [*]
 charset = utf-8
 end_of_line = lf
-indent_style = space
-indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
 
-[*.{yml,yaml,json}]
+[*.{yml,yaml}]
 indent_size = 2
 
-[*.{html,css,scss,ts,js}]
+[*.{json,js,ts,html,scss,css}]
 indent_size = 2
 
 [*.md]

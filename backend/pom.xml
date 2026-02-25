@@ -21,22 +21,17 @@
 
     <modules>
         <module>error-handling</module>
-        <!-- Future modules:
-             common
-             discovery-service
-             api-gateway
-             user-service
-             association-service
-             payment-service
-             notification-service
-        -->
+        <module>common</module>
+        <module>discovery-service</module>
+        <module>api-gateway</module>
+        <module>user-service</module>
     </modules>
 
     <properties>
         <java.version>17</java.version>
-        <spring-cloud.version>2023.0.1</spring-cloud.version>
+        <spring-cloud.version>2023.0.3</spring-cloud.version>
         <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
-        <org.projectlombok.version>1.18.30</org.projectlombok.version>
+        <org.projectlombok.version>1.18.42</org.projectlombok.version>
     </properties>
 
     <dependencyManagement>
@@ -50,12 +45,43 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- Internal modules -->
+            <dependency>
+                <groupId>com.familyhobbies</groupId>
+                <artifactId>error-handling</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.familyhobbies</groupId>
+                <artifactId>common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- Lombok -->
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${org.projectlombok.version}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <!-- JJWT (JSON Web Token) -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>0.11.5</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>0.11.5</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>0.11.5</version>
+                <scope>runtime</scope>
             </dependency>
 
             <!-- MapStruct -->

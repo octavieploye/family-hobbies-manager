@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 000-init
+      author: family-hobbies-team
+      comment: "Validates Liquibase connectivity to familyhobbies_users database"
+      changes:
+        - sql:
+            sql: SELECT 1
