@@ -13,374 +13,368 @@ The EmailService (S6-002) resolves email templates by category code from the `t_
 
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|----------------|---------------|
-| 1 | Liquibase seed data changeset | `backend/notification-service/src/main/resources/db/changelog/changesets/004-seed-email-templates.yaml` | 5 INSERT statements for email templates | All templates exist in DB after migration |
+| 1 | Liquibase seed data changeset | `backend/notification-service/src/main/resources/db/changelog/changesets/004-seed-email-templates.xml` | 5 INSERT statements for email templates | All templates exist in DB after migration |
 | 2 | Failing tests (TDD contract) | `backend/notification-service/src/test/java/.../repository/EmailTemplateSeedTest.java` | Integration test verifying seeded data | All 5 templates resolve correctly |
 
 ---
 
 ## Task 1 Detail: Liquibase Seed Data Changeset
 
-- **What**: Liquibase YAML changeset that inserts five email templates into `t_email_template` with French content, Thymeleaf syntax, and documented variables
-- **Where**: `backend/notification-service/src/main/resources/db/changelog/changesets/004-seed-email-templates.yaml`
+- **What**: Liquibase XML changeset that inserts five email templates into `t_email_template` with French content, Thymeleaf syntax, and documented variables
+- **Where**: `backend/notification-service/src/main/resources/db/changelog/changesets/004-seed-email-templates.xml`
 - **Why**: The EmailService cannot send emails without templates. Seeding via Liquibase ensures templates are always present in any environment (dev, CI, staging, production) and are version-controlled.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 004-seed-email-templates
-      author: family-hobbies-team
-      comment: "Seed initial French email templates for notification categories"
-      changes:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-        # ── WELCOME Template ────────────────────────────────────────────────
-        - insert:
-            tableName: t_email_template
-            columns:
-              - column:
-                  name: code
-                  value: "WELCOME"
-              - column:
-                  name: subject_template
-                  value: "Bienvenue sur Family Hobbies Manager !"
-              - column:
-                  name: body_template
-                  value: >-
-                    <!DOCTYPE html>
-                    <html lang="fr">
-                    <head>
-                      <meta charset="UTF-8"/>
-                      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-                      <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
-                        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-                        .header { background-color: #1565C0; color: #ffffff; padding: 24px; text-align: center; }
-                        .header h1 { margin: 0; font-size: 24px; }
-                        .content { padding: 32px 24px; color: #333333; line-height: 1.6; }
-                        .content h2 { color: #1565C0; margin-top: 0; }
-                        .cta-button { display: inline-block; background-color: #1565C0; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 4px; margin: 16px 0; }
-                        .footer { background-color: #f5f5f5; padding: 16px 24px; text-align: center; font-size: 12px; color: #888888; }
-                        ul { padding-left: 20px; }
-                        li { margin-bottom: 8px; }
-                      </style>
-                    </head>
-                    <body>
-                      <div class="container">
-                        <div class="header">
-                          <h1>Family Hobbies Manager</h1>
-                        </div>
-                        <div class="content">
-                          <h2>Bienvenue [[${firstName}]] !</h2>
-                          <p>Nous sommes ravis de vous accueillir sur <strong>Family Hobbies Manager</strong>,
-                          votre plateforme pour decouvrir et gerer les activites de toute la famille.</p>
-                          <p>Voici comment bien demarrer :</p>
-                          <ul>
-                            <li><strong>Explorez les associations</strong> pres de chez vous : sport, danse, musique, theatre et bien plus</li>
-                            <li><strong>Creez votre famille</strong> et ajoutez les membres de votre foyer</li>
-                            <li><strong>Inscrivez-vous</strong> aux activites qui vous interessent</li>
-                            <li><strong>Suivez les cours</strong> et gerez la presence de chaque membre</li>
-                          </ul>
-                          <a href="https://familyhobbies.fr/dashboard" class="cta-button">Acceder a mon espace</a>
-                          <p>Si vous avez des questions, n'hesitez pas a nous contacter.</p>
-                          <p>A bientot,<br/>L'equipe Family Hobbies Manager</p>
-                        </div>
-                        <div class="footer">
-                          <p>Cet email a ete envoye a [[${email}]]. Si vous n'etes pas a l'origine de cette inscription, veuillez ignorer ce message.</p>
-                          <p>&copy; 2026 Family Hobbies Manager. Tous droits reserves.</p>
-                        </div>
-                      </div>
-                    </body>
-                    </html>
-              - column:
-                  name: variables
-                  value: "firstName,lastName,email"
-              - column:
-                  name: active
-                  valueBoolean: true
+    <changeSet id="004-seed-email-templates" author="family-hobbies-team">
+        <comment>Seed initial French email templates for notification categories</comment>
 
-        # ── PAYMENT_SUCCESS Template ────────────────────────────────────────
-        - insert:
-            tableName: t_email_template
-            columns:
-              - column:
-                  name: code
-                  value: "PAYMENT_SUCCESS"
-              - column:
-                  name: subject_template
-                  value: "Paiement confirme - Reference #[[${paymentId}]]"
-              - column:
-                  name: body_template
-                  value: >-
-                    <!DOCTYPE html>
-                    <html lang="fr">
-                    <head>
-                      <meta charset="UTF-8"/>
-                      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-                      <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
-                        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-                        .header { background-color: #2E7D32; color: #ffffff; padding: 24px; text-align: center; }
-                        .header h1 { margin: 0; font-size: 24px; }
-                        .content { padding: 32px 24px; color: #333333; line-height: 1.6; }
-                        .content h2 { color: #2E7D32; margin-top: 0; }
-                        .details-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-                        .details-table td { padding: 8px 12px; border-bottom: 1px solid #eeeeee; }
-                        .details-table td:first-child { font-weight: bold; color: #555555; width: 40%; }
-                        .success-badge { display: inline-block; background-color: #E8F5E9; color: #2E7D32; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 14px; }
-                        .footer { background-color: #f5f5f5; padding: 16px 24px; text-align: center; font-size: 12px; color: #888888; }
-                      </style>
-                    </head>
-                    <body>
-                      <div class="container">
-                        <div class="header">
-                          <h1>Paiement confirme</h1>
-                        </div>
-                        <div class="content">
-                          <h2><span class="success-badge">Confirme</span></h2>
-                          <p>Votre paiement a ete traite avec succes. Voici le recapitulatif :</p>
-                          <table class="details-table">
-                            <tr><td>Reference</td><td>#[[${paymentId}]]</td></tr>
-                            <tr><td>Montant</td><td>[[${amount}]] [[${currency}]]</td></tr>
-                            <tr><td>Mode de paiement</td><td>[[${paymentMethod}]]</td></tr>
-                            <tr><td>Date</td><td>[[${paidAt}]]</td></tr>
-                            <tr><td>Inscription</td><td>#[[${subscriptionId}]]</td></tr>
-                          </table>
-                          <p>Vous pouvez consulter le detail de ce paiement dans votre espace personnel.</p>
-                          <p>Merci pour votre confiance,<br/>L'equipe Family Hobbies Manager</p>
-                        </div>
-                        <div class="footer">
-                          <p>Ce recu de paiement a ete genere automatiquement. Conservez-le pour vos dossiers.</p>
-                          <p>&copy; 2026 Family Hobbies Manager. Tous droits reserves.</p>
-                        </div>
-                      </div>
-                    </body>
-                    </html>
-              - column:
-                  name: variables
-                  value: "paymentId,subscriptionId,amount,currency,paymentMethod,paidAt"
-              - column:
-                  name: active
-                  valueBoolean: true
+        <!-- WELCOME Template -->
+        <insert tableName="t_email_template">
+            <column name="code" value="WELCOME"/>
+            <column name="subject_template" value="Bienvenue sur Family Hobbies Manager !"/>
+            <column name="body_template" valueClobFile="templates/welcome.html"/>
+            <column name="variables" value="firstName,lastName,email"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
 
-        # ── PAYMENT_FAILED Template ─────────────────────────────────────────
-        - insert:
-            tableName: t_email_template
-            columns:
-              - column:
-                  name: code
-                  value: "PAYMENT_FAILED"
-              - column:
-                  name: subject_template
-                  value: "Echec de paiement - Reference #[[${paymentId}]]"
-              - column:
-                  name: body_template
-                  value: >-
-                    <!DOCTYPE html>
-                    <html lang="fr">
-                    <head>
-                      <meta charset="UTF-8"/>
-                      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-                      <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
-                        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-                        .header { background-color: #C62828; color: #ffffff; padding: 24px; text-align: center; }
-                        .header h1 { margin: 0; font-size: 24px; }
-                        .content { padding: 32px 24px; color: #333333; line-height: 1.6; }
-                        .content h2 { color: #C62828; margin-top: 0; }
-                        .details-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-                        .details-table td { padding: 8px 12px; border-bottom: 1px solid #eeeeee; }
-                        .details-table td:first-child { font-weight: bold; color: #555555; width: 40%; }
-                        .error-badge { display: inline-block; background-color: #FFEBEE; color: #C62828; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 14px; }
-                        .cta-button { display: inline-block; background-color: #1565C0; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 4px; margin: 16px 0; }
-                        .footer { background-color: #f5f5f5; padding: 16px 24px; text-align: center; font-size: 12px; color: #888888; }
-                      </style>
-                    </head>
-                    <body>
-                      <div class="container">
-                        <div class="header">
-                          <h1>Echec de paiement</h1>
-                        </div>
-                        <div class="content">
-                          <h2><span class="error-badge">Echec</span></h2>
-                          <p>Nous n'avons pas pu traiter votre paiement. Voici les details :</p>
-                          <table class="details-table">
-                            <tr><td>Reference</td><td>#[[${paymentId}]]</td></tr>
-                            <tr><td>Montant</td><td>[[${amount}]] EUR</td></tr>
-                            <tr><td>Raison</td><td>[[${failureReason}]]</td></tr>
-                            <tr><td>Date</td><td>[[${failedAt}]]</td></tr>
-                          </table>
-                          <p><strong>Que faire ?</strong></p>
-                          <ul>
-                            <li>Verifiez les informations de votre moyen de paiement</li>
-                            <li>Assurez-vous que votre compte dispose de fonds suffisants</li>
-                            <li>Reessayez le paiement depuis votre espace personnel</li>
-                          </ul>
-                          <a href="https://familyhobbies.fr/payments" class="cta-button">Reessayer le paiement</a>
-                          <p>Si le probleme persiste, contactez notre support.</p>
-                          <p>Cordialement,<br/>L'equipe Family Hobbies Manager</p>
-                        </div>
-                        <div class="footer">
-                          <p>Cet email a ete genere automatiquement suite a un echec de paiement.</p>
-                          <p>&copy; 2026 Family Hobbies Manager. Tous droits reserves.</p>
-                        </div>
-                      </div>
-                    </body>
-                    </html>
-              - column:
-                  name: variables
-                  value: "paymentId,subscriptionId,amount,failureReason,failedAt"
-              - column:
-                  name: active
-                  valueBoolean: true
+        <!-- PAYMENT_SUCCESS Template -->
+        <insert tableName="t_email_template">
+            <column name="code" value="PAYMENT_SUCCESS"/>
+            <column name="subject_template" value="Paiement confirme - Reference #[[${paymentId}]]"/>
+            <column name="body_template" valueClobFile="templates/payment-success.html"/>
+            <column name="variables" value="paymentId,subscriptionId,amount,currency,paymentMethod,paidAt"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
 
-        # ── SUBSCRIPTION_CONFIRMED Template ─────────────────────────────────
-        - insert:
-            tableName: t_email_template
-            columns:
-              - column:
-                  name: code
-                  value: "SUBSCRIPTION_CONFIRMED"
-              - column:
-                  name: subject_template
-                  value: "Inscription confirmee - Saison [[${season}]]"
-              - column:
-                  name: body_template
-                  value: >-
-                    <!DOCTYPE html>
-                    <html lang="fr">
-                    <head>
-                      <meta charset="UTF-8"/>
-                      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-                      <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
-                        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-                        .header { background-color: #1565C0; color: #ffffff; padding: 24px; text-align: center; }
-                        .header h1 { margin: 0; font-size: 24px; }
-                        .content { padding: 32px 24px; color: #333333; line-height: 1.6; }
-                        .content h2 { color: #1565C0; margin-top: 0; }
-                        .details-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-                        .details-table td { padding: 8px 12px; border-bottom: 1px solid #eeeeee; }
-                        .details-table td:first-child { font-weight: bold; color: #555555; width: 40%; }
-                        .info-box { background-color: #E3F2FD; border-left: 4px solid #1565C0; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; }
-                        .cta-button { display: inline-block; background-color: #1565C0; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 4px; margin: 16px 0; }
-                        .footer { background-color: #f5f5f5; padding: 16px 24px; text-align: center; font-size: 12px; color: #888888; }
-                      </style>
-                    </head>
-                    <body>
-                      <div class="container">
-                        <div class="header">
-                          <h1>Inscription confirmee</h1>
-                        </div>
-                        <div class="content">
-                          <h2>Votre inscription est confirmee !</h2>
-                          <p>Felicitations ! Votre inscription a bien ete enregistree pour la saison [[${season}]].</p>
-                          <table class="details-table">
-                            <tr><td>Numero d'inscription</td><td>#[[${subscriptionId}]]</td></tr>
-                            <tr><td>Activite</td><td>#[[${activityId}]]</td></tr>
-                            <tr><td>Membre</td><td>#[[${familyMemberId}]]</td></tr>
-                            <tr><td>Saison</td><td>[[${season}]]</td></tr>
-                            <tr><td>Montant</td><td>[[${amount}]] EUR</td></tr>
-                          </table>
-                          <div class="info-box">
-                            <strong>Prochaines etapes :</strong>
-                            <ul style="margin: 8px 0 0 0; padding-left: 20px;">
-                              <li>Consultez le planning des cours dans votre espace</li>
-                              <li>Preparez le materiel necessaire pour la premiere seance</li>
-                              <li>N'hesitez pas a contacter l'association pour toute question</li>
-                            </ul>
-                          </div>
-                          <a href="https://familyhobbies.fr/subscriptions" class="cta-button">Voir mes inscriptions</a>
-                          <p>Bonne saison !<br/>L'equipe Family Hobbies Manager</p>
-                        </div>
-                        <div class="footer">
-                          <p>Cet email confirme votre inscription. Conservez-le pour vos dossiers.</p>
-                          <p>&copy; 2026 Family Hobbies Manager. Tous droits reserves.</p>
-                        </div>
-                      </div>
-                    </body>
-                    </html>
-              - column:
-                  name: variables
-                  value: "subscriptionId,familyMemberId,activityId,season,amount"
-              - column:
-                  name: active
-                  valueBoolean: true
+        <!-- PAYMENT_FAILED Template -->
+        <insert tableName="t_email_template">
+            <column name="code" value="PAYMENT_FAILED"/>
+            <column name="subject_template" value="Echec de paiement - Reference #[[${paymentId}]]"/>
+            <column name="body_template" valueClobFile="templates/payment-failed.html"/>
+            <column name="variables" value="paymentId,subscriptionId,amount,failureReason,failedAt"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
 
-        # ── ATTENDANCE_REMINDER Template ────────────────────────────────────
-        - insert:
-            tableName: t_email_template
-            columns:
-              - column:
-                  name: code
-                  value: "ATTENDANCE_REMINDER"
-              - column:
-                  name: subject_template
-                  value: "Rappel - Cours demain : [[${activityName}]]"
-              - column:
-                  name: body_template
-                  value: >-
-                    <!DOCTYPE html>
-                    <html lang="fr">
-                    <head>
-                      <meta charset="UTF-8"/>
-                      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-                      <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
-                        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-                        .header { background-color: #F57C00; color: #ffffff; padding: 24px; text-align: center; }
-                        .header h1 { margin: 0; font-size: 24px; }
-                        .content { padding: 32px 24px; color: #333333; line-height: 1.6; }
-                        .content h2 { color: #F57C00; margin-top: 0; }
-                        .details-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-                        .details-table td { padding: 8px 12px; border-bottom: 1px solid #eeeeee; }
-                        .details-table td:first-child { font-weight: bold; color: #555555; width: 40%; }
-                        .reminder-box { background-color: #FFF3E0; border-left: 4px solid #F57C00; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; }
-                        .footer { background-color: #f5f5f5; padding: 16px 24px; text-align: center; font-size: 12px; color: #888888; }
-                      </style>
-                    </head>
-                    <body>
-                      <div class="container">
-                        <div class="header">
-                          <h1>Rappel de cours</h1>
-                        </div>
-                        <div class="content">
-                          <h2>N'oubliez pas votre cours demain !</h2>
-                          <p>Ceci est un rappel pour le cours de demain.</p>
-                          <table class="details-table">
-                            <tr><td>Activite</td><td>[[${activityName}]]</td></tr>
-                            <tr><td>Membre</td><td>[[${memberName}]]</td></tr>
-                            <tr><td>Horaire</td><td>[[${sessionTime}]]</td></tr>
-                            <tr><td>Lieu</td><td>[[${location}]]</td></tr>
-                          </table>
-                          <div class="reminder-box">
-                            <strong>Pensez a :</strong>
-                            <ul style="margin: 8px 0 0 0; padding-left: 20px;">
-                              <li>Apporter votre equipement</li>
-                              <li>Arriver 10 minutes en avance</li>
-                              <li>Prevenir l'association en cas d'absence</li>
-                            </ul>
-                          </div>
-                          <p>Bonne seance !<br/>L'equipe Family Hobbies Manager</p>
-                        </div>
-                        <div class="footer">
-                          <p>Vous recevez ce rappel car les notifications de rappel sont activees dans vos preferences.</p>
-                          <p>&copy; 2026 Family Hobbies Manager. Tous droits reserves.</p>
-                        </div>
-                      </div>
-                    </body>
-                    </html>
-              - column:
-                  name: variables
-                  value: "activityName,memberName,sessionTime,location"
-              - column:
-                  name: active
-                  valueBoolean: true
+        <!-- SUBSCRIPTION_CONFIRMED Template -->
+        <insert tableName="t_email_template">
+            <column name="code" value="SUBSCRIPTION_CONFIRMED"/>
+            <column name="subject_template" value="Inscription confirmee - Saison [[${season}]]"/>
+            <column name="body_template" valueClobFile="templates/subscription-confirmed.html"/>
+            <column name="variables" value="subscriptionId,familyMemberId,activityId,season,amount"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
 
-      rollback:
-        - delete:
-            tableName: t_email_template
-            where: code IN ('WELCOME', 'PAYMENT_SUCCESS', 'PAYMENT_FAILED', 'SUBSCRIPTION_CONFIRMED', 'ATTENDANCE_REMINDER')
+        <!-- ATTENDANCE_REMINDER Template -->
+        <insert tableName="t_email_template">
+            <column name="code" value="ATTENDANCE_REMINDER"/>
+            <column name="subject_template" value="Rappel - Cours demain : [[${activityName}]]"/>
+            <column name="body_template" valueClobFile="templates/attendance-reminder.html"/>
+            <column name="variables" value="activityName,memberName,sessionTime,location"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="t_email_template">
+                <where>code IN ('WELCOME', 'PAYMENT_SUCCESS', 'PAYMENT_FAILED', 'SUBSCRIPTION_CONFIRMED', 'ATTENDANCE_REMINDER')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
 ```
+
+> **Note**: The HTML email template bodies are referenced via `valueClobFile` to keep the XML changeset clean and readable. Each template HTML file should be placed in `backend/notification-service/src/main/resources/db/changelog/templates/`. The HTML content for each template is documented below for reference.
+
+<details>
+<summary>WELCOME template HTML (templates/welcome.html)</summary>
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background-color: #1565C0; color: #ffffff; padding: 24px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { padding: 32px 24px; color: #333333; line-height: 1.6; }
+    .content h2 { color: #1565C0; margin-top: 0; }
+    .cta-button { display: inline-block; background-color: #1565C0; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 4px; margin: 16px 0; }
+    .footer { background-color: #f5f5f5; padding: 16px 24px; text-align: center; font-size: 12px; color: #888888; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Family Hobbies Manager</h1>
+    </div>
+    <div class="content">
+      <h2>Bienvenue [[${firstName}]] !</h2>
+      <p>Nous sommes ravis de vous accueillir sur <strong>Family Hobbies Manager</strong>,
+      votre plateforme pour decouvrir et gerer les activites de toute la famille.</p>
+      <p>Voici comment bien demarrer :</p>
+      <ul>
+        <li><strong>Explorez les associations</strong> pres de chez vous : sport, danse, musique, theatre et bien plus</li>
+        <li><strong>Creez votre famille</strong> et ajoutez les membres de votre foyer</li>
+        <li><strong>Inscrivez-vous</strong> aux activites qui vous interessent</li>
+        <li><strong>Suivez les cours</strong> et gerez la presence de chaque membre</li>
+      </ul>
+      <a href="https://familyhobbies.fr/dashboard" class="cta-button">Acceder a mon espace</a>
+      <p>Si vous avez des questions, n'hesitez pas a nous contacter.</p>
+      <p>A bientot,<br/>L'equipe Family Hobbies Manager</p>
+    </div>
+    <div class="footer">
+      <p>Cet email a ete envoye a [[${email}]]. Si vous n'etes pas a l'origine de cette inscription, veuillez ignorer ce message.</p>
+      <p>&copy; 2026 Family Hobbies Manager. Tous droits reserves.</p>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+</details>
+
+<details>
+<summary>PAYMENT_SUCCESS template HTML (templates/payment-success.html)</summary>
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background-color: #2E7D32; color: #ffffff; padding: 24px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { padding: 32px 24px; color: #333333; line-height: 1.6; }
+    .content h2 { color: #2E7D32; margin-top: 0; }
+    .details-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .details-table td { padding: 8px 12px; border-bottom: 1px solid #eeeeee; }
+    .details-table td:first-child { font-weight: bold; color: #555555; width: 40%; }
+    .success-badge { display: inline-block; background-color: #E8F5E9; color: #2E7D32; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 14px; }
+    .footer { background-color: #f5f5f5; padding: 16px 24px; text-align: center; font-size: 12px; color: #888888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Paiement confirme</h1>
+    </div>
+    <div class="content">
+      <h2><span class="success-badge">Confirme</span></h2>
+      <p>Votre paiement a ete traite avec succes. Voici le recapitulatif :</p>
+      <table class="details-table">
+        <tr><td>Reference</td><td>#[[${paymentId}]]</td></tr>
+        <tr><td>Montant</td><td>[[${amount}]] [[${currency}]]</td></tr>
+        <tr><td>Mode de paiement</td><td>[[${paymentMethod}]]</td></tr>
+        <tr><td>Date</td><td>[[${paidAt}]]</td></tr>
+        <tr><td>Inscription</td><td>#[[${subscriptionId}]]</td></tr>
+      </table>
+      <p>Vous pouvez consulter le detail de ce paiement dans votre espace personnel.</p>
+      <p>Merci pour votre confiance,<br/>L'equipe Family Hobbies Manager</p>
+    </div>
+    <div class="footer">
+      <p>Ce recu de paiement a ete genere automatiquement. Conservez-le pour vos dossiers.</p>
+      <p>&copy; 2026 Family Hobbies Manager. Tous droits reserves.</p>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+</details>
+
+<details>
+<summary>PAYMENT_FAILED template HTML (templates/payment-failed.html)</summary>
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background-color: #C62828; color: #ffffff; padding: 24px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { padding: 32px 24px; color: #333333; line-height: 1.6; }
+    .content h2 { color: #C62828; margin-top: 0; }
+    .details-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .details-table td { padding: 8px 12px; border-bottom: 1px solid #eeeeee; }
+    .details-table td:first-child { font-weight: bold; color: #555555; width: 40%; }
+    .error-badge { display: inline-block; background-color: #FFEBEE; color: #C62828; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 14px; }
+    .cta-button { display: inline-block; background-color: #1565C0; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 4px; margin: 16px 0; }
+    .footer { background-color: #f5f5f5; padding: 16px 24px; text-align: center; font-size: 12px; color: #888888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Echec de paiement</h1>
+    </div>
+    <div class="content">
+      <h2><span class="error-badge">Echec</span></h2>
+      <p>Nous n'avons pas pu traiter votre paiement. Voici les details :</p>
+      <table class="details-table">
+        <tr><td>Reference</td><td>#[[${paymentId}]]</td></tr>
+        <tr><td>Montant</td><td>[[${amount}]] EUR</td></tr>
+        <tr><td>Raison</td><td>[[${failureReason}]]</td></tr>
+        <tr><td>Date</td><td>[[${failedAt}]]</td></tr>
+      </table>
+      <p><strong>Que faire ?</strong></p>
+      <ul>
+        <li>Verifiez les informations de votre moyen de paiement</li>
+        <li>Assurez-vous que votre compte dispose de fonds suffisants</li>
+        <li>Reessayez le paiement depuis votre espace personnel</li>
+      </ul>
+      <a href="https://familyhobbies.fr/payments" class="cta-button">Reessayer le paiement</a>
+      <p>Si le probleme persiste, contactez notre support.</p>
+      <p>Cordialement,<br/>L'equipe Family Hobbies Manager</p>
+    </div>
+    <div class="footer">
+      <p>Cet email a ete genere automatiquement suite a un echec de paiement.</p>
+      <p>&copy; 2026 Family Hobbies Manager. Tous droits reserves.</p>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+</details>
+
+<details>
+<summary>SUBSCRIPTION_CONFIRMED template HTML (templates/subscription-confirmed.html)</summary>
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background-color: #1565C0; color: #ffffff; padding: 24px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { padding: 32px 24px; color: #333333; line-height: 1.6; }
+    .content h2 { color: #1565C0; margin-top: 0; }
+    .details-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .details-table td { padding: 8px 12px; border-bottom: 1px solid #eeeeee; }
+    .details-table td:first-child { font-weight: bold; color: #555555; width: 40%; }
+    .info-box { background-color: #E3F2FD; border-left: 4px solid #1565C0; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; }
+    .cta-button { display: inline-block; background-color: #1565C0; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 4px; margin: 16px 0; }
+    .footer { background-color: #f5f5f5; padding: 16px 24px; text-align: center; font-size: 12px; color: #888888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Inscription confirmee</h1>
+    </div>
+    <div class="content">
+      <h2>Votre inscription est confirmee !</h2>
+      <p>Felicitations ! Votre inscription a bien ete enregistree pour la saison [[${season}]].</p>
+      <table class="details-table">
+        <tr><td>Numero d'inscription</td><td>#[[${subscriptionId}]]</td></tr>
+        <tr><td>Activite</td><td>#[[${activityId}]]</td></tr>
+        <tr><td>Membre</td><td>#[[${familyMemberId}]]</td></tr>
+        <tr><td>Saison</td><td>[[${season}]]</td></tr>
+        <tr><td>Montant</td><td>[[${amount}]] EUR</td></tr>
+      </table>
+      <div class="info-box">
+        <strong>Prochaines etapes :</strong>
+        <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+          <li>Consultez le planning des cours dans votre espace</li>
+          <li>Preparez le materiel necessaire pour la premiere seance</li>
+          <li>N'hesitez pas a contacter l'association pour toute question</li>
+        </ul>
+      </div>
+      <a href="https://familyhobbies.fr/subscriptions" class="cta-button">Voir mes inscriptions</a>
+      <p>Bonne saison !<br/>L'equipe Family Hobbies Manager</p>
+    </div>
+    <div class="footer">
+      <p>Cet email confirme votre inscription. Conservez-le pour vos dossiers.</p>
+      <p>&copy; 2026 Family Hobbies Manager. Tous droits reserves.</p>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+</details>
+
+<details>
+<summary>ATTENDANCE_REMINDER template HTML (templates/attendance-reminder.html)</summary>
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background-color: #F57C00; color: #ffffff; padding: 24px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { padding: 32px 24px; color: #333333; line-height: 1.6; }
+    .content h2 { color: #F57C00; margin-top: 0; }
+    .details-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .details-table td { padding: 8px 12px; border-bottom: 1px solid #eeeeee; }
+    .details-table td:first-child { font-weight: bold; color: #555555; width: 40%; }
+    .reminder-box { background-color: #FFF3E0; border-left: 4px solid #F57C00; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; }
+    .footer { background-color: #f5f5f5; padding: 16px 24px; text-align: center; font-size: 12px; color: #888888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Rappel de cours</h1>
+    </div>
+    <div class="content">
+      <h2>N'oubliez pas votre cours demain !</h2>
+      <p>Ceci est un rappel pour le cours de demain.</p>
+      <table class="details-table">
+        <tr><td>Activite</td><td>[[${activityName}]]</td></tr>
+        <tr><td>Membre</td><td>[[${memberName}]]</td></tr>
+        <tr><td>Horaire</td><td>[[${sessionTime}]]</td></tr>
+        <tr><td>Lieu</td><td>[[${location}]]</td></tr>
+      </table>
+      <div class="reminder-box">
+        <strong>Pensez a :</strong>
+        <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+          <li>Apporter votre equipement</li>
+          <li>Arriver 10 minutes en avance</li>
+          <li>Prevenir l'association en cas d'absence</li>
+        </ul>
+      </div>
+      <p>Bonne seance !<br/>L'equipe Family Hobbies Manager</p>
+    </div>
+    <div class="footer">
+      <p>Vous recevez ce rappel car les notifications de rappel sont activees dans vos preferences.</p>
+      <p>&copy; 2026 Family Hobbies Manager. Tous droits reserves.</p>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+</details>
 
 - **Verify**: Start notification-service -> Liquibase applies changeset 004 -> `SELECT code, subject_template FROM t_email_template` returns 5 rows
 

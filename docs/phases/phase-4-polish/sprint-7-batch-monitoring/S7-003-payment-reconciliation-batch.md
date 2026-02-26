@@ -15,7 +15,7 @@ The HelloAsso checkout flow is inherently asynchronous: when a family initiates 
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|----------------|---------------|
 | 1 | Spring Batch Maven dependency | `backend/payment-service/pom.xml` | Add spring-boot-starter-batch dependency | `mvn compile` |
-| 2 | Liquibase 006 -- Spring Batch metadata tables | `backend/payment-service/src/main/resources/db/changelog/changesets/006-create-batch-metadata-tables.yaml` | Enable Spring Batch schema initialization | Migration runs |
+| 2 | Liquibase 006 -- Spring Batch metadata tables | `backend/payment-service/src/main/resources/db/changelog/changesets/006-create-batch-metadata-tables.xml` | Enable Spring Batch schema initialization | Migration runs |
 | 3 | PaymentRepository -- add stale payment query | `backend/payment-service/src/main/java/.../repository/PaymentRepository.java` | `findByStatusAndInitiatedAtBefore` method | Compiles |
 | 4 | HelloAssoCheckoutClient -- add getCheckoutStatus | `backend/payment-service/src/main/java/.../adapter/HelloAssoCheckoutClient.java` | `getCheckoutStatus(String checkoutId)` method returning HelloAsso checkout status | MockWebServer tests pass |
 | 5 | HelloAssoCheckoutStatusResponse DTO | `backend/payment-service/src/main/java/.../dto/helloasso/HelloAssoCheckoutStatusResponse.java` | DTO mapping HelloAsso checkout status API response | Compiles |
@@ -60,22 +60,28 @@ The HelloAsso checkout flow is inherently asynchronous: when a family initiates 
 ## Task 2 Detail: Liquibase 006 -- Spring Batch Metadata Tables
 
 - **What**: Liquibase changeset to enable Spring Batch metadata table initialization. Spring Batch 5.x requires metadata tables (`BATCH_JOB_INSTANCE`, `BATCH_JOB_EXECUTION`, etc.) in the database. We configure Spring Boot to initialize these automatically.
-- **Where**: `backend/payment-service/src/main/resources/db/changelog/changesets/006-create-batch-metadata-tables.yaml`
+- **Where**: `backend/payment-service/src/main/resources/db/changelog/changesets/006-create-batch-metadata-tables.xml`
 - **Why**: Spring Batch stores job execution state in database tables. The framework creates them automatically when `spring.batch.jdbc.initialize-schema=always`, but we add a Liquibase changeset as a documentation marker to track that this is intentional.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 006-spring-batch-metadata-tables
-      author: family-hobbies-team
-      comment: >
-        Spring Batch 5.x metadata tables are auto-created by Spring Boot
-        via spring.batch.jdbc.initialize-schema=always.
-        This changeset is a documentation marker only.
-      changes:
-        - tagDatabase:
-            tag: spring-batch-metadata-initialized
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="006-spring-batch-metadata-tables" author="family-hobbies-team">
+        <comment>
+            Spring Batch 5.x metadata tables are auto-created by Spring Boot
+            via spring.batch.jdbc.initialize-schema=always.
+            This changeset is a documentation marker only.
+        </comment>
+        <tagDatabase tag="spring-batch-metadata-initialized"/>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: `mvn liquibase:update -pl backend/payment-service` -> tag applied

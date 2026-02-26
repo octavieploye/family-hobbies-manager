@@ -58,9 +58,9 @@ authorization, and REST controller. Without this, no family management is possib
 
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|---------------|---------------|
-| 1 | Liquibase: create family table | `backend/user-service/src/main/resources/db/changelog/changes/003-create-family-table.yaml` | t_family DDL | `docker exec` SQL check |
-| 2 | Liquibase: create family_member table | `backend/user-service/src/main/resources/db/changelog/changes/004-create-family-member-table.yaml` | t_family_member DDL | `docker exec` SQL check |
-| 3 | Update changelog master | `backend/user-service/src/main/resources/db/changelog/db.changelog-master.yaml` | Include new changesets | Service starts without errors |
+| 1 | Liquibase: create family table | `backend/user-service/src/main/resources/db/changelog/changesets/003-create-family-table.xml` | t_family DDL | `docker exec` SQL check |
+| 2 | Liquibase: create family_member table | `backend/user-service/src/main/resources/db/changelog/changesets/004-create-family-member-table.xml` | t_family_member DDL | `docker exec` SQL check |
+| 3 | Update changelog master | `backend/user-service/src/main/resources/db/changelog/db.changelog-master.xml` | Include new changesets | Service starts without errors |
 | 4 | Create Relationship enum | `backend/user-service/src/main/java/com/familyhobbies/userservice/model/enums/Relationship.java` | PARENT, CHILD, SPOUSE, SIBLING, OTHER | Compiles |
 | 5 | Create Family entity | `backend/user-service/src/main/java/com/familyhobbies/userservice/model/Family.java` | JPA entity | Compiles |
 | 6 | Create FamilyMember entity | `backend/user-service/src/main/java/com/familyhobbies/userservice/model/FamilyMember.java` | JPA entity | Compiles |
@@ -81,64 +81,52 @@ authorization, and REST controller. Without this, no family management is possib
 
 **What**: Liquibase changeset creating `t_family` table with PK, name, created_by FK, timestamps.
 
-**Where**: `backend/user-service/src/main/resources/db/changelog/changes/003-create-family-table.yaml`
+**Where**: `backend/user-service/src/main/resources/db/changelog/changesets/003-create-family-table.xml`
 
 **Why**: The family table stores family groups. Each family is created by a user (FK to t_user). This must exist before family_member table (FK dependency).
 
 **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 003-create-family-table
-      author: family-hobbies-team
-      changes:
-        - createTable:
-            tableName: t_family
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_family
-                    nullable: false
-              - column:
-                  name: name
-                  type: VARCHAR(100)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: created_by
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-        - addForeignKeyConstraint:
-            baseTableName: t_family
-            baseColumnNames: created_by
-            referencedTableName: t_user
-            referencedColumnNames: id
-            constraintName: fk_family_user
-            onDelete: RESTRICT
-        - createIndex:
-            tableName: t_family
-            indexName: idx_family_created_by
-            columns:
-              - column:
-                  name: created_by
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="003-create-family-table" author="family-hobbies-team">
+        <createTable tableName="t_family">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_family" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="t_family"
+                                 baseColumnNames="created_by"
+                                 referencedTableName="t_user"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_family_user"
+                                 onDelete="RESTRICT"/>
+
+        <createIndex tableName="t_family" indexName="idx_family_created_by">
+            <column name="created_by"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 **Verify**:
@@ -158,102 +146,78 @@ kill %1
 
 **What**: Liquibase changeset creating `t_family_member` with FK to t_family and t_user.
 
-**Where**: `backend/user-service/src/main/resources/db/changelog/changes/004-create-family-member-table.yaml`
+**Where**: `backend/user-service/src/main/resources/db/changelog/changesets/004-create-family-member-table.xml`
 
 **Why**: Family members are individuals within a family. They may or may not have user accounts (children don't). Each member can be subscribed to activities independently.
 
 **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 004-create-family-member-table
-      author: family-hobbies-team
-      changes:
-        - createTable:
-            tableName: t_family_member
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_family_member
-                    nullable: false
-              - column:
-                  name: family_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: user_id
-                  type: BIGINT
-                  constraints:
-                    nullable: true
-              - column:
-                  name: first_name
-                  type: VARCHAR(100)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: last_name
-                  type: VARCHAR(100)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: date_of_birth
-                  type: DATE
-                  constraints:
-                    nullable: false
-              - column:
-                  name: relationship
-                  type: VARCHAR(20)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: medical_note
-                  type: TEXT
-                  constraints:
-                    nullable: true
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-        - addForeignKeyConstraint:
-            baseTableName: t_family_member
-            baseColumnNames: family_id
-            referencedTableName: t_family
-            referencedColumnNames: id
-            constraintName: fk_family_member_family
-            onDelete: CASCADE
-        - addForeignKeyConstraint:
-            baseTableName: t_family_member
-            baseColumnNames: user_id
-            referencedTableName: t_user
-            referencedColumnNames: id
-            constraintName: fk_family_member_user
-            onDelete: SET NULL
-        - createIndex:
-            tableName: t_family_member
-            indexName: idx_family_member_family_id
-            columns:
-              - column:
-                  name: family_id
-        - createIndex:
-            tableName: t_family_member
-            indexName: idx_family_member_user_id
-            columns:
-              - column:
-                  name: user_id
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="004-create-family-member-table" author="family-hobbies-team">
+        <createTable tableName="t_family_member">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_family_member" nullable="false"/>
+            </column>
+            <column name="family_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_of_birth" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="relationship" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="medical_note" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="t_family_member"
+                                 baseColumnNames="family_id"
+                                 referencedTableName="t_family"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_family_member_family"
+                                 onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint baseTableName="t_family_member"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="t_user"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_family_member_user"
+                                 onDelete="SET NULL"/>
+
+        <createIndex tableName="t_family_member" indexName="idx_family_member_family_id">
+            <column name="family_id"/>
+        </createIndex>
+
+        <createIndex tableName="t_family_member" indexName="idx_family_member_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 **Verify**:
@@ -270,17 +234,15 @@ docker exec fhm-postgres psql -U fhm_admin -d familyhobbies_users \
 
 **What**: Add changeset includes for 003 and 004 to the master changelog.
 
-**Where**: `backend/user-service/src/main/resources/db/changelog/db.changelog-master.yaml`
+**Where**: `backend/user-service/src/main/resources/db/changelog/db.changelog-master.xml`
 
 **Why**: Liquibase only runs changesets referenced from the master changelog. Without this, migrations won't execute.
 
 **Content** — append to existing file:
 
-```yaml
-  - include:
-      file: changes/003-create-family-table.yaml
-  - include:
-      file: changes/004-create-family-member-table.yaml
+```xml
+    <include file="changesets/003-create-family-table.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/004-create-family-member-table.xml" relativeToChangelogFile="true"/>
 ```
 
 **Verify**:
@@ -2379,8 +2341,8 @@ gateway route.
 | 3 | Create application.yml | `backend/association-service/src/main/resources/application.yml` | Config | Service starts |
 | 4 | Create main class | `backend/association-service/src/main/java/com/familyhobbies/associationservice/AssociationServiceApplication.java` | Spring Boot app | Service starts |
 | 5 | Add DB to Docker init | `docker/init-databases.sql` | CREATE DATABASE | `docker exec` check |
-| 6 | Liquibase: association table | `backend/association-service/src/main/resources/db/changelog/changes/001-create-association-table.yaml` | t_association DDL | Migration runs |
-| 7 | Create changelog master | `backend/association-service/src/main/resources/db/changelog/db.changelog-master.yaml` | Include changeset | Service starts |
+| 6 | Liquibase: association table | `backend/association-service/src/main/resources/db/changelog/changesets/001-create-association-table.xml` | t_association DDL | Migration runs |
+| 7 | Create changelog master | `backend/association-service/src/main/resources/db/changelog/db.changelog-master.xml` | Include changeset | Service starts |
 | 8 | Create AssociationCategory enum | `backend/association-service/src/main/java/com/familyhobbies/associationservice/model/enums/AssociationCategory.java` | Enum | Compiles |
 | 9 | Create AssociationStatus enum | `backend/association-service/src/main/java/com/familyhobbies/associationservice/model/enums/AssociationStatus.java` | Enum | Compiles |
 | 10 | Create Association entity | `backend/association-service/src/main/java/com/familyhobbies/associationservice/model/Association.java` | JPA entity | Compiles |
@@ -2413,8 +2375,8 @@ gateway route.
 
     <parent>
         <groupId>com.familyhobbies</groupId>
-        <artifactId>family-hobbies-manager</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <artifactId>family-hobbies-manager-backend</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>association-service</artifactId>
@@ -2560,7 +2522,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    change-log: classpath:db/changelog/db.changelog-master.xml
 
 eureka:
   client:
@@ -2646,137 +2608,83 @@ docker exec fhm-postgres psql -U fhm_admin -l | grep familyhobbies_associations
 
 **What**: Full DDL for `t_association` with all columns and indexes.
 
-**Where**: `backend/association-service/src/main/resources/db/changelog/changes/001-create-association-table.yaml`
+**Where**: `backend/association-service/src/main/resources/db/changelog/changesets/001-create-association-table.xml`
 
 **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 001-create-association-table
-      author: family-hobbies-team
-      changes:
-        - createTable:
-            tableName: t_association
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_association
-                    nullable: false
-              - column:
-                  name: name
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: slug
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-                    unique: true
-                    uniqueConstraintName: uq_association_slug
-              - column:
-                  name: description
-                  type: TEXT
-              - column:
-                  name: address
-                  type: VARCHAR(255)
-              - column:
-                  name: city
-                  type: VARCHAR(100)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: postal_code
-                  type: VARCHAR(10)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: department
-                  type: VARCHAR(5)
-              - column:
-                  name: region
-                  type: VARCHAR(100)
-              - column:
-                  name: phone
-                  type: VARCHAR(20)
-              - column:
-                  name: email
-                  type: VARCHAR(255)
-              - column:
-                  name: website
-                  type: VARCHAR(255)
-              - column:
-                  name: logo_url
-                  type: VARCHAR(500)
-              - column:
-                  name: helloasso_slug
-                  type: VARCHAR(255)
-              - column:
-                  name: helloasso_org_id
-                  type: VARCHAR(100)
-              - column:
-                  name: category
-                  type: VARCHAR(50)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: status
-                  type: VARCHAR(20)
-                  defaultValue: ACTIVE
-                  constraints:
-                    nullable: false
-              - column:
-                  name: last_synced_at
-                  type: TIMESTAMPTZ
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-        - createIndex:
-            tableName: t_association
-            indexName: idx_association_city
-            columns:
-              - column:
-                  name: city
-        - createIndex:
-            tableName: t_association
-            indexName: idx_association_category
-            columns:
-              - column:
-                  name: category
-        - createIndex:
-            tableName: t_association
-            indexName: idx_association_city_category
-            columns:
-              - column:
-                  name: city
-              - column:
-                  name: category
-        - createIndex:
-            tableName: t_association
-            indexName: idx_association_postal_code
-            columns:
-              - column:
-                  name: postal_code
-        - createIndex:
-            tableName: t_association
-            indexName: idx_association_helloasso_slug
-            columns:
-              - column:
-                  name: helloasso_slug
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="001-create-association-table" author="family-hobbies-team">
+        <createTable tableName="t_association">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_association" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slug" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_association_slug"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="address" type="VARCHAR(255)"/>
+            <column name="city" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="postal_code" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="department" type="VARCHAR(5)"/>
+            <column name="region" type="VARCHAR(100)"/>
+            <column name="phone" type="VARCHAR(20)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="website" type="VARCHAR(255)"/>
+            <column name="logo_url" type="VARCHAR(500)"/>
+            <column name="helloasso_slug" type="VARCHAR(255)"/>
+            <column name="helloasso_org_id" type="VARCHAR(100)"/>
+            <column name="category" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_synced_at" type="TIMESTAMPTZ"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="t_association" indexName="idx_association_city">
+            <column name="city"/>
+        </createIndex>
+
+        <createIndex tableName="t_association" indexName="idx_association_category">
+            <column name="category"/>
+        </createIndex>
+
+        <createIndex tableName="t_association" indexName="idx_association_city_category">
+            <column name="city"/>
+            <column name="category"/>
+        </createIndex>
+
+        <createIndex tableName="t_association" indexName="idx_association_postal_code">
+            <column name="postal_code"/>
+        </createIndex>
+
+        <createIndex tableName="t_association" indexName="idx_association_helloasso_slug">
+            <column name="helloasso_slug"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 **Verify**:
@@ -2791,14 +2699,21 @@ docker exec fhm-postgres psql -U fhm_admin -d familyhobbies_associations \
 
 #### Task 7 Detail: Create Changelog Master
 
-**Where**: `backend/association-service/src/main/resources/db/changelog/db.changelog-master.yaml`
+**Where**: `backend/association-service/src/main/resources/db/changelog/db.changelog-master.xml`
 
 **Content**:
 
-```yaml
-databaseChangeLog:
-  - include:
-      file: changes/001-create-association-table.yaml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="changesets/001-create-association-table.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>
 ```
 
 ---
@@ -3522,8 +3437,8 @@ portfolio reviewers — real French city names, postal codes, addresses, and des
 
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|---------------|---------------|
-| 1 | Liquibase seed data | `backend/association-service/src/main/resources/db/changelog/changes/010-seed-associations.yaml` | 20 INSERT rows | `SELECT count(*) = 20` |
-| 2 | Update changelog master | `backend/association-service/src/main/resources/db/changelog/db.changelog-master.yaml` | Include 010 | Data visible |
+| 1 | Liquibase seed data | `backend/association-service/src/main/resources/db/changelog/changesets/010-seed-associations.xml` | 20 INSERT rows | `SELECT count(*) = 20` |
+| 2 | Update changelog master | `backend/association-service/src/main/resources/db/changelog/db.changelog-master.xml` | Include 010 | Data visible |
 
 ---
 
@@ -3531,329 +3446,335 @@ portfolio reviewers — real French city names, postal codes, addresses, and des
 
 **What**: Liquibase changeset inserting 20 realistic French associations.
 
-**Where**: `backend/association-service/src/main/resources/db/changelog/changes/010-seed-associations.yaml`
+**Where**: `backend/association-service/src/main/resources/db/changelog/changesets/010-seed-associations.xml`
 
 **Why**: Without seed data, the search feature returns empty results. Portfolio reviewers need to see realistic data to evaluate the application's value.
 
 **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 010-seed-associations
-      author: family-hobbies-team
-      context: "!test"
-      changes:
-        # --- LYON (5) ---
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "AS Lyon Judo" }
-              - column: { name: slug, value: "as-lyon-judo" }
-              - column: { name: description, value: "Club de judo affilie a la FFJDA. Cours pour enfants des 4 ans et adultes. Judo, jujitsu et self-defense." }
-              - column: { name: address, value: "12 Rue des Sports" }
-              - column: { name: city, value: "Lyon" }
-              - column: { name: postal_code, value: "69001" }
-              - column: { name: department, value: "69" }
-              - column: { name: region, value: "Auvergne-Rhone-Alpes" }
-              - column: { name: phone, value: "+33478120001" }
-              - column: { name: email, value: "contact@as-lyon-judo.fr" }
-              - column: { name: website, value: "https://www.as-lyon-judo.fr" }
-              - column: { name: category, value: "MARTIAL_ARTS" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Ecole de Danse du Rhone" }
-              - column: { name: slug, value: "ecole-de-danse-du-rhone" }
-              - column: { name: description, value: "Ecole de danse proposant classique, contemporain, jazz et hip-hop. Tous niveaux, de l'eveil a la competition." }
-              - column: { name: address, value: "45 Rue de la Republique" }
-              - column: { name: city, value: "Lyon" }
-              - column: { name: postal_code, value: "69002" }
-              - column: { name: department, value: "69" }
-              - column: { name: region, value: "Auvergne-Rhone-Alpes" }
-              - column: { name: phone, value: "+33478120002" }
-              - column: { name: email, value: "contact@danse-rhone.fr" }
-              - column: { name: website, value: "https://www.danse-rhone.fr" }
-              - column: { name: category, value: "DANCE" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Lyon Sport Collectif" }
-              - column: { name: slug, value: "lyon-sport-collectif" }
-              - column: { name: description, value: "Association multisport : football, basketball, handball et volleyball. Entrainements et competitions pour jeunes et adultes." }
-              - column: { name: address, value: "8 Avenue Jean Jaures" }
-              - column: { name: city, value: "Lyon" }
-              - column: { name: postal_code, value: "69007" }
-              - column: { name: department, value: "69" }
-              - column: { name: region, value: "Auvergne-Rhone-Alpes" }
-              - column: { name: phone, value: "+33478120003" }
-              - column: { name: email, value: "contact@lyon-sport-collectif.fr" }
-              - column: { name: category, value: "SPORT" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Conservatoire de Lyon" }
-              - column: { name: slug, value: "conservatoire-de-lyon" }
-              - column: { name: description, value: "Conservatoire municipal de musique. Piano, violon, guitare, chant, solfege. Cursus diplômant et cours loisirs." }
-              - column: { name: address, value: "4 Montee du Gourguillon" }
-              - column: { name: city, value: "Lyon" }
-              - column: { name: postal_code, value: "69005" }
-              - column: { name: department, value: "69" }
-              - column: { name: region, value: "Auvergne-Rhone-Alpes" }
-              - column: { name: phone, value: "+33478120004" }
-              - column: { name: email, value: "contact@conservatoire-lyon.fr" }
-              - column: { name: website, value: "https://www.conservatoire-lyon.fr" }
-              - column: { name: category, value: "MUSIC" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Theatre des Celestins Atelier" }
-              - column: { name: slug, value: "theatre-des-celestins-atelier" }
-              - column: { name: description, value: "Ateliers theatre pour amateurs. Improvisation, mise en scene, expression corporelle. Spectacles de fin d'annee." }
-              - column: { name: address, value: "4 Rue Charles Dullin" }
-              - column: { name: city, value: "Lyon" }
-              - column: { name: postal_code, value: "69002" }
-              - column: { name: department, value: "69" }
-              - column: { name: region, value: "Auvergne-Rhone-Alpes" }
-              - column: { name: phone, value: "+33478120005" }
-              - column: { name: email, value: "contact@celestins-atelier.fr" }
-              - column: { name: category, value: "THEATER" }
-              - column: { name: status, value: "ACTIVE" }
-        # --- PARIS (5) ---
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Paris Arts Martiaux" }
-              - column: { name: slug, value: "paris-arts-martiaux" }
-              - column: { name: description, value: "Club d'arts martiaux au coeur de Paris. Karate, taekwondo, kung-fu. Tous ages et niveaux." }
-              - column: { name: address, value: "22 Rue du Faubourg Saint-Antoine" }
-              - column: { name: city, value: "Paris" }
-              - column: { name: postal_code, value: "75011" }
-              - column: { name: department, value: "75" }
-              - column: { name: region, value: "Ile-de-France" }
-              - column: { name: phone, value: "+33142120001" }
-              - column: { name: email, value: "contact@paris-arts-martiaux.fr" }
-              - column: { name: category, value: "MARTIAL_ARTS" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Studio Danse Republique" }
-              - column: { name: slug, value: "studio-danse-republique" }
-              - column: { name: description, value: "Studio de danse contemporaine et modern jazz. Cours reguliers, stages et ateliers choregraphiques." }
-              - column: { name: address, value: "15 Boulevard Voltaire" }
-              - column: { name: city, value: "Paris" }
-              - column: { name: postal_code, value: "75011" }
-              - column: { name: department, value: "75" }
-              - column: { name: region, value: "Ile-de-France" }
-              - column: { name: phone, value: "+33142120002" }
-              - column: { name: email, value: "contact@studio-danse-republique.fr" }
-              - column: { name: category, value: "DANCE" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Paris FC Academy" }
-              - column: { name: slug, value: "paris-fc-academy" }
-              - column: { name: description, value: "Ecole de football pour jeunes de 6 a 18 ans. Entrainements techniques, tactiques et matchs le week-end." }
-              - column: { name: address, value: "Stade Charlety, 99 Boulevard Kellermann" }
-              - column: { name: city, value: "Paris" }
-              - column: { name: postal_code, value: "75013" }
-              - column: { name: department, value: "75" }
-              - column: { name: region, value: "Ile-de-France" }
-              - column: { name: phone, value: "+33142120003" }
-              - column: { name: email, value: "contact@paris-fc-academy.fr" }
-              - column: { name: website, value: "https://www.paris-fc-academy.fr" }
-              - column: { name: category, value: "SPORT" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Ecole de Musique de Paris 11" }
-              - column: { name: slug, value: "ecole-de-musique-paris-11" }
-              - column: { name: description, value: "Ecole de musique associative. Guitare, batterie, basse, chant, MAO. Ambiance conviviale et scene ouverte mensuelle." }
-              - column: { name: address, value: "33 Rue de la Roquette" }
-              - column: { name: city, value: "Paris" }
-              - column: { name: postal_code, value: "75011" }
-              - column: { name: department, value: "75" }
-              - column: { name: region, value: "Ile-de-France" }
-              - column: { name: phone, value: "+33142120004" }
-              - column: { name: email, value: "contact@musique-paris11.fr" }
-              - column: { name: category, value: "MUSIC" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Atelier Theatre Bastille" }
-              - column: { name: slug, value: "atelier-theatre-bastille" }
-              - column: { name: description, value: "Compagnie de theatre amateur. Cours d'art dramatique, improvisation et creation collective. Representation annuelle." }
-              - column: { name: address, value: "5 Passage Thierre" }
-              - column: { name: city, value: "Paris" }
-              - column: { name: postal_code, value: "75011" }
-              - column: { name: department, value: "75" }
-              - column: { name: region, value: "Ile-de-France" }
-              - column: { name: phone, value: "+33142120005" }
-              - column: { name: email, value: "contact@theatre-bastille.fr" }
-              - column: { name: category, value: "THEATER" }
-              - column: { name: status, value: "ACTIVE" }
-        # --- MARSEILLE (5) ---
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Marseille Karate Club" }
-              - column: { name: slug, value: "marseille-karate-club" }
-              - column: { name: description, value: "Club de karate Shotokan. Cours enfants, adolescents et adultes. Preparation aux passages de grades et competitions." }
-              - column: { name: address, value: "18 Boulevard de la Liberation" }
-              - column: { name: city, value: "Marseille" }
-              - column: { name: postal_code, value: "13001" }
-              - column: { name: department, value: "13" }
-              - column: { name: region, value: "Provence-Alpes-Cote d'Azur" }
-              - column: { name: phone, value: "+33491120001" }
-              - column: { name: email, value: "contact@marseille-karate.fr" }
-              - column: { name: category, value: "MARTIAL_ARTS" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Danse Phoceenne" }
-              - column: { name: slug, value: "danse-phoceenne" }
-              - column: { name: description, value: "Association de danse orientale, flamenco et salsa. Cours debutants a confirmes dans une ambiance chaleureuse." }
-              - column: { name: address, value: "7 Rue du Petit Puits" }
-              - column: { name: city, value: "Marseille" }
-              - column: { name: postal_code, value: "13002" }
-              - column: { name: department, value: "13" }
-              - column: { name: region, value: "Provence-Alpes-Cote d'Azur" }
-              - column: { name: phone, value: "+33491120002" }
-              - column: { name: email, value: "contact@danse-phoceenne.fr" }
-              - column: { name: category, value: "DANCE" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "OM Handball Academy" }
-              - column: { name: slug, value: "om-handball-academy" }
-              - column: { name: description, value: "Ecole de handball pour jeunes et seniors. Entrainements au gymnase, matchs en championnat departemental." }
-              - column: { name: address, value: "Stade Vallier, 33 Boulevard Rabatau" }
-              - column: { name: city, value: "Marseille" }
-              - column: { name: postal_code, value: "13008" }
-              - column: { name: department, value: "13" }
-              - column: { name: region, value: "Provence-Alpes-Cote d'Azur" }
-              - column: { name: phone, value: "+33491120003" }
-              - column: { name: email, value: "contact@om-handball.fr" }
-              - column: { name: category, value: "SPORT" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Conservatoire de Marseille" }
-              - column: { name: slug, value: "conservatoire-de-marseille" }
-              - column: { name: description, value: "Conservatoire a rayonnement regional. Musique classique, jazz et musiques actuelles. Cursus diplômant reconnu par l'Etat." }
-              - column: { name: address, value: "2 Place Auguste Carli" }
-              - column: { name: city, value: "Marseille" }
-              - column: { name: postal_code, value: "13001" }
-              - column: { name: department, value: "13" }
-              - column: { name: region, value: "Provence-Alpes-Cote d'Azur" }
-              - column: { name: phone, value: "+33491120004" }
-              - column: { name: email, value: "contact@conservatoire-marseille.fr" }
-              - column: { name: website, value: "https://www.conservatoire-marseille.fr" }
-              - column: { name: category, value: "MUSIC" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Theatre du Lacydon" }
-              - column: { name: slug, value: "theatre-du-lacydon" }
-              - column: { name: description, value: "Troupe de theatre amateur et ateliers d'expression scenique. Comedies, drames et theatre d'improvisation." }
-              - column: { name: address, value: "14 Quai du Port" }
-              - column: { name: city, value: "Marseille" }
-              - column: { name: postal_code, value: "13002" }
-              - column: { name: department, value: "13" }
-              - column: { name: region, value: "Provence-Alpes-Cote d'Azur" }
-              - column: { name: phone, value: "+33491120005" }
-              - column: { name: email, value: "contact@theatre-lacydon.fr" }
-              - column: { name: category, value: "THEATER" }
-              - column: { name: status, value: "ACTIVE" }
-        # --- TOULOUSE (3) ---
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Toulouse Escrime" }
-              - column: { name: slug, value: "toulouse-escrime" }
-              - column: { name: description, value: "Club d'escrime. Fleuret, epee et sabre. Cours pour enfants des 7 ans, adolescents et adultes. Preparation aux competitions." }
-              - column: { name: address, value: "25 Allee Charles de Fitte" }
-              - column: { name: city, value: "Toulouse" }
-              - column: { name: postal_code, value: "31300" }
-              - column: { name: department, value: "31" }
-              - column: { name: region, value: "Occitanie" }
-              - column: { name: phone, value: "+33561120001" }
-              - column: { name: email, value: "contact@toulouse-escrime.fr" }
-              - column: { name: category, value: "SPORT" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Rock n Roll Danse Toulouse" }
-              - column: { name: slug, value: "rock-n-roll-danse-toulouse" }
-              - column: { name: description, value: "Association de rock'n'roll et danses de salon. Cours en couple et solo, soirees dansantes mensuelles." }
-              - column: { name: address, value: "10 Rue Bayard" }
-              - column: { name: city, value: "Toulouse" }
-              - column: { name: postal_code, value: "31000" }
-              - column: { name: department, value: "31" }
-              - column: { name: region, value: "Occitanie" }
-              - column: { name: phone, value: "+33561120002" }
-              - column: { name: email, value: "contact@rnr-danse-toulouse.fr" }
-              - column: { name: category, value: "DANCE" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Harmonie Occitane" }
-              - column: { name: slug, value: "harmonie-occitane" }
-              - column: { name: description, value: "Orchestre d'harmonie amateur. Cuivres, bois, percussions. Concerts publics et animations municipales." }
-              - column: { name: address, value: "3 Place du Capitole" }
-              - column: { name: city, value: "Toulouse" }
-              - column: { name: postal_code, value: "31000" }
-              - column: { name: department, value: "31" }
-              - column: { name: region, value: "Occitanie" }
-              - column: { name: phone, value: "+33561120003" }
-              - column: { name: email, value: "contact@harmonie-occitane.fr" }
-              - column: { name: category, value: "MUSIC" }
-              - column: { name: status, value: "ACTIVE" }
-        # --- NANTES (2) ---
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Nantes Yoga Collectif" }
-              - column: { name: slug, value: "nantes-yoga-collectif" }
-              - column: { name: description, value: "Collectif de yoga. Hatha, vinyasa, yin et meditation. Cours en salle et en plein air au Jardin des Plantes." }
-              - column: { name: address, value: "20 Rue de Strasbourg" }
-              - column: { name: city, value: "Nantes" }
-              - column: { name: postal_code, value: "44000" }
-              - column: { name: department, value: "44" }
-              - column: { name: region, value: "Pays de la Loire" }
-              - column: { name: phone, value: "+33240120001" }
-              - column: { name: email, value: "contact@nantes-yoga.fr" }
-              - column: { name: category, value: "WELLNESS" }
-              - column: { name: status, value: "ACTIVE" }
-        - insert:
-            tableName: t_association
-            columns:
-              - column: { name: name, value: "Beaux Arts Nantes Atelier" }
-              - column: { name: slug, value: "beaux-arts-nantes-atelier" }
-              - column: { name: description, value: "Ateliers de dessin, peinture, sculpture et arts plastiques. Adultes et enfants. Expositions collectives annuelles." }
-              - column: { name: address, value: "13 Rue Premion" }
-              - column: { name: city, value: "Nantes" }
-              - column: { name: postal_code, value: "44000" }
-              - column: { name: department, value: "44" }
-              - column: { name: region, value: "Pays de la Loire" }
-              - column: { name: phone, value: "+33240120002" }
-              - column: { name: email, value: "contact@beaux-arts-nantes.fr" }
-              - column: { name: category, value: "ART" }
-              - column: { name: status, value: "ACTIVE" }
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="010-seed-associations" author="family-hobbies-team" context="!test">
+
+        <!-- LYON (5) -->
+        <insert tableName="t_association">
+            <column name="name" value="AS Lyon Judo"/>
+            <column name="slug" value="as-lyon-judo"/>
+            <column name="description" value="Club de judo affilie a la FFJDA. Cours pour enfants des 4 ans et adultes. Judo, jujitsu et self-defense."/>
+            <column name="address" value="12 Rue des Sports"/>
+            <column name="city" value="Lyon"/>
+            <column name="postal_code" value="69001"/>
+            <column name="department" value="69"/>
+            <column name="region" value="Auvergne-Rhone-Alpes"/>
+            <column name="phone" value="+33478120001"/>
+            <column name="email" value="contact@as-lyon-judo.fr"/>
+            <column name="website" value="https://www.as-lyon-judo.fr"/>
+            <column name="category" value="MARTIAL_ARTS"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Ecole de Danse du Rhone"/>
+            <column name="slug" value="ecole-de-danse-du-rhone"/>
+            <column name="description" value="Ecole de danse proposant classique, contemporain, jazz et hip-hop. Tous niveaux, de l'eveil a la competition."/>
+            <column name="address" value="45 Rue de la Republique"/>
+            <column name="city" value="Lyon"/>
+            <column name="postal_code" value="69002"/>
+            <column name="department" value="69"/>
+            <column name="region" value="Auvergne-Rhone-Alpes"/>
+            <column name="phone" value="+33478120002"/>
+            <column name="email" value="contact@danse-rhone.fr"/>
+            <column name="website" value="https://www.danse-rhone.fr"/>
+            <column name="category" value="DANCE"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Lyon Sport Collectif"/>
+            <column name="slug" value="lyon-sport-collectif"/>
+            <column name="description" value="Association multisport : football, basketball, handball et volleyball. Entrainements et competitions pour jeunes et adultes."/>
+            <column name="address" value="8 Avenue Jean Jaures"/>
+            <column name="city" value="Lyon"/>
+            <column name="postal_code" value="69007"/>
+            <column name="department" value="69"/>
+            <column name="region" value="Auvergne-Rhone-Alpes"/>
+            <column name="phone" value="+33478120003"/>
+            <column name="email" value="contact@lyon-sport-collectif.fr"/>
+            <column name="category" value="SPORT"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Conservatoire de Lyon"/>
+            <column name="slug" value="conservatoire-de-lyon"/>
+            <column name="description" value="Conservatoire municipal de musique. Piano, violon, guitare, chant, solfege. Cursus diplômant et cours loisirs."/>
+            <column name="address" value="4 Montee du Gourguillon"/>
+            <column name="city" value="Lyon"/>
+            <column name="postal_code" value="69005"/>
+            <column name="department" value="69"/>
+            <column name="region" value="Auvergne-Rhone-Alpes"/>
+            <column name="phone" value="+33478120004"/>
+            <column name="email" value="contact@conservatoire-lyon.fr"/>
+            <column name="website" value="https://www.conservatoire-lyon.fr"/>
+            <column name="category" value="MUSIC"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Theatre des Celestins Atelier"/>
+            <column name="slug" value="theatre-des-celestins-atelier"/>
+            <column name="description" value="Ateliers theatre pour amateurs. Improvisation, mise en scene, expression corporelle. Spectacles de fin d'annee."/>
+            <column name="address" value="4 Rue Charles Dullin"/>
+            <column name="city" value="Lyon"/>
+            <column name="postal_code" value="69002"/>
+            <column name="department" value="69"/>
+            <column name="region" value="Auvergne-Rhone-Alpes"/>
+            <column name="phone" value="+33478120005"/>
+            <column name="email" value="contact@celestins-atelier.fr"/>
+            <column name="category" value="THEATER"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- PARIS (5) -->
+        <insert tableName="t_association">
+            <column name="name" value="Paris Arts Martiaux"/>
+            <column name="slug" value="paris-arts-martiaux"/>
+            <column name="description" value="Club d'arts martiaux au coeur de Paris. Karate, taekwondo, kung-fu. Tous ages et niveaux."/>
+            <column name="address" value="22 Rue du Faubourg Saint-Antoine"/>
+            <column name="city" value="Paris"/>
+            <column name="postal_code" value="75011"/>
+            <column name="department" value="75"/>
+            <column name="region" value="Ile-de-France"/>
+            <column name="phone" value="+33142120001"/>
+            <column name="email" value="contact@paris-arts-martiaux.fr"/>
+            <column name="category" value="MARTIAL_ARTS"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Studio Danse Republique"/>
+            <column name="slug" value="studio-danse-republique"/>
+            <column name="description" value="Studio de danse contemporaine et modern jazz. Cours reguliers, stages et ateliers choregraphiques."/>
+            <column name="address" value="15 Boulevard Voltaire"/>
+            <column name="city" value="Paris"/>
+            <column name="postal_code" value="75011"/>
+            <column name="department" value="75"/>
+            <column name="region" value="Ile-de-France"/>
+            <column name="phone" value="+33142120002"/>
+            <column name="email" value="contact@studio-danse-republique.fr"/>
+            <column name="category" value="DANCE"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Paris FC Academy"/>
+            <column name="slug" value="paris-fc-academy"/>
+            <column name="description" value="Ecole de football pour jeunes de 6 a 18 ans. Entrainements techniques, tactiques et matchs le week-end."/>
+            <column name="address" value="Stade Charlety, 99 Boulevard Kellermann"/>
+            <column name="city" value="Paris"/>
+            <column name="postal_code" value="75013"/>
+            <column name="department" value="75"/>
+            <column name="region" value="Ile-de-France"/>
+            <column name="phone" value="+33142120003"/>
+            <column name="email" value="contact@paris-fc-academy.fr"/>
+            <column name="website" value="https://www.paris-fc-academy.fr"/>
+            <column name="category" value="SPORT"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Ecole de Musique de Paris 11"/>
+            <column name="slug" value="ecole-de-musique-paris-11"/>
+            <column name="description" value="Ecole de musique associative. Guitare, batterie, basse, chant, MAO. Ambiance conviviale et scene ouverte mensuelle."/>
+            <column name="address" value="33 Rue de la Roquette"/>
+            <column name="city" value="Paris"/>
+            <column name="postal_code" value="75011"/>
+            <column name="department" value="75"/>
+            <column name="region" value="Ile-de-France"/>
+            <column name="phone" value="+33142120004"/>
+            <column name="email" value="contact@musique-paris11.fr"/>
+            <column name="category" value="MUSIC"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Atelier Theatre Bastille"/>
+            <column name="slug" value="atelier-theatre-bastille"/>
+            <column name="description" value="Compagnie de theatre amateur. Cours d'art dramatique, improvisation et creation collective. Representation annuelle."/>
+            <column name="address" value="5 Passage Thierre"/>
+            <column name="city" value="Paris"/>
+            <column name="postal_code" value="75011"/>
+            <column name="department" value="75"/>
+            <column name="region" value="Ile-de-France"/>
+            <column name="phone" value="+33142120005"/>
+            <column name="email" value="contact@theatre-bastille.fr"/>
+            <column name="category" value="THEATER"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- MARSEILLE (5) -->
+        <insert tableName="t_association">
+            <column name="name" value="Marseille Karate Club"/>
+            <column name="slug" value="marseille-karate-club"/>
+            <column name="description" value="Club de karate Shotokan. Cours enfants, adolescents et adultes. Preparation aux passages de grades et competitions."/>
+            <column name="address" value="18 Boulevard de la Liberation"/>
+            <column name="city" value="Marseille"/>
+            <column name="postal_code" value="13001"/>
+            <column name="department" value="13"/>
+            <column name="region" value="Provence-Alpes-Cote d'Azur"/>
+            <column name="phone" value="+33491120001"/>
+            <column name="email" value="contact@marseille-karate.fr"/>
+            <column name="category" value="MARTIAL_ARTS"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Danse Phoceenne"/>
+            <column name="slug" value="danse-phoceenne"/>
+            <column name="description" value="Association de danse orientale, flamenco et salsa. Cours debutants a confirmes dans une ambiance chaleureuse."/>
+            <column name="address" value="7 Rue du Petit Puits"/>
+            <column name="city" value="Marseille"/>
+            <column name="postal_code" value="13002"/>
+            <column name="department" value="13"/>
+            <column name="region" value="Provence-Alpes-Cote d'Azur"/>
+            <column name="phone" value="+33491120002"/>
+            <column name="email" value="contact@danse-phoceenne.fr"/>
+            <column name="category" value="DANCE"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="OM Handball Academy"/>
+            <column name="slug" value="om-handball-academy"/>
+            <column name="description" value="Ecole de handball pour jeunes et seniors. Entrainements au gymnase, matchs en championnat departemental."/>
+            <column name="address" value="Stade Vallier, 33 Boulevard Rabatau"/>
+            <column name="city" value="Marseille"/>
+            <column name="postal_code" value="13008"/>
+            <column name="department" value="13"/>
+            <column name="region" value="Provence-Alpes-Cote d'Azur"/>
+            <column name="phone" value="+33491120003"/>
+            <column name="email" value="contact@om-handball.fr"/>
+            <column name="category" value="SPORT"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Conservatoire de Marseille"/>
+            <column name="slug" value="conservatoire-de-marseille"/>
+            <column name="description" value="Conservatoire a rayonnement regional. Musique classique, jazz et musiques actuelles. Cursus diplômant reconnu par l'Etat."/>
+            <column name="address" value="2 Place Auguste Carli"/>
+            <column name="city" value="Marseille"/>
+            <column name="postal_code" value="13001"/>
+            <column name="department" value="13"/>
+            <column name="region" value="Provence-Alpes-Cote d'Azur"/>
+            <column name="phone" value="+33491120004"/>
+            <column name="email" value="contact@conservatoire-marseille.fr"/>
+            <column name="website" value="https://www.conservatoire-marseille.fr"/>
+            <column name="category" value="MUSIC"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Theatre du Lacydon"/>
+            <column name="slug" value="theatre-du-lacydon"/>
+            <column name="description" value="Troupe de theatre amateur et ateliers d'expression scenique. Comedies, drames et theatre d'improvisation."/>
+            <column name="address" value="14 Quai du Port"/>
+            <column name="city" value="Marseille"/>
+            <column name="postal_code" value="13002"/>
+            <column name="department" value="13"/>
+            <column name="region" value="Provence-Alpes-Cote d'Azur"/>
+            <column name="phone" value="+33491120005"/>
+            <column name="email" value="contact@theatre-lacydon.fr"/>
+            <column name="category" value="THEATER"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- TOULOUSE (3) -->
+        <insert tableName="t_association">
+            <column name="name" value="Toulouse Escrime"/>
+            <column name="slug" value="toulouse-escrime"/>
+            <column name="description" value="Club d'escrime. Fleuret, epee et sabre. Cours pour enfants des 7 ans, adolescents et adultes. Preparation aux competitions."/>
+            <column name="address" value="25 Allee Charles de Fitte"/>
+            <column name="city" value="Toulouse"/>
+            <column name="postal_code" value="31300"/>
+            <column name="department" value="31"/>
+            <column name="region" value="Occitanie"/>
+            <column name="phone" value="+33561120001"/>
+            <column name="email" value="contact@toulouse-escrime.fr"/>
+            <column name="category" value="SPORT"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Rock n Roll Danse Toulouse"/>
+            <column name="slug" value="rock-n-roll-danse-toulouse"/>
+            <column name="description" value="Association de rock'n'roll et danses de salon. Cours en couple et solo, soirees dansantes mensuelles."/>
+            <column name="address" value="10 Rue Bayard"/>
+            <column name="city" value="Toulouse"/>
+            <column name="postal_code" value="31000"/>
+            <column name="department" value="31"/>
+            <column name="region" value="Occitanie"/>
+            <column name="phone" value="+33561120002"/>
+            <column name="email" value="contact@rnr-danse-toulouse.fr"/>
+            <column name="category" value="DANCE"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Harmonie Occitane"/>
+            <column name="slug" value="harmonie-occitane"/>
+            <column name="description" value="Orchestre d'harmonie amateur. Cuivres, bois, percussions. Concerts publics et animations municipales."/>
+            <column name="address" value="3 Place du Capitole"/>
+            <column name="city" value="Toulouse"/>
+            <column name="postal_code" value="31000"/>
+            <column name="department" value="31"/>
+            <column name="region" value="Occitanie"/>
+            <column name="phone" value="+33561120003"/>
+            <column name="email" value="contact@harmonie-occitane.fr"/>
+            <column name="category" value="MUSIC"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- NANTES (2) -->
+        <insert tableName="t_association">
+            <column name="name" value="Nantes Yoga Collectif"/>
+            <column name="slug" value="nantes-yoga-collectif"/>
+            <column name="description" value="Collectif de yoga. Hatha, vinyasa, yin et meditation. Cours en salle et en plein air au Jardin des Plantes."/>
+            <column name="address" value="20 Rue de Strasbourg"/>
+            <column name="city" value="Nantes"/>
+            <column name="postal_code" value="44000"/>
+            <column name="department" value="44"/>
+            <column name="region" value="Pays de la Loire"/>
+            <column name="phone" value="+33240120001"/>
+            <column name="email" value="contact@nantes-yoga.fr"/>
+            <column name="category" value="WELLNESS"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Beaux Arts Nantes Atelier"/>
+            <column name="slug" value="beaux-arts-nantes-atelier"/>
+            <column name="description" value="Ateliers de dessin, peinture, sculpture et arts plastiques. Adultes et enfants. Expositions collectives annuelles."/>
+            <column name="address" value="13 Rue Premion"/>
+            <column name="city" value="Nantes"/>
+            <column name="postal_code" value="44000"/>
+            <column name="department" value="44"/>
+            <column name="region" value="Pays de la Loire"/>
+            <column name="phone" value="+33240120002"/>
+            <column name="email" value="contact@beaux-arts-nantes.fr"/>
+            <column name="category" value="ART"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 **Verify**:
@@ -3872,13 +3793,12 @@ docker exec fhm-postgres psql -U fhm_admin -d familyhobbies_associations \
 
 #### Task 2 Detail: Update Changelog Master
 
-**Where**: `backend/association-service/src/main/resources/db/changelog/db.changelog-master.yaml`
+**Where**: `backend/association-service/src/main/resources/db/changelog/db.changelog-master.xml`
 
 **Content** — append:
 
-```yaml
-  - include:
-      file: changes/010-seed-associations.yaml
+```xml
+    <include file="changesets/010-seed-associations.xml" relativeToChangelogFile="true"/>
 ```
 
 ---

@@ -97,8 +97,8 @@ means services get error handling automatically -- zero extra wiring for service
 <!-- backend/error-handling/pom.xml -->
 <parent>
     <groupId>com.familyhobbies</groupId>
-    <artifactId>family-hobbies-manager</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>family-hobbies-manager-backend</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
 </parent>
 
 <artifactId>error-handling</artifactId>

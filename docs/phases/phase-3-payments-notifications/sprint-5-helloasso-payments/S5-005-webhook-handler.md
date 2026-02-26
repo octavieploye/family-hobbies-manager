@@ -14,7 +14,7 @@ When a user completes (or fails) a payment on the HelloAsso checkout page, Hello
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|----------------|---------------|
 | 1 | WebhookEventType enum | `backend/payment-service/src/main/java/.../enums/WebhookEventType.java` | Enum: PAYMENT_AUTHORIZED, PAYMENT_COMPLETED, PAYMENT_FAILED, PAYMENT_REFUNDED, ORDER_CREATED | Compiles |
-| 2 | Liquibase 003 -- t_payment_webhook_log | `backend/payment-service/src/main/resources/db/changelog/003-create-payment-webhook-log-table.yaml` | Table with indexes for processed status and event type | Migration runs clean |
+| 2 | Liquibase 003 -- t_payment_webhook_log | `backend/payment-service/src/main/resources/db/changesets/003-create-payment-webhook-log-table.xml` | Table with indexes for processed status and event type | Migration runs clean |
 | 3 | PaymentWebhookLog entity | `backend/payment-service/src/main/java/.../entity/PaymentWebhookLog.java` | JPA entity mapping t_payment_webhook_log | Compiles, Hibernate validates |
 | 4 | PaymentWebhookLogRepository | `backend/payment-service/src/main/java/.../repository/PaymentWebhookLogRepository.java` | Spring Data JPA with idempotency check | Compiles |
 | 5 | WebhookSignatureValidator | `backend/payment-service/src/main/java/.../security/WebhookSignatureValidator.java` | HMAC-SHA256 signature validation | Unit tests pass |
@@ -101,88 +101,61 @@ public enum WebhookEventType {
 ## Task 2 Detail: Liquibase 003 -- Create t_payment_webhook_log Table
 
 - **What**: Liquibase changeset creating the `t_payment_webhook_log` table for idempotent webhook processing and audit trail
-- **Where**: `backend/payment-service/src/main/resources/db/changelog/003-create-payment-webhook-log-table.yaml`
+- **Where**: `backend/payment-service/src/main/resources/db/changesets/003-create-payment-webhook-log-table.xml`
 - **Why**: Every incoming webhook is logged before processing. The `helloasso_event_id` column enables idempotency checks to prevent duplicate processing.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 003-create-payment-webhook-log-table
-      author: family-hobbies-team
-      preConditions:
-        - onFail: MARK_RAN
-        - not:
-            - tableExists:
-                tableName: t_payment_webhook_log
-      changes:
-        - createTable:
-            tableName: t_payment_webhook_log
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_payment_webhook_log
-                    nullable: false
-              - column:
-                  name: helloasso_event_type
-                  type: VARCHAR(50)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: helloasso_event_id
-                  type: VARCHAR(100)
-              - column:
-                  name: payload
-                  type: JSONB
-                  constraints:
-                    nullable: false
-              - column:
-                  name: processed
-                  type: BOOLEAN
-                  defaultValueBoolean: false
-                  constraints:
-                    nullable: false
-              - column:
-                  name: processed_at
-                  type: TIMESTAMPTZ
-              - column:
-                  name: error_message
-                  type: TEXT
-              - column:
-                  name: retry_count
-                  type: INTEGER
-                  defaultValueNumeric: 0
-                  constraints:
-                    nullable: false
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-        - createIndex:
-            tableName: t_payment_webhook_log
-            indexName: idx_webhook_log_processed
-            columns:
-              - column:
-                  name: processed
-        - createIndex:
-            tableName: t_payment_webhook_log
-            indexName: idx_webhook_log_event_type
-            columns:
-              - column:
-                  name: helloasso_event_type
-        - createIndex:
-            tableName: t_payment_webhook_log
-            indexName: idx_webhook_log_helloasso_event_id
-            columns:
-              - column:
-                  name: helloasso_event_id
+    <changeSet id="003-create-payment-webhook-log-table" author="family-hobbies-team">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="t_payment_webhook_log"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="t_payment_webhook_log">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_payment_webhook_log" nullable="false"/>
+            </column>
+            <column name="helloasso_event_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="helloasso_event_id" type="VARCHAR(100)"/>
+            <column name="payload" type="JSONB">
+                <constraints nullable="false"/>
+            </column>
+            <column name="processed" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="processed_at" type="TIMESTAMPTZ"/>
+            <column name="error_message" type="TEXT"/>
+            <column name="retry_count" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="t_payment_webhook_log" indexName="idx_webhook_log_processed">
+            <column name="processed"/>
+        </createIndex>
+        <createIndex tableName="t_payment_webhook_log" indexName="idx_webhook_log_event_type">
+            <column name="helloasso_event_type"/>
+        </createIndex>
+        <createIndex tableName="t_payment_webhook_log" indexName="idx_webhook_log_helloasso_event_id">
+            <column name="helloasso_event_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: `mvn liquibase:update -pl backend/payment-service` -> table created with all columns and indexes

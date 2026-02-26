@@ -1153,6 +1153,22 @@ backend/{service-name}/src/main/resources/db/changelog/
 | **One table per changeset**    | Each changeset creates or modifies exactly one table                           |
 | **No data in schema changesets** | Data inserts (seeds) use separate changesets with `context="dev"` or `context="seed"` |
 
+### 11.7 Constraint Naming: Liquibase vs JPA
+
+Liquibase XML migrations use **explicit constraint names** following the project naming conventions:
+
+| Constraint Type   | Naming Pattern                      | Example                          |
+|-------------------|-------------------------------------|----------------------------------|
+| Primary key       | `pk_{table}`                        | `pk_user`                        |
+| Unique            | `uq_{table}_{column}`              | `uq_user_email`                  |
+| Foreign key       | `fk_{table}_{referenced_table}`    | `fk_refresh_token_user`          |
+| Index             | `idx_{table}_{column}`             | `idx_user_email`                 |
+| Check             | `chk_{table}_{column}`             | `chk_payment_amount`             |
+
+JPA entities use Hibernate defaults (`unique = true`, `@JoinColumn`) which auto-generate constraint names at validation time.
+
+**Authoritative source**: Liquibase migrations define the schema and constraint names. Hibernate validates the schema (`ddl-auto: validate`) but does not enforce or check constraint names. No JPA annotation changes are needed to align with Liquibase constraint names.
+
 ---
 
 ## Appendix A: Full System ER Overview

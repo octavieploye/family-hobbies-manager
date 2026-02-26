@@ -117,9 +117,9 @@ cd backend && mvn liquibase:update -pl payment-service \
 ```
 
 Expected: All three changesets applied:
-- `001-create-payment-table.yaml` -- `t_payment` table with indexes
-- `002-create-invoice-table.yaml` -- `t_invoice` table with FK to `t_payment`
-- `003-create-payment-webhook-log-table.yaml` -- `t_payment_webhook_log` table
+- `001-create-payment-table.xml` -- `t_payment` table with indexes
+- `002-create-invoice-table.xml` -- `t_invoice` table with FK to `t_payment`
+- `003-create-payment-webhook-log-table.xml` -- `t_payment_webhook_log` table
 
 ### 13. Verify payment tables exist
 

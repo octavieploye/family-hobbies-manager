@@ -22,7 +22,7 @@ The association-service already has an `AssociationSyncService` (S5-003) that pe
 | 7 | Job listener | `backend/association-service/src/main/java/com/familyhobbies/associationservice/batch/listener/SyncJobListener.java` | JobExecutionListener with structured logging | Logs emitted on job start/end |
 | 8 | Batch scheduler | `backend/association-service/src/main/java/com/familyhobbies/associationservice/batch/config/BatchSchedulerConfig.java` | CRON scheduler for helloAssoSyncJob | Application starts without errors |
 | 9 | Admin controller | `backend/association-service/src/main/java/com/familyhobbies/associationservice/controller/AdminBatchController.java` | POST /admin/batch/helloasso-sync endpoint | `curl -X POST` returns 202 |
-| 10 | Liquibase migration | `backend/association-service/src/main/resources/db/changelog/changesets/006-spring-batch-metadata.yaml` | Spring Batch metadata tables (or auto-init) | `spring.batch.jdbc.initialize-schema=always` |
+| 10 | Liquibase migration | `backend/association-service/src/main/resources/db/changelog/changesets/006-spring-batch-metadata.xml` | Spring Batch metadata tables (or auto-init) | `spring.batch.jdbc.initialize-schema=always` |
 | 11 | application.yml additions | `backend/association-service/src/main/resources/application.yml` | Batch config properties | Application starts with batch disabled on startup |
 | 12 | Failing tests (TDD) | `backend/association-service/src/test/java/com/familyhobbies/associationservice/batch/` | 12 JUnit 5 test cases | `mvn test -pl backend/association-service` |
 
@@ -972,32 +972,34 @@ public class AdminBatchController {
 - **Why**: Spring Batch requires metadata tables to track job executions, step details, and parameters. The auto-initialization approach is simpler than a Liquibase changeset and is recommended for single-database-per-service architectures.
 - **Content** (alternative Liquibase changeset if explicit control is preferred):
 
-```yaml
-# File: backend/association-service/src/main/resources/db/changelog/changesets/006-spring-batch-metadata.yaml
-databaseChangeLog:
-  - changeSet:
-      id: 006-spring-batch-metadata
-      author: familyhobbies
-      comment: >
-        Spring Batch 5.x metadata tables.
-        Alternative to spring.batch.jdbc.initialize-schema=always.
-        These tables track job execution history, step details, and parameters.
-      changes:
-        - sql:
-            comment: Create Spring Batch metadata tables from official schema
-            sql: |
-              -- Spring Batch 5.x PostgreSQL schema
-              -- Source: org/springframework/batch/core/schema-postgresql.sql
+```xml
+<!-- File: backend/association-service/src/main/resources/db/changelog/changesets/006-spring-batch-metadata.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-              CREATE TABLE IF NOT EXISTS BATCH_JOB_INSTANCE (
+    <changeSet id="006-spring-batch-metadata" author="familyhobbies">
+        <comment>
+            Spring Batch 5.x metadata tables.
+            Alternative to spring.batch.jdbc.initialize-schema=always.
+            These tables track job execution history, step details, and parameters.
+        </comment>
+        <sql>
+            -- Spring Batch 5.x PostgreSQL schema
+            -- Source: org/springframework/batch/core/schema-postgresql.sql
+
+            CREATE TABLE IF NOT EXISTS BATCH_JOB_INSTANCE (
                 JOB_INSTANCE_ID BIGINT NOT NULL PRIMARY KEY,
                 VERSION BIGINT,
                 JOB_NAME VARCHAR(100) NOT NULL,
                 JOB_KEY VARCHAR(32) NOT NULL,
                 CONSTRAINT JOB_INST_UN UNIQUE (JOB_NAME, JOB_KEY)
-              );
+            );
 
-              CREATE TABLE IF NOT EXISTS BATCH_JOB_EXECUTION (
+            CREATE TABLE IF NOT EXISTS BATCH_JOB_EXECUTION (
                 JOB_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY,
                 VERSION BIGINT,
                 JOB_INSTANCE_ID BIGINT NOT NULL,
@@ -1009,20 +1011,20 @@ databaseChangeLog:
                 EXIT_MESSAGE VARCHAR(2500),
                 LAST_UPDATED TIMESTAMP,
                 CONSTRAINT JOB_INST_EXEC_FK FOREIGN KEY (JOB_INSTANCE_ID)
-                  REFERENCES BATCH_JOB_INSTANCE(JOB_INSTANCE_ID)
-              );
+                    REFERENCES BATCH_JOB_INSTANCE(JOB_INSTANCE_ID)
+            );
 
-              CREATE TABLE IF NOT EXISTS BATCH_JOB_EXECUTION_PARAMS (
+            CREATE TABLE IF NOT EXISTS BATCH_JOB_EXECUTION_PARAMS (
                 JOB_EXECUTION_ID BIGINT NOT NULL,
                 PARAMETER_NAME VARCHAR(100) NOT NULL,
                 PARAMETER_TYPE VARCHAR(100) NOT NULL,
                 PARAMETER_VALUE VARCHAR(2500),
                 IDENTIFYING CHAR(1) NOT NULL,
                 CONSTRAINT JOB_EXEC_PARAMS_FK FOREIGN KEY (JOB_EXECUTION_ID)
-                  REFERENCES BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
-              );
+                    REFERENCES BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
+            );
 
-              CREATE TABLE IF NOT EXISTS BATCH_STEP_EXECUTION (
+            CREATE TABLE IF NOT EXISTS BATCH_STEP_EXECUTION (
                 STEP_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY,
                 VERSION BIGINT NOT NULL,
                 STEP_NAME VARCHAR(100) NOT NULL,
@@ -1043,28 +1045,32 @@ databaseChangeLog:
                 EXIT_MESSAGE VARCHAR(2500),
                 LAST_UPDATED TIMESTAMP,
                 CONSTRAINT JOB_EXEC_STEP_FK FOREIGN KEY (JOB_EXECUTION_ID)
-                  REFERENCES BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
-              );
+                    REFERENCES BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
+            );
 
-              CREATE TABLE IF NOT EXISTS BATCH_STEP_EXECUTION_CONTEXT (
+            CREATE TABLE IF NOT EXISTS BATCH_STEP_EXECUTION_CONTEXT (
                 STEP_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY,
                 SHORT_CONTEXT VARCHAR(2500) NOT NULL,
                 SERIALIZED_CONTEXT TEXT,
                 CONSTRAINT STEP_EXEC_CTX_FK FOREIGN KEY (STEP_EXECUTION_ID)
-                  REFERENCES BATCH_STEP_EXECUTION(STEP_EXECUTION_ID)
-              );
+                    REFERENCES BATCH_STEP_EXECUTION(STEP_EXECUTION_ID)
+            );
 
-              CREATE TABLE IF NOT EXISTS BATCH_JOB_EXECUTION_CONTEXT (
+            CREATE TABLE IF NOT EXISTS BATCH_JOB_EXECUTION_CONTEXT (
                 JOB_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY,
                 SHORT_CONTEXT VARCHAR(2500) NOT NULL,
                 SERIALIZED_CONTEXT TEXT,
                 CONSTRAINT JOB_EXEC_CTX_FK FOREIGN KEY (JOB_EXECUTION_ID)
-                  REFERENCES BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
-              );
+                    REFERENCES BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
+            );
 
-              CREATE SEQUENCE IF NOT EXISTS BATCH_STEP_EXECUTION_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
-              CREATE SEQUENCE IF NOT EXISTS BATCH_JOB_EXECUTION_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
-              CREATE SEQUENCE IF NOT EXISTS BATCH_JOB_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
+            CREATE SEQUENCE IF NOT EXISTS BATCH_STEP_EXECUTION_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
+            CREATE SEQUENCE IF NOT EXISTS BATCH_JOB_EXECUTION_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
+            CREATE SEQUENCE IF NOT EXISTS BATCH_JOB_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: `spring.batch.jdbc.initialize-schema=always` or Liquibase migration creates all `BATCH_*` tables. `SELECT * FROM BATCH_JOB_INSTANCE;` returns empty result set.

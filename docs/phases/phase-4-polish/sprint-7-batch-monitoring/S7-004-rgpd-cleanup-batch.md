@@ -15,8 +15,8 @@ The Family Hobbies Manager handles personal data of French families and their me
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|----------------|---------------|
 | 1 | Spring Batch Maven dependency | `backend/user-service/pom.xml` | Add spring-boot-starter-batch dependency | `mvn compile` |
-| 2 | Liquibase 007 -- t_rgpd_cleanup_log table | `backend/user-service/src/main/resources/db/changelog/changesets/007-create-rgpd-cleanup-log-table.yaml` | Create audit log table | Migration runs |
-| 3 | Liquibase 008 -- Spring Batch metadata | `backend/user-service/src/main/resources/db/changelog/changesets/008-create-batch-metadata-tables.yaml` | Enable Spring Batch schema initialization | Migration runs |
+| 2 | Liquibase 007 -- t_rgpd_cleanup_log table | `backend/user-service/src/main/resources/db/changelog/changesets/007-create-rgpd-cleanup-log-table.xml` | Create audit log table | Migration runs |
+| 3 | Liquibase 008 -- Spring Batch metadata | `backend/user-service/src/main/resources/db/changelog/changesets/008-create-batch-metadata-tables.xml` | Enable Spring Batch schema initialization | Migration runs |
 | 4 | RgpdCleanupLog entity | `backend/user-service/src/main/java/.../entity/RgpdCleanupLog.java` | JPA entity for audit log | Compiles |
 | 5 | RgpdCleanupLogRepository | `backend/user-service/src/main/java/.../repository/RgpdCleanupLogRepository.java` | Spring Data JPA repository | Compiles |
 | 6 | CrossServiceCleanupStatus enum | `backend/user-service/src/main/java/.../enums/CrossServiceCleanupStatus.java` | Enum: SUCCESS, PARTIAL_FAILURE, FAILED | Compiles |
@@ -69,79 +69,60 @@ The Family Hobbies Manager handles personal data of French families and their me
 ## Task 2 Detail: Liquibase 007 -- Create t_rgpd_cleanup_log Table
 
 - **What**: Liquibase changeset creating the `t_rgpd_cleanup_log` table for RGPD audit trail
-- **Where**: `backend/user-service/src/main/resources/db/changelog/changesets/007-create-rgpd-cleanup-log-table.yaml`
+- **Where**: `backend/user-service/src/main/resources/db/changelog/changesets/007-create-rgpd-cleanup-log-table.xml`
 - **Why**: RGPD compliance requires an audit trail of all anonymization operations. This table records each cleanup execution with user counts, status, and error details.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 007-create-rgpd-cleanup-log-table
-      author: family-hobbies-team
-      comment: >
-        RGPD compliance audit table. Records each data cleanup batch execution
-        with processed/anonymized counts, cross-service cleanup status, and errors.
-      preConditions:
-        - onFail: MARK_RAN
-        - not:
-            - tableExists:
-                tableName: t_rgpd_cleanup_log
-      changes:
-        - createTable:
-            tableName: t_rgpd_cleanup_log
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_rgpd_cleanup_log
-                    nullable: false
-              - column:
-                  name: execution_timestamp
-                  type: TIMESTAMPTZ
-                  constraints:
-                    nullable: false
-              - column:
-                  name: users_processed
-                  type: INTEGER
-                  defaultValueNumeric: 0
-                  constraints:
-                    nullable: false
-              - column:
-                  name: users_anonymized
-                  type: INTEGER
-                  defaultValueNumeric: 0
-                  constraints:
-                    nullable: false
-              - column:
-                  name: cross_service_cleanup_status
-                  type: VARCHAR(20)
-                  defaultValue: 'SUCCESS'
-                  constraints:
-                    nullable: false
-              - column:
-                  name: error_details
-                  type: TEXT
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
-        - addCheckConstraint:
-            tableName: t_rgpd_cleanup_log
-            constraintName: chk_cross_service_cleanup_status
-            constraintBody: >
-              cross_service_cleanup_status IN ('SUCCESS', 'PARTIAL_FAILURE', 'FAILED')
-        - createIndex:
-            tableName: t_rgpd_cleanup_log
-            indexName: idx_rgpd_cleanup_log_execution_timestamp
-            columns:
-              - column:
-                  name: execution_timestamp
-                  descending: true
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="007-create-rgpd-cleanup-log-table" author="family-hobbies-team">
+        <comment>
+            RGPD compliance audit table. Records each data cleanup batch execution
+            with processed/anonymized counts, cross-service cleanup status, and errors.
+        </comment>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="t_rgpd_cleanup_log"/>
+            </not>
+        </preConditions>
+        <createTable tableName="t_rgpd_cleanup_log">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_rgpd_cleanup_log" nullable="false"/>
+            </column>
+            <column name="execution_timestamp" type="TIMESTAMPTZ">
+                <constraints nullable="false"/>
+            </column>
+            <column name="users_processed" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="users_anonymized" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cross_service_cleanup_status" type="VARCHAR(20)" defaultValue="SUCCESS">
+                <constraints nullable="false"/>
+            </column>
+            <column name="error_details" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE t_rgpd_cleanup_log
+            ADD CONSTRAINT chk_cross_service_cleanup_status
+            CHECK (cross_service_cleanup_status IN ('SUCCESS', 'PARTIAL_FAILURE', 'FAILED'));
+        </sql>
+        <createIndex tableName="t_rgpd_cleanup_log" indexName="idx_rgpd_cleanup_log_execution_timestamp">
+            <column name="execution_timestamp" descending="true"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: `mvn liquibase:update -pl backend/user-service` -> table `t_rgpd_cleanup_log` created with check constraint and index
@@ -151,22 +132,28 @@ databaseChangeLog:
 ## Task 3 Detail: Liquibase 008 -- Spring Batch Metadata Tables
 
 - **What**: Liquibase documentation marker for Spring Batch metadata table auto-initialization
-- **Where**: `backend/user-service/src/main/resources/db/changelog/changesets/008-create-batch-metadata-tables.yaml`
+- **Where**: `backend/user-service/src/main/resources/db/changelog/changesets/008-create-batch-metadata-tables.xml`
 - **Why**: Spring Batch requires metadata tables. Same pattern as S7-003 in payment-service.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 008-spring-batch-metadata-tables
-      author: family-hobbies-team
-      comment: >
-        Spring Batch 5.x metadata tables are auto-created by Spring Boot
-        via spring.batch.jdbc.initialize-schema=always.
-        This changeset is a documentation marker only.
-      changes:
-        - tagDatabase:
-            tag: spring-batch-metadata-initialized
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="008-spring-batch-metadata-tables" author="family-hobbies-team">
+        <comment>
+            Spring Batch 5.x metadata tables are auto-created by Spring Boot
+            via spring.batch.jdbc.initialize-schema=always.
+            This changeset is a documentation marker only.
+        </comment>
+        <tagDatabase tag="spring-batch-metadata-initialized"/>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: `mvn liquibase:update -pl backend/user-service` -> tag applied

@@ -16,8 +16,8 @@ The payment-service is the financial backbone of the Family Hobbies Manager plat
 | 1 | PaymentStatus enum | `backend/payment-service/src/main/java/.../enums/PaymentStatus.java` | Enum: PENDING, AUTHORIZED, COMPLETED, FAILED, REFUNDED, CANCELLED | Compiles |
 | 2 | PaymentMethod enum | `backend/payment-service/src/main/java/.../enums/PaymentMethod.java` | Enum: CARD, SEPA, INSTALLMENT_3X, INSTALLMENT_10X | Compiles |
 | 3 | InvoiceStatus enum | `backend/payment-service/src/main/java/.../enums/InvoiceStatus.java` | Enum: DRAFT, ISSUED, PAID, CANCELLED | Compiles |
-| 4 | Liquibase 001 -- t_payment | `backend/payment-service/src/main/resources/db/changelog/001-create-payment-table.yaml` | Table with check constraint and 4 indexes | Migration runs clean |
-| 5 | Liquibase 002 -- t_invoice | `backend/payment-service/src/main/resources/db/changelog/002-create-invoice-table.yaml` | Table with FK, unique constraint, check constraint | Migration runs clean |
+| 4 | Liquibase 001 -- t_payment | `backend/payment-service/src/main/resources/db/changesets/001-create-payment-table.xml` | Table with check constraint and 4 indexes | Migration runs clean |
+| 5 | Liquibase 002 -- t_invoice | `backend/payment-service/src/main/resources/db/changesets/002-create-invoice-table.xml` | Table with FK, unique constraint, check constraint | Migration runs clean |
 | 6 | Payment entity | `backend/payment-service/src/main/java/.../entity/Payment.java` | JPA entity mapping t_payment | Compiles, Hibernate validates |
 | 7 | Invoice entity | `backend/payment-service/src/main/java/.../entity/Invoice.java` | JPA entity mapping t_invoice | Compiles, Hibernate validates |
 | 8 | PaymentRepository | `backend/payment-service/src/main/java/.../repository/PaymentRepository.java` | Spring Data JPA with custom queries | Compiles |
@@ -161,122 +161,78 @@ public enum InvoiceStatus {
 ## Task 4 Detail: Liquibase 001 -- Create t_payment Table
 
 - **What**: Liquibase changeset creating the `t_payment` table with identity PK, check constraint on amount, and 4 indexes
-- **Where**: `backend/payment-service/src/main/resources/db/changelog/001-create-payment-table.yaml`
+- **Where**: `backend/payment-service/src/main/resources/db/changesets/001-create-payment-table.xml`
 - **Why**: Foundation table for all payment data. Must exist before any PaymentRepository operations.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 001-create-payment-table
-      author: family-hobbies-team
-      preConditions:
-        - onFail: MARK_RAN
-        - not:
-            - tableExists:
-                tableName: t_payment
-      changes:
-        - createTable:
-            tableName: t_payment
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_payment
-                    nullable: false
-              - column:
-                  name: family_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: subscription_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: amount
-                  type: DECIMAL(10,2)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: currency
-                  type: VARCHAR(3)
-                  defaultValue: 'EUR'
-                  constraints:
-                    nullable: false
-              - column:
-                  name: status
-                  type: VARCHAR(20)
-                  defaultValue: 'PENDING'
-                  constraints:
-                    nullable: false
-              - column:
-                  name: payment_method
-                  type: VARCHAR(30)
-              - column:
-                  name: helloasso_checkout_id
-                  type: VARCHAR(100)
-              - column:
-                  name: helloasso_payment_id
-                  type: VARCHAR(100)
-              - column:
-                  name: description
-                  type: VARCHAR(255)
-              - column:
-                  name: paid_at
-                  type: TIMESTAMPTZ
-              - column:
-                  name: failed_at
-                  type: TIMESTAMPTZ
-              - column:
-                  name: refunded_at
-                  type: TIMESTAMPTZ
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-        - addCheckConstraint:
-            tableName: t_payment
-            constraintName: chk_payment_amount
-            constraintBody: "amount > 0"
+    <changeSet id="001-create-payment-table" author="family-hobbies-team">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="t_payment"/>
+            </not>
+        </preConditions>
 
-        - createIndex:
-            tableName: t_payment
-            indexName: idx_payment_family_id
-            columns:
-              - column:
-                  name: family_id
-        - createIndex:
-            tableName: t_payment
-            indexName: idx_payment_status
-            columns:
-              - column:
-                  name: status
-        - createIndex:
-            tableName: t_payment
-            indexName: idx_payment_helloasso_checkout_id
-            columns:
-              - column:
-                  name: helloasso_checkout_id
-        - createIndex:
-            tableName: t_payment
-            indexName: idx_payment_subscription_id
-            columns:
-              - column:
-                  name: subscription_id
+        <createTable tableName="t_payment">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_payment" nullable="false"/>
+            </column>
+            <column name="family_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subscription_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="EUR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_method" type="VARCHAR(30)"/>
+            <column name="helloasso_checkout_id" type="VARCHAR(100)"/>
+            <column name="helloasso_payment_id" type="VARCHAR(100)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="paid_at" type="TIMESTAMPTZ"/>
+            <column name="failed_at" type="TIMESTAMPTZ"/>
+            <column name="refunded_at" type="TIMESTAMPTZ"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addCheckConstraint tableName="t_payment"
+                            constraintName="chk_payment_amount"
+                            constraintBody="amount &gt; 0"/>
+
+        <createIndex tableName="t_payment" indexName="idx_payment_family_id">
+            <column name="family_id"/>
+        </createIndex>
+        <createIndex tableName="t_payment" indexName="idx_payment_status">
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="t_payment" indexName="idx_payment_helloasso_checkout_id">
+            <column name="helloasso_checkout_id"/>
+        </createIndex>
+        <createIndex tableName="t_payment" indexName="idx_payment_subscription_id">
+            <column name="subscription_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: `mvn liquibase:update -pl backend/payment-service` -> table `t_payment` created with all columns, indexes, and check constraint
@@ -286,104 +242,75 @@ databaseChangeLog:
 ## Task 5 Detail: Liquibase 002 -- Create t_invoice Table
 
 - **What**: Liquibase changeset creating the `t_invoice` table with FK to `t_payment`, unique invoice_number, and check constraint on amounts
-- **Where**: `backend/payment-service/src/main/resources/db/changelog/002-create-invoice-table.yaml`
+- **Where**: `backend/payment-service/src/main/resources/db/changesets/002-create-invoice-table.xml`
 - **Why**: Invoices are generated after successful payments. FK to t_payment enforces referential integrity.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 002-create-invoice-table
-      author: family-hobbies-team
-      preConditions:
-        - onFail: MARK_RAN
-        - not:
-            - tableExists:
-                tableName: t_invoice
-      changes:
-        - createTable:
-            tableName: t_invoice
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_invoice
-                    nullable: false
-              - column:
-                  name: payment_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: invoice_number
-                  type: VARCHAR(20)
-                  constraints:
-                    nullable: false
-                    unique: true
-                    uniqueConstraintName: uq_invoice_number
-              - column:
-                  name: family_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: association_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: amount_ht
-                  type: DECIMAL(10,2)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: tax_amount
-                  type: DECIMAL(10,2)
-                  defaultValueNumeric: 0
-                  constraints:
-                    nullable: false
-              - column:
-                  name: amount_ttc
-                  type: DECIMAL(10,2)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: status
-                  type: VARCHAR(20)
-                  defaultValue: 'DRAFT'
-                  constraints:
-                    nullable: false
-              - column:
-                  name: issued_at
-                  type: TIMESTAMPTZ
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-        - addForeignKeyConstraint:
-            baseTableName: t_invoice
-            baseColumnNames: payment_id
-            referencedTableName: t_payment
-            referencedColumnNames: id
-            constraintName: fk_invoice_payment
-            onDelete: RESTRICT
+    <changeSet id="002-create-invoice-table" author="family-hobbies-team">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="t_invoice"/>
+            </not>
+        </preConditions>
 
-        - addCheckConstraint:
-            tableName: t_invoice
-            constraintName: chk_invoice_amounts
-            constraintBody: "amount_ht >= 0 AND tax_amount >= 0 AND amount_ttc = amount_ht + tax_amount"
+        <createTable tableName="t_invoice">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_invoice" nullable="false"/>
+            </column>
+            <column name="payment_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invoice_number" type="VARCHAR(20)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_invoice_number"/>
+            </column>
+            <column name="family_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="association_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount_ht" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tax_amount" type="DECIMAL(10,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount_ttc" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="DRAFT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="issued_at" type="TIMESTAMPTZ"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="t_invoice"
+                                 baseColumnNames="payment_id"
+                                 referencedTableName="t_payment"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_invoice_payment"
+                                 onDelete="RESTRICT"/>
+
+        <addCheckConstraint tableName="t_invoice"
+                            constraintName="chk_invoice_amounts"
+                            constraintBody="amount_ht &gt;= 0 AND tax_amount &gt;= 0 AND amount_ttc = amount_ht + tax_amount"/>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: `mvn liquibase:update -pl backend/payment-service` -> table `t_invoice` created with FK, unique constraint, and check constraint
@@ -1862,7 +1789,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    change-log: classpath:db/changelog/db.changelog-master.xml
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:

@@ -123,8 +123,8 @@ ls -d backend/ frontend/ docker/ docs/ e2e/ .github/
     </parent>
 
     <groupId>com.familyhobbies</groupId>
-    <artifactId>family-hobbies-manager</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>family-hobbies-manager-backend</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Family Hobbies Manager</name>
     <description>Multi-association management platform</description>
@@ -132,7 +132,7 @@ ls -d backend/ frontend/ docker/ docs/ e2e/ .github/
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
-        <lombok.version>1.18.32</lombok.version>
+        <org.projectlombok.version>1.18.42</org.projectlombok.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
     </properties>
 
@@ -178,7 +178,7 @@ ls -d backend/ frontend/ docker/ docs/ e2e/ .github/
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
+                            <version>${org.projectlombok.version}</version>
                         </path>
                         <path>
                             <groupId>org.mapstruct</groupId>
@@ -494,8 +494,8 @@ implementation makes them pass (green).
 
     <parent>
         <groupId>com.familyhobbies</groupId>
-        <artifactId>family-hobbies-manager</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <artifactId>family-hobbies-manager-backend</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>error-handling</artifactId>
@@ -1241,8 +1241,8 @@ depend on common (and transitively get error-handling).
 
     <parent>
         <groupId>com.familyhobbies</groupId>
-        <artifactId>family-hobbies-manager</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <artifactId>family-hobbies-manager-backend</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>common</artifactId>
@@ -1525,8 +1525,8 @@ Sprint 1 adds the actual auth endpoints.
 | 1 | Create user-service POM | `backend/user-service/pom.xml` | Spring Boot + JPA + common deps | `mvn validate` |
 | 2 | Create main application class | `...userservice/UserServiceApplication.java` | `@SpringBootApplication` | Compiles |
 | 3 | Create application.yml | `...resources/application.yml` | DB connection, Eureka, profiles | Starts on :8081 |
-| 4 | Create Liquibase master changelog | `...resources/db/changelog/db.changelog-master.yaml` | Master changelog | Liquibase runs |
-| 5 | Create init changeset | `...resources/db/changelog/changes/000-init.yaml` | Empty validation changeset | Migration recorded |
+| 4 | Create Liquibase master changelog | `...resources/db/changelog/db.changelog-master.xml` | Master changelog | Liquibase runs |
+| 5 | Create init changeset | `...resources/db/changelog/changesets/000-init.xml` | Empty validation changeset | Migration recorded |
 
 #### Task 1 Detail: Create user-service POM
 
@@ -1544,8 +1544,8 @@ Sprint 1 adds the actual auth endpoints.
 
     <parent>
         <groupId>com.familyhobbies</groupId>
-        <artifactId>family-hobbies-manager</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <artifactId>family-hobbies-manager-backend</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>user-service</artifactId>
@@ -1647,7 +1647,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    change-log: classpath:db/changelog/db.changelog-master.xml
 
 eureka:
   client:
@@ -1665,29 +1665,39 @@ management:
 
 #### Task 4-5 Detail: Create Liquibase Changelog
 
-**Where (master)**: `backend/user-service/src/main/resources/db/changelog/db.changelog-master.yaml`
+**Where (master)**: `backend/user-service/src/main/resources/db/changelog/db.changelog-master.xml`
 
 **Content**:
 
-```yaml
-databaseChangeLog:
-  - include:
-      file: db/changelog/changes/000-init.yaml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="db/changelog/changesets/000-init.xml"/>
+</databaseChangeLog>
 ```
 
-**Where (init changeset)**: `backend/user-service/src/main/resources/db/changelog/changes/000-init.yaml`
+**Where (init changeset)**: `backend/user-service/src/main/resources/db/changelog/changesets/000-init.xml`
 
 **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 000-init
-      author: family-hobbies-team
-      comment: "Validates Liquibase connectivity to familyhobbies_users database"
-      changes:
-        - sql:
-            sql: SELECT 1
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="000-init" author="family-hobbies-team">
+        <comment>Validates Liquibase connectivity to familyhobbies_users database</comment>
+        <sql>SELECT 1</sql>
+    </changeSet>
+</databaseChangeLog>
 ```
 
 **Verify**:
@@ -1699,7 +1709,7 @@ cd docker && docker compose up -d
 # Then start user-service
 cd backend/user-service && mvn spring-boot:run
 # Expected: starts on :8081, Liquibase runs changeset 000-init
-# Logs show: "ChangeSet db/changelog/changes/000-init.yaml::000-init::family-hobbies-team ran successfully"
+# Logs show: "ChangeSet db/changelog/changesets/000-init.xml::000-init::family-hobbies-team ran successfully"
 
 # Verify in DB
 docker exec fhm-postgres psql -U fhm_admin -d familyhobbies_users \

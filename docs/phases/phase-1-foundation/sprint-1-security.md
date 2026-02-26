@@ -64,7 +64,7 @@ The user-service version is the full-featured provider: it generates access toke
 tokens, and extracts claims. The api-gateway version is simpler: it only validates tokens and
 extracts roles (it never generates tokens).
 
-Both use the JJWT library (version 0.12.5) with HS256 (HMAC-SHA256) signing. The signing key
+Both use the JJWT library (version 0.13.0) with HS256 (HMAC-SHA256) signing. The signing key
 is a 256-bit secret loaded from the `jwt.secret` property in `application.yml`.
 
 #### Tasks
@@ -86,7 +86,7 @@ is a 256-bit secret loaded from the `jwt.secret` property in `application.yml`.
 
 #### Task 1 Detail: Add jjwt to Parent POM dependencyManagement
 
-**What**: Add three JJWT 0.12.5 artifacts to the parent POM `<dependencyManagement>` section. The `jjwt-api` artifact is the compile-time API. The `jjwt-impl` and `jjwt-jackson` artifacts are runtime dependencies that provide the implementation and JSON serialization.
+**What**: Add three JJWT 0.13.0 artifacts to the parent POM `<dependencyManagement>` section. The `jjwt-api` artifact is the compile-time API. The `jjwt-impl` and `jjwt-jackson` artifacts are runtime dependencies that provide the implementation and JSON serialization.
 
 **Where**: `backend/pom.xml`
 
@@ -99,18 +99,18 @@ is a 256-bit secret loaded from the `jwt.secret` property in `application.yml`.
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-api</artifactId>
-                <version>0.12.5</version>
+                <version>0.13.0</version>
             </dependency>
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-impl</artifactId>
-                <version>0.12.5</version>
+                <version>0.13.0</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-jackson</artifactId>
-                <version>0.12.5</version>
+                <version>0.13.0</version>
                 <scope>runtime</scope>
             </dependency>
 ```
@@ -141,18 +141,18 @@ The full `<dependencyManagement>` block in `backend/pom.xml` should now look lik
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-api</artifactId>
-                <version>0.12.5</version>
+                <version>0.13.0</version>
             </dependency>
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-impl</artifactId>
-                <version>0.12.5</version>
+                <version>0.13.0</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-jackson</artifactId>
-                <version>0.12.5</version>
+                <version>0.13.0</version>
                 <scope>runtime</scope>
             </dependency>
         </dependencies>
@@ -713,9 +713,9 @@ sections 4.1 and 4.5. The auth endpoint contracts are defined in
 
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|---------------|---------------|
-| 1 | Create Liquibase 001-create-user-table.yaml | `...db/changelog/changes/001-create-user-table.yaml` | t_user table with all columns and indexes | `mvn liquibase:update` or service startup |
-| 2 | Create Liquibase 002-create-refresh-token-table.yaml | `...db/changelog/changes/002-create-refresh-token-table.yaml` | t_refresh_token table with FK to t_user | `mvn liquibase:update` or service startup |
-| 3 | Update db.changelog-master.yaml | `...db/changelog/db.changelog-master.yaml` | Include both new changesets | Liquibase runs all 3 changesets |
+| 1 | Create Liquibase 001-create-user-table.xml | `...db/changelog/changesets/001-create-user-table.xml` | t_user table with all columns and indexes | `mvn liquibase:update` or service startup |
+| 2 | Create Liquibase 002-create-refresh-token-table.xml | `...db/changelog/changesets/002-create-refresh-token-table.xml` | t_refresh_token table with FK to t_user | `mvn liquibase:update` or service startup |
+| 3 | Update db.changelog-master.xml | `...db/changelog/db.changelog-master.xml` | Include both new changesets | Liquibase runs all 3 changesets |
 | 4 | Create UserRole enum | `...userservice/entity/UserRole.java` | Enum with FAMILY, ASSOCIATION, ADMIN | Compiles |
 | 5 | Create UserStatus enum | `...userservice/entity/UserStatus.java` | Enum with ACTIVE, INACTIVE, SUSPENDED, DELETED | Compiles |
 | 6 | Create User entity | `...userservice/entity/User.java` | JPA entity mapping t_user | Compiles |
@@ -734,110 +734,77 @@ sections 4.1 and 4.5. The auth endpoint contracts are defined in
 
 ---
 
-#### Task 1 Detail: Create Liquibase 001-create-user-table.yaml
+#### Task 1 Detail: Create Liquibase 001-create-user-table.xml
 
 **What**: Liquibase changeset that creates the `t_user` table with all columns, constraints, and indexes as defined in the data model document (02-data-model.md section 4.1).
 
-**Where**: `backend/user-service/src/main/resources/db/changelog/changes/001-create-user-table.yaml`
+**Where**: `backend/user-service/src/main/resources/db/changelog/changesets/001-create-user-table.xml`
 
 **Why**: The User entity cannot be persisted without this table. Hibernate is configured with `ddl-auto: validate`, meaning it validates the schema against the entity but does NOT create tables. Liquibase is responsible for all DDL.
 
 **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 001-create-user-table
-      author: family-hobbies-team
-      comment: "Creates t_user table for authentication and user management"
-      changes:
-        - createTable:
-            tableName: t_user
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_user
-                    nullable: false
-              - column:
-                  name: email
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-                    unique: true
-                    uniqueConstraintName: uq_user_email
-              - column:
-                  name: password_hash
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: first_name
-                  type: VARCHAR(100)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: last_name
-                  type: VARCHAR(100)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: phone
-                  type: VARCHAR(20)
-                  constraints:
-                    nullable: true
-              - column:
-                  name: role
-                  type: VARCHAR(20)
-                  defaultValue: "FAMILY"
-                  constraints:
-                    nullable: false
-              - column:
-                  name: status
-                  type: VARCHAR(20)
-                  defaultValue: "ACTIVE"
-                  constraints:
-                    nullable: false
-              - column:
-                  name: email_verified
-                  type: BOOLEAN
-                  defaultValueBoolean: false
-                  constraints:
-                    nullable: false
-              - column:
-                  name: last_login_at
-                  type: TIMESTAMP WITH TIME ZONE
-                  constraints:
-                    nullable: true
-              - column:
-                  name: created_at
-                  type: TIMESTAMP WITH TIME ZONE
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMP WITH TIME ZONE
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-        - createIndex:
-            tableName: t_user
-            indexName: idx_user_email
-            columns:
-              - column:
-                  name: email
+    <changeSet id="001-create-user-table" author="family-hobbies-team"
+               context="!test">
+        <comment>Creates t_user table for authentication and user management</comment>
 
-        - createIndex:
-            tableName: t_user
-            indexName: idx_user_status
-            columns:
-              - column:
-                  name: status
+        <createTable tableName="t_user">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_user" nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_user_email"/>
+            </column>
+            <column name="password_hash" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="VARCHAR(20)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="role" type="VARCHAR(20)" defaultValue="FAMILY">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email_verified" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_login_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="t_user" indexName="idx_user_email">
+            <column name="email"/>
+        </createIndex>
+
+        <createIndex tableName="t_user" indexName="idx_user_status">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 **Verify**:
@@ -867,85 +834,66 @@ kill %1
 
 ---
 
-#### Task 2 Detail: Create Liquibase 002-create-refresh-token-table.yaml
+#### Task 2 Detail: Create Liquibase 002-create-refresh-token-table.xml
 
 **What**: Liquibase changeset that creates the `t_refresh_token` table with foreign key to `t_user`, unique constraint on token, and indexes as defined in the data model document (02-data-model.md section 4.5).
 
-**Where**: `backend/user-service/src/main/resources/db/changelog/changes/002-create-refresh-token-table.yaml`
+**Where**: `backend/user-service/src/main/resources/db/changelog/changesets/002-create-refresh-token-table.xml`
 
 **Why**: The RefreshToken entity stores opaque refresh tokens. Without this table, the login and refresh flows cannot persist tokens.
 
 **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 002-create-refresh-token-table
-      author: family-hobbies-team
-      comment: "Creates t_refresh_token table for JWT refresh token persistence"
-      changes:
-        - createTable:
-            tableName: t_refresh_token
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_refresh_token
-                    nullable: false
-              - column:
-                  name: user_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: token
-                  type: VARCHAR(512)
-                  constraints:
-                    nullable: false
-                    unique: true
-                    uniqueConstraintName: uq_refresh_token
-              - column:
-                  name: expires_at
-                  type: TIMESTAMP WITH TIME ZONE
-                  constraints:
-                    nullable: false
-              - column:
-                  name: revoked
-                  type: BOOLEAN
-                  defaultValueBoolean: false
-                  constraints:
-                    nullable: false
-              - column:
-                  name: created_at
-                  type: TIMESTAMP WITH TIME ZONE
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-        - addForeignKeyConstraint:
-            baseTableName: t_refresh_token
-            baseColumnNames: user_id
-            constraintName: fk_refresh_token_user
-            referencedTableName: t_user
-            referencedColumnNames: id
-            onDelete: CASCADE
+    <changeSet id="002-create-refresh-token-table" author="family-hobbies-team"
+               context="!test">
+        <comment>Creates t_refresh_token table for JWT refresh token persistence</comment>
 
-        - createIndex:
-            tableName: t_refresh_token
-            indexName: idx_refresh_token_user_id
-            columns:
-              - column:
-                  name: user_id
+        <createTable tableName="t_refresh_token">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_refresh_token" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token" type="VARCHAR(512)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_refresh_token"/>
+            </column>
+            <column name="expires_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revoked" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
 
-        - createIndex:
-            tableName: t_refresh_token
-            indexName: idx_refresh_token_expires_at
-            columns:
-              - column:
-                  name: expires_at
+        <addForeignKeyConstraint baseTableName="t_refresh_token"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_refresh_token_user"
+                                 referencedTableName="t_user"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+
+        <createIndex tableName="t_refresh_token" indexName="idx_refresh_token_user_id">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex tableName="t_refresh_token" indexName="idx_refresh_token_expires_at">
+            <column name="expires_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 **Verify**:
@@ -963,24 +911,29 @@ docker exec fhm-postgres psql -U fhm_admin -d familyhobbies_users \
 
 ---
 
-#### Task 3 Detail: Update db.changelog-master.yaml
+#### Task 3 Detail: Update db.changelog-master.xml
 
 **What**: Add the two new changeset files to the master changelog so Liquibase executes them in order.
 
-**Where**: `backend/user-service/src/main/resources/db/changelog/db.changelog-master.yaml`
+**Where**: `backend/user-service/src/main/resources/db/changelog/db.changelog-master.xml`
 
 **Why**: Liquibase only runs changesets listed in the master changelog. Without this update, the new tables are never created.
 
 **Content**: Replace the entire file with:
 
-```yaml
-databaseChangeLog:
-  - include:
-      file: db/changelog/changes/000-init.yaml
-  - include:
-      file: db/changelog/changes/001-create-user-table.yaml
-  - include:
-      file: db/changelog/changes/002-create-refresh-token-table.yaml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="db/changelog/changesets/000-init.xml"/>
+    <include file="db/changelog/changesets/001-create-user-table.xml"/>
+    <include file="db/changelog/changesets/002-create-refresh-token-table.xml"/>
+
+</databaseChangeLog>
 ```
 
 **Verify**:

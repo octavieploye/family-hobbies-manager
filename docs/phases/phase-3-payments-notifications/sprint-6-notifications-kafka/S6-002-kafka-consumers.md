@@ -59,7 +59,7 @@ spring:
 
   # ── Liquibase ───────────────────────────────────────────────────────────
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    change-log: classpath:db/changelog/db.changelog-master.xml
 
   # ── Kafka Consumer ─────────────────────────────────────────────────────
   kafka:

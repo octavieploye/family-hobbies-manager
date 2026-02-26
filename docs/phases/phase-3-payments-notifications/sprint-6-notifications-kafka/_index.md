@@ -136,12 +136,12 @@ Dependency chain: `error-handling` <- `common` <- `notification-service`
 ```
 src/main/resources/
   +-- db/changelog/
-  |   +-- db.changelog-master.yaml              (includes all changesets)
+  |   +-- db.changelog-master.xml              (includes all changesets)
   |   +-- changesets/
-  |       +-- 001-create-notification-table.yaml        (S6-001)
-  |       +-- 002-create-email-template-table.yaml      (S6-001)
-  |       +-- 003-create-notification-preference-table.yaml (S6-001)
-  |       +-- 004-seed-email-templates.yaml             (S6-005)
+  |       +-- 001-create-notification-table.xml        (S6-001)
+  |       +-- 002-create-email-template-table.xml      (S6-001)
+  |       +-- 003-create-notification-preference-table.xml (S6-001)
+  |       +-- 004-seed-email-templates.xml             (S6-005)
   +-- application.yml                           (S6-002, Kafka + Mail config)
 ```
 
@@ -202,13 +202,13 @@ Dependency chain: `error-handling` <- `common` <- `payment-service`
 ```
 src/main/resources/
   +-- db/changelog/
-  |   +-- db.changelog-master.yaml                   (includes all changesets)
+  |   +-- db.changelog-master.xml                   (includes all changesets)
   |   +-- changesets/
-  |       +-- 001-create-payment-table.yaml           (S5-004)
-  |       +-- 002-create-invoice-table.yaml           (S5-004)
-  |       +-- 003-create-payment-webhook-log-table.yaml (S5-005)
-  |       +-- 004-alter-invoice-add-columns.yaml      (S6-006 -- Agent E)
-  |       +-- 005-create-invoice-number-sequence.yaml  (S6-006 -- Agent E)
+  |       +-- 001-create-payment-table.xml           (S5-004)
+  |       +-- 002-create-invoice-table.xml           (S5-004)
+  |       +-- 003-create-payment-webhook-log-table.xml (S5-005)
+  |       +-- 004-alter-invoice-add-columns.xml      (S6-006 -- Agent E)
+  |       +-- 005-create-invoice-number-sequence.xml  (S6-006 -- Agent E)
   +-- application.yml                                 (S5-004, Kafka + DB config)
 ```
 

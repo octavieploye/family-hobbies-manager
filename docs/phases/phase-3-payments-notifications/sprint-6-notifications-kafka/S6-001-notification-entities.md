@@ -8,16 +8,16 @@
 
 ## Context
 
-The notification-service needs a persistent data model to store in-app notifications, email templates, and per-user notification preferences. This story creates the three foundational database tables via Liquibase YAML migrations, maps them to JPA entities with Lombok, defines the enums for notification type and category, and implements Spring Data JPA repositories with custom query methods. Every other story in Sprint 6 depends on these entities and repositories -- S6-002 (Kafka consumers) writes notifications, S6-003 (API) reads them, and S6-005 (seed templates) populates the email template table. This is the first code written for the notification-service and must be implemented before any other Sprint 6 work begins.
+The notification-service needs a persistent data model to store in-app notifications, email templates, and per-user notification preferences. This story creates the three foundational database tables via Liquibase XML migrations, maps them to JPA entities with Lombok, defines the enums for notification type and category, and implements Spring Data JPA repositories with custom query methods. Every other story in Sprint 6 depends on these entities and repositories -- S6-002 (Kafka consumers) writes notifications, S6-003 (API) reads them, and S6-005 (seed templates) populates the email template table. This is the first code written for the notification-service and must be implemented before any other Sprint 6 work begins.
 
 ## Tasks
 
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|----------------|---------------|
-| 1 | Liquibase master changelog | `backend/notification-service/src/main/resources/db/changelog/db.changelog-master.yaml` | Master changelog including all changesets | `mvn liquibase:validate -pl backend/notification-service` |
-| 2 | Create t_notification table | `backend/notification-service/src/main/resources/db/changelog/changesets/001-create-notification-table.yaml` | Liquibase changeset with table + 3 indexes | Table exists in DB with correct columns and indexes |
-| 3 | Create t_email_template table | `backend/notification-service/src/main/resources/db/changelog/changesets/002-create-email-template-table.yaml` | Liquibase changeset with table + unique + 2 indexes | Table exists in DB with correct columns, unique constraint, and indexes |
-| 4 | Create t_notification_preference table | `backend/notification-service/src/main/resources/db/changelog/changesets/003-create-notification-preference-table.yaml` | Liquibase changeset with table + unique + 1 index | Table exists in DB with correct columns, unique constraint, and index |
+| 1 | Liquibase master changelog | `backend/notification-service/src/main/resources/db/changelog/db.changelog-master.xml` | Master changelog including all changesets | `mvn liquibase:validate -pl backend/notification-service` |
+| 2 | Create t_notification table | `backend/notification-service/src/main/resources/db/changelog/changesets/001-create-notification-table.xml` | Liquibase changeset with table + 3 indexes | Table exists in DB with correct columns and indexes |
+| 3 | Create t_email_template table | `backend/notification-service/src/main/resources/db/changelog/changesets/002-create-email-template-table.xml` | Liquibase changeset with table + unique + 2 indexes | Table exists in DB with correct columns, unique constraint, and indexes |
+| 4 | Create t_notification_preference table | `backend/notification-service/src/main/resources/db/changelog/changesets/003-create-notification-preference-table.xml` | Liquibase changeset with table + unique + 1 index | Table exists in DB with correct columns, unique constraint, and index |
 | 5 | NotificationType enum | `backend/notification-service/src/main/java/com/familyhobbies/notificationservice/enums/NotificationType.java` | Enum: EMAIL, IN_APP, SMS | Compiles, used by Notification entity |
 | 6 | NotificationCategory enum | `backend/notification-service/src/main/java/com/familyhobbies/notificationservice/enums/NotificationCategory.java` | Enum: WELCOME, PAYMENT_SUCCESS, PAYMENT_FAILED, SUBSCRIPTION_CONFIRMED, SUBSCRIPTION_CANCELLED, ATTENDANCE_REMINDER, SYSTEM | Compiles, used by Notification + NotificationPreference entities |
 | 7 | Notification entity | `backend/notification-service/src/main/java/com/familyhobbies/notificationservice/entity/Notification.java` | JPA entity mapping t_notification | Compiles, Hibernate validates schema match |
@@ -33,20 +33,24 @@ The notification-service needs a persistent data model to store in-app notificat
 ## Task 1 Detail: Liquibase Master Changelog
 
 - **What**: Master changelog file that includes all notification-service changesets in order
-- **Where**: `backend/notification-service/src/main/resources/db/changelog/db.changelog-master.yaml`
+- **Where**: `backend/notification-service/src/main/resources/db/changelog/db.changelog-master.xml`
 - **Why**: Liquibase requires a master changelog as the entry point. All individual changesets are included from here.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - include:
-      file: db/changelog/changesets/001-create-notification-table.yaml
-  - include:
-      file: db/changelog/changesets/002-create-email-template-table.yaml
-  - include:
-      file: db/changelog/changesets/003-create-notification-preference-table.yaml
-  - include:
-      file: db/changelog/changesets/004-seed-email-templates.yaml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="db/changelog/changesets/001-create-notification-table.xml"/>
+    <include file="db/changelog/changesets/002-create-email-template-table.xml"/>
+    <include file="db/changelog/changesets/003-create-notification-preference-table.xml"/>
+    <include file="db/changelog/changesets/004-seed-email-templates.xml"/>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: `mvn liquibase:validate -pl backend/notification-service` -> BUILD SUCCESS
@@ -55,100 +59,67 @@ databaseChangeLog:
 
 ## Task 2 Detail: Create t_notification Table
 
-- **What**: Liquibase YAML changeset creating the `t_notification` table with all columns and three indexes
-- **Where**: `backend/notification-service/src/main/resources/db/changelog/changesets/001-create-notification-table.yaml`
+- **What**: Liquibase XML changeset creating the `t_notification` table with all columns and three indexes
+- **Where**: `backend/notification-service/src/main/resources/db/changelog/changesets/001-create-notification-table.xml`
 - **Why**: Core table storing all in-app and email notifications per user. Indexed on user_id for fast lookups, on (user_id, read) for unread count queries, and on category for filtering.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 001-create-notification-table
-      author: family-hobbies-team
-      changes:
-        - createTable:
-            tableName: t_notification
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_notification
-                    nullable: false
-              - column:
-                  name: user_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: type
-                  type: VARCHAR(20)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: category
-                  type: VARCHAR(30)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: title
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: message
-                  type: TEXT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: read
-                  type: BOOLEAN
-                  defaultValueBoolean: false
-                  constraints:
-                    nullable: false
-              - column:
-                  name: read_at
-                  type: TIMESTAMPTZ
-              - column:
-                  name: email_sent
-                  type: BOOLEAN
-                  defaultValueBoolean: false
-                  constraints:
-                    nullable: false
-              - column:
-                  name: email_sent_at
-                  type: TIMESTAMPTZ
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-        - createIndex:
-            indexName: idx_notification_user_id
-            tableName: t_notification
-            columns:
-              - column:
-                  name: user_id
+    <changeSet id="001-create-notification-table" author="family-hobbies-team">
+        <createTable tableName="t_notification">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_notification" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="read" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="read_at" type="TIMESTAMPTZ"/>
+            <column name="email_sent" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email_sent_at" type="TIMESTAMPTZ"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
 
-        - createIndex:
-            indexName: idx_notification_user_read
-            tableName: t_notification
-            columns:
-              - column:
-                  name: user_id
-              - column:
-                  name: read
+        <createIndex indexName="idx_notification_user_id" tableName="t_notification">
+            <column name="user_id"/>
+        </createIndex>
 
-        - createIndex:
-            indexName: idx_notification_category
-            tableName: t_notification
-            columns:
-              - column:
-                  name: category
+        <createIndex indexName="idx_notification_user_read" tableName="t_notification">
+            <column name="user_id"/>
+            <column name="read"/>
+        </createIndex>
+
+        <createIndex indexName="idx_notification_category" tableName="t_notification">
+            <column name="category"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: Start notification-service -> Liquibase applies changeset -> `\d t_notification` in psql shows all columns and indexes
@@ -157,83 +128,59 @@ databaseChangeLog:
 
 ## Task 3 Detail: Create t_email_template Table
 
-- **What**: Liquibase YAML changeset creating the `t_email_template` table with unique constraint on code and two indexes
-- **Where**: `backend/notification-service/src/main/resources/db/changelog/changesets/002-create-email-template-table.yaml`
+- **What**: Liquibase XML changeset creating the `t_email_template` table with unique constraint on code and two indexes
+- **Where**: `backend/notification-service/src/main/resources/db/changelog/changesets/002-create-email-template-table.xml`
 - **Why**: Stores Thymeleaf email templates that the EmailService resolves by category code. The unique constraint ensures no duplicate template codes. Active flag allows soft-disable without deletion.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 002-create-email-template-table
-      author: family-hobbies-team
-      changes:
-        - createTable:
-            tableName: t_email_template
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_email_template
-                    nullable: false
-              - column:
-                  name: code
-                  type: VARCHAR(50)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: subject_template
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: body_template
-                  type: TEXT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: variables
-                  type: VARCHAR(500)
-              - column:
-                  name: active
-                  type: BOOLEAN
-                  defaultValueBoolean: true
-                  constraints:
-                    nullable: false
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-        - addUniqueConstraint:
-            constraintName: uq_template_code
-            tableName: t_email_template
-            columnNames: code
+    <changeSet id="002-create-email-template-table" author="family-hobbies-team">
+        <createTable tableName="t_email_template">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_email_template" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subject_template" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body_template" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="variables" type="VARCHAR(500)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
 
-        - createIndex:
-            indexName: idx_email_template_code
-            tableName: t_email_template
-            columns:
-              - column:
-                  name: code
+        <addUniqueConstraint constraintName="uq_template_code"
+                             tableName="t_email_template"
+                             columnNames="code"/>
 
-        - createIndex:
-            indexName: idx_email_template_active
-            tableName: t_email_template
-            columns:
-              - column:
-                  name: active
+        <createIndex indexName="idx_email_template_code" tableName="t_email_template">
+            <column name="code"/>
+        </createIndex>
+
+        <createIndex indexName="idx_email_template_active" tableName="t_email_template">
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: Start notification-service -> Liquibase applies changeset -> `\d t_email_template` in psql shows all columns, unique constraint, and indexes
@@ -242,74 +189,54 @@ databaseChangeLog:
 
 ## Task 4 Detail: Create t_notification_preference Table
 
-- **What**: Liquibase YAML changeset creating the `t_notification_preference` table with unique constraint on (user_id, category) and one index
-- **Where**: `backend/notification-service/src/main/resources/db/changelog/changesets/003-create-notification-preference-table.yaml`
+- **What**: Liquibase XML changeset creating the `t_notification_preference` table with unique constraint on (user_id, category) and one index
+- **Where**: `backend/notification-service/src/main/resources/db/changelog/changesets/003-create-notification-preference-table.xml`
 - **Why**: Stores per-user, per-category notification preferences. The unique constraint prevents duplicate preferences. Consumers check this table before creating notifications or sending emails.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 003-create-notification-preference-table
-      author: family-hobbies-team
-      changes:
-        - createTable:
-            tableName: t_notification_preference
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pk_notification_preference
-                    nullable: false
-              - column:
-                  name: user_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: category
-                  type: VARCHAR(30)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: email_enabled
-                  type: BOOLEAN
-                  defaultValueBoolean: true
-                  constraints:
-                    nullable: false
-              - column:
-                  name: in_app_enabled
-                  type: BOOLEAN
-                  defaultValueBoolean: true
-                  constraints:
-                    nullable: false
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: NOW()
-                  constraints:
-                    nullable: false
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-        - addUniqueConstraint:
-            constraintName: uq_notification_pref_user_category
-            tableName: t_notification_preference
-            columnNames: user_id, category
+    <changeSet id="003-create-notification-preference-table" author="family-hobbies-team">
+        <createTable tableName="t_notification_preference">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_notification_preference" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email_enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="in_app_enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
 
-        - createIndex:
-            indexName: idx_notification_pref_user_id
-            tableName: t_notification_preference
-            columns:
-              - column:
-                  name: user_id
+        <addUniqueConstraint constraintName="uq_notification_pref_user_category"
+                             tableName="t_notification_preference"
+                             columnNames="user_id, category"/>
+
+        <createIndex indexName="idx_notification_pref_user_id" tableName="t_notification_preference">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: Start notification-service -> Liquibase applies changeset -> `\d t_notification_preference` in psql shows all columns, unique constraint, and index

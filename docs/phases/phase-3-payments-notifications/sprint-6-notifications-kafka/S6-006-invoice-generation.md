@@ -14,8 +14,8 @@ When a payment is successfully completed via HelloAsso, the system must automati
 
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|----------------|---------------|
-| 1 | Liquibase 004 -- add columns to t_invoice | `backend/payment-service/src/main/resources/db/changelog/changesets/004-alter-invoice-add-columns.yaml` | Add pdf_path, payer_email, payer_name, member_name, activity_name, association_name, season columns | Migration runs clean |
-| 2 | Liquibase 005 -- invoice number sequence | `backend/payment-service/src/main/resources/db/changelog/changesets/005-create-invoice-number-sequence.yaml` | DB sequence for invoice numbering | Sequence exists |
+| 1 | Liquibase 004 -- add columns to t_invoice | `backend/payment-service/src/main/resources/db/changelog/changesets/004-alter-invoice-add-columns.xml` | Add pdf_path, payer_email, payer_name, member_name, activity_name, association_name, season columns | Migration runs clean |
+| 2 | Liquibase 005 -- invoice number sequence | `backend/payment-service/src/main/resources/db/changelog/changesets/005-create-invoice-number-sequence.xml` | DB sequence for invoice numbering | Sequence exists |
 | 3 | Update Invoice entity | `backend/payment-service/src/main/java/.../entity/Invoice.java` | Add new fields to entity | Compiles, Hibernate validates |
 | 4 | Update InvoiceRepository | `backend/payment-service/src/main/java/.../repository/InvoiceRepository.java` | Add findByFamilyId paginated query + sequence method | Compiles |
 | 5 | InvoiceResponse DTO | `backend/payment-service/src/main/java/.../dto/response/InvoiceResponse.java` | Full invoice detail response | Compiles |
@@ -36,47 +36,33 @@ When a payment is successfully completed via HelloAsso, the system must automati
 ## Task 1 Detail: Liquibase 004 -- Add Columns to t_invoice
 
 - **What**: Liquibase changeset adding extra columns to `t_invoice` for PDF generation data: pdf_path, payer_email, payer_name, member_name, activity_name, association_name, season
-- **Where**: `backend/payment-service/src/main/resources/db/changelog/changesets/004-alter-invoice-add-columns.yaml`
+- **Where**: `backend/payment-service/src/main/resources/db/changelog/changesets/004-alter-invoice-add-columns.xml`
 - **Why**: The original t_invoice from S5-004 stores only financial data. Invoice generation requires descriptive fields for the PDF (who paid, for what activity, at which association, which season).
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 004-alter-invoice-add-columns
-      author: family-hobbies-team
-      changes:
-        - addColumn:
-            tableName: t_invoice
-            columns:
-              - column:
-                  name: pdf_path
-                  type: VARCHAR(255)
-              - column:
-                  name: payer_email
-                  type: VARCHAR(255)
-              - column:
-                  name: payer_name
-                  type: VARCHAR(255)
-              - column:
-                  name: member_name
-                  type: VARCHAR(255)
-              - column:
-                  name: activity_name
-                  type: VARCHAR(255)
-              - column:
-                  name: association_name
-                  type: VARCHAR(255)
-              - column:
-                  name: season
-                  type: VARCHAR(20)
-              - column:
-                  name: paid_at
-                  type: TIMESTAMPTZ
-              - column:
-                  name: currency
-                  type: VARCHAR(3)
-                  defaultValue: 'EUR'
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="004-alter-invoice-add-columns" author="family-hobbies-team">
+        <addColumn tableName="t_invoice">
+            <column name="pdf_path" type="VARCHAR(255)"/>
+            <column name="payer_email" type="VARCHAR(255)"/>
+            <column name="payer_name" type="VARCHAR(255)"/>
+            <column name="member_name" type="VARCHAR(255)"/>
+            <column name="activity_name" type="VARCHAR(255)"/>
+            <column name="association_name" type="VARCHAR(255)"/>
+            <column name="season" type="VARCHAR(20)"/>
+            <column name="paid_at" type="TIMESTAMPTZ"/>
+            <column name="currency" type="VARCHAR(3)" defaultValue="EUR"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: `mvn liquibase:update -pl backend/payment-service` -> columns added to t_invoice
@@ -86,25 +72,30 @@ databaseChangeLog:
 ## Task 2 Detail: Liquibase 005 -- Invoice Number Sequence
 
 - **What**: Liquibase changeset creating a PostgreSQL sequence for generating sequential invoice numbers
-- **Where**: `backend/payment-service/src/main/resources/db/changelog/changesets/005-create-invoice-number-sequence.yaml`
+- **Where**: `backend/payment-service/src/main/resources/db/changelog/changesets/005-create-invoice-number-sequence.xml`
 - **Why**: Invoice numbers must be sequential per year (`FHM-2026-000001`). A DB sequence guarantees uniqueness and concurrency safety without application-level synchronization.
 - **Content**:
 
-```yaml
-databaseChangeLog:
-  - changeSet:
-      id: 005-create-invoice-number-sequence
-      author: family-hobbies-team
-      changes:
-        - createSequence:
-            sequenceName: invoice_number_seq
-            startValue: 1
-            incrementBy: 1
-            minValue: 1
-            cacheSize: 1
-      rollback:
-        - dropSequence:
-            sequenceName: invoice_number_seq
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="005-create-invoice-number-sequence" author="family-hobbies-team">
+        <createSequence sequenceName="invoice_number_seq"
+                        startValue="1"
+                        incrementBy="1"
+                        minValue="1"
+                        cacheSize="1"/>
+        <rollback>
+            <dropSequence sequenceName="invoice_number_seq"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
 ```
 
 - **Verify**: `SELECT nextval('invoice_number_seq')` in psql -> returns 1
