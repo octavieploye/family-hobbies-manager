@@ -146,9 +146,9 @@ The Family Hobbies Manager handles personal data of French families and their me
 
     <changeSet id="008-spring-batch-metadata-tables" author="family-hobbies-team">
         <comment>
-            Spring Batch 5.x metadata tables are auto-created by Spring Boot
-            via spring.batch.jdbc.initialize-schema=always.
-            This changeset is a documentation marker only.
+            Spring Batch 5.x metadata tables managed by Liquibase.
+            Convention: Use spring.batch.jdbc.initialize-schema=never and include
+            batch schema tables in Liquibase changesets instead of auto-initialization.
         </comment>
         <tagDatabase tag="spring-batch-metadata-initialized"/>
     </changeSet>
@@ -633,7 +633,8 @@ public class AssociationServiceClient {
                         return response.bodyToMono(String.class)
                                 .map(body -> new ExternalApiException(
                                         "association-service cleanup failed for userId=" + userId
-                                                + ": " + response.statusCode() + " " + body));
+                                                + ": " + response.statusCode() + " " + body,
+                                        "association-service", response.statusCode().value()));
                     })
                     .toBodilessEntity()
                     .timeout(TIMEOUT)
@@ -646,7 +647,8 @@ public class AssociationServiceClient {
         } catch (Exception e) {
             log.error("Failed to reach association-service for userId={}: {}", userId, e.getMessage());
             throw new ExternalApiException(
-                    "association-service unreachable for user cleanup userId=" + userId, e);
+                    "association-service unreachable for user cleanup userId=" + userId,
+                    "association-service", 503, e);
         }
     }
 }
@@ -720,7 +722,8 @@ public class PaymentServiceClient {
                         return response.bodyToMono(String.class)
                                 .map(body -> new ExternalApiException(
                                         "payment-service cleanup failed for userId=" + userId
-                                                + ": " + response.statusCode() + " " + body));
+                                                + ": " + response.statusCode() + " " + body,
+                                        "payment-service", response.statusCode().value()));
                     })
                     .toBodilessEntity()
                     .timeout(TIMEOUT)
@@ -733,7 +736,8 @@ public class PaymentServiceClient {
         } catch (Exception e) {
             log.error("Failed to reach payment-service for userId={}: {}", userId, e.getMessage());
             throw new ExternalApiException(
-                    "payment-service unreachable for user cleanup userId=" + userId, e);
+                    "payment-service unreachable for user cleanup userId=" + userId,
+                    "payment-service", 503, e);
         }
     }
 }
@@ -1375,7 +1379,7 @@ public class AdminBatchController {
 spring:
   batch:
     jdbc:
-      initialize-schema: always
+      initialize-schema: never    # Batch schema managed by Liquibase -- do NOT use 'always'
     job:
       enabled: false  # Do not auto-run jobs on application startup
 

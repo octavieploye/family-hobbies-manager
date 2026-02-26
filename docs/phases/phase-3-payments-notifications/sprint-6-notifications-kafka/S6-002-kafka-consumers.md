@@ -247,6 +247,8 @@ public class KafkaErrorHandlerConfig {
 
 - **Verify**: `mvn compile -pl backend/notification-service` -> compiles; send a poison pill message -> message retried 3 times then appears in DLT
 
+> **Convention**: If `notification-service` is consumer-only (no Kafka producer configured), use `DefaultErrorHandler` with `FixedBackOff` recovery instead of `DeadLetterPublishingRecoverer`. DLT publishing requires a `KafkaTemplate` producer bean. Only use `DeadLetterPublishingRecoverer` if the service has a configured `KafkaTemplate`.
+
 ---
 
 ## Task 4 Detail: MailConfig
@@ -680,6 +682,8 @@ public class UserEventConsumer {
             topics = "family-hobbies.user.registered",
             groupId = "notification-service-group"
     )
+    // Available UserRegisteredEvent fields: getUserId(), getEmail(), getFirstName(), getLastName()
+    // Timestamp via DomainEvent base class: getOccurredAt()
     public void handleUserRegistered(UserRegisteredEvent event) {
         log.info("Received UserRegisteredEvent: userId={}, email={}, firstName={}",
                 event.getUserId(), event.getEmail(), event.getFirstName());
@@ -710,10 +714,13 @@ public class UserEventConsumer {
             topics = "family-hobbies.user.deleted",
             groupId = "notification-service-group"
     )
+    // Available UserDeletedEvent fields: getUserId(), getDeletionType()
+    // Timestamp via DomainEvent base class: getOccurredAt()
+    // Note: getEmail(), getReason(), getDeletedAt() do NOT exist on this event
     @Transactional
     public void handleUserDeleted(UserDeletedEvent event) {
-        log.info("Received UserDeletedEvent: userId={}, reason={}",
-                event.getUserId(), event.getReason());
+        log.info("Received UserDeletedEvent: userId={}, deletionType={}",
+                event.getUserId(), event.getDeletionType());
 
         notificationRepository.deleteByUserId(event.getUserId());
         preferenceRepository.deleteByUserId(event.getUserId());
@@ -816,22 +823,20 @@ public class SubscriptionEventConsumer {
             groupId = "notification-service-group"
     )
     public void handleSubscriptionCancelled(SubscriptionCancelledEvent event) {
-        log.info("Received SubscriptionCancelledEvent: subscriptionId={}, familyId={}, "
-                        + "reason={}",
-                event.getSubscriptionId(), event.getFamilyId(), event.getReason());
+        log.info("Received SubscriptionCancelledEvent: subscriptionId={}, cancellationReason={}",
+                event.getSubscriptionId(), event.getCancellationReason());
 
         Map<String, Object> variables = new HashMap<>();
         variables.put("subscriptionId", event.getSubscriptionId());
-        variables.put("familyMemberId", event.getFamilyMemberId());
-        variables.put("reason", event.getReason());
+        variables.put("cancellationReason", event.getCancellationReason());
 
         notificationCreationService.createNotification(
-                event.getFamilyId(),
+                event.getUserId(),
                 null,
                 NotificationCategory.SUBSCRIPTION_CANCELLED,
                 "Inscription annulee",
                 String.format("L'inscription #%d a ete annulee. Raison : %s.",
-                        event.getSubscriptionId(), event.getReason()),
+                        event.getSubscriptionId(), event.getCancellationReason()),
                 variables
         );
     }

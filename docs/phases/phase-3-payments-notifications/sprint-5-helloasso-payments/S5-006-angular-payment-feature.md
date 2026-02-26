@@ -7,7 +7,7 @@
 
 ## Context
 
-The Angular payment feature is the user-facing layer for the entire HelloAsso payment integration built in S5-004 and S5-005. Families browsing the platform need to view their payment history, initiate checkout sessions that redirect to HelloAsso, and handle the return flow after payment completion or failure. This story delivers three standalone Angular 17+ components (`PaymentListComponent`, `PaymentDetailComponent`, `CheckoutRedirectComponent`), a `PaymentService` for HTTP communication with the payment-service backend, and a full NgRx store (`actions`, `reducer`, `effects`, `selectors`, `state`) for centralized payment state management. The checkout flow works as follows: the frontend calls `POST /api/v1/payments/checkout` to get a checkout URL, redirects the user to HelloAsso, and when HelloAsso redirects back to `/payments/checkout/redirect?status=success|error`, the `CheckoutRedirectComponent` displays the appropriate result. Payment statuses are rendered as color-coded Angular Material chips (PENDING=yellow, PROCESSING=blue, COMPLETED=green, FAILED=red, REFUNDED=grey). All HTTP errors flow through the project's `error.interceptor.ts` which parses structured `ApiError` responses and displays French toast notifications via `MatSnackBar`. Jest tests validate component rendering, filter logic, return parameter handling, HTTP calls, and reducer state transitions.
+The Angular payment feature is the user-facing layer for the entire HelloAsso payment integration built in S5-004 and S5-005. Families browsing the platform need to view their payment history, initiate checkout sessions that redirect to HelloAsso, and handle the return flow after payment completion or failure. This story delivers three standalone Angular 17+ components (`PaymentListComponent`, `PaymentDetailComponent`, `CheckoutRedirectComponent`), a `PaymentService` for HTTP communication with the payment-service backend, and a full NgRx store (`actions`, `reducer`, `effects`, `selectors`, `state`) for centralized payment state management. The checkout flow works as follows: the frontend calls `POST /api/v1/payments/checkout` to get a checkout URL, redirects the user to HelloAsso, and when HelloAsso redirects back to `/payments/checkout/redirect?status=success|error`, the `CheckoutRedirectComponent` displays the appropriate result. Payment statuses are rendered as color-coded Angular Material chips (PENDING=yellow, AUTHORIZED=blue, COMPLETED=green, FAILED=red, REFUNDED=grey). All HTTP errors flow through the project's `error.interceptor.ts` which parses structured `ApiError` responses and displays French toast notifications via `MatSnackBar`. Jest tests validate component rendering, filter logic, return parameter handling, HTTP calls, and reducer state transitions.
 
 ## Tasks
 
@@ -45,13 +45,11 @@ The Angular payment feature is the user-facing layer for the entire HelloAsso pa
  */
 export enum PaymentStatus {
   PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
+  AUTHORIZED = 'AUTHORIZED',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
   REFUNDED = 'REFUNDED',
-  PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED',
   CANCELLED = 'CANCELLED',
-  EXPIRED = 'EXPIRED',
 }
 
 /**
@@ -79,7 +77,7 @@ export enum PaymentType {
  * Sent by the frontend to initiate a HelloAsso checkout session.
  */
 export interface CheckoutRequest {
-  subscriptionId: string;
+  subscriptionId: number;
   amount: number;
   description: string;
   paymentType: PaymentType;
@@ -92,8 +90,8 @@ export interface CheckoutRequest {
  * Contains the checkoutUrl to redirect the user to HelloAsso.
  */
 export interface CheckoutResponse {
-  paymentId: string;
-  subscriptionId: string;
+  paymentId: number;
+  subscriptionId: number;
   amount: number;
   paymentType: PaymentType;
   status: PaymentStatus;
@@ -108,8 +106,8 @@ export interface CheckoutResponse {
  * Used in the payment list table.
  */
 export interface PaymentSummary {
-  id: string;
-  subscriptionId: string;
+  id: number;
+  subscriptionId: number;
   familyMemberName: string;
   associationName: string;
   activityName: string;
@@ -118,7 +116,7 @@ export interface PaymentSummary {
   status: PaymentStatus;
   paymentMethod: PaymentMethod | null;
   paidAt: string | null;
-  invoiceId: string | null;
+  invoiceId: number | null;
   createdAt: string;
 }
 
@@ -127,9 +125,9 @@ export interface PaymentSummary {
  * Used in the payment detail view.
  */
 export interface PaymentDetail {
-  id: string;
-  subscriptionId: string;
-  familyId: string;
+  id: number;
+  subscriptionId: number;
+  familyId: number;
   familyMemberName: string;
   associationName: string;
   activityName: string;
@@ -140,7 +138,7 @@ export interface PaymentDetail {
   helloassoPaymentId: string | null;
   paymentMethod: PaymentMethod | null;
   paidAt: string | null;
-  invoiceId: string | null;
+  invoiceId: number | null;
   metadata: Record<string, string> | null;
   createdAt: string;
   updatedAt: string;
@@ -163,7 +161,7 @@ export interface Page<T> {
  * Query parameters for the payment list endpoint.
  */
 export interface PaymentListParams {
-  familyId: string;
+  familyId: number;
   status?: PaymentStatus;
   from?: string;
   to?: string;
@@ -177,13 +175,11 @@ export interface PaymentListParams {
  */
 export const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, { color: string; label: string }> = {
   [PaymentStatus.PENDING]: { color: 'warn', label: 'En attente' },
-  [PaymentStatus.PROCESSING]: { color: 'primary', label: 'En cours' },
+  [PaymentStatus.AUTHORIZED]: { color: 'primary', label: 'Autorisé' },
   [PaymentStatus.COMPLETED]: { color: 'accent', label: 'Terminé' },
   [PaymentStatus.FAILED]: { color: 'warn', label: 'Échoué' },
   [PaymentStatus.REFUNDED]: { color: '', label: 'Remboursé' },
-  [PaymentStatus.PARTIALLY_REFUNDED]: { color: '', label: 'Partiellement remboursé' },
   [PaymentStatus.CANCELLED]: { color: '', label: 'Annulé' },
-  [PaymentStatus.EXPIRED]: { color: '', label: 'Expiré' },
 };
 ```
 
@@ -361,7 +357,7 @@ export const PaymentActions = createActionGroup({
   source: 'Payments',
   events: {
     // ── Load payment list ──────────────────────────────────────────
-    'Load Payments': props<{ familyId: string; page?: number; size?: number }>(),
+    'Load Payments': props<{ familyId: number; page?: number; size?: number }>(),
     'Load Payments Success': props<{ page: Page<PaymentSummary> }>(),
     'Load Payments Failure': props<{ error: string }>(),
 
@@ -721,7 +717,7 @@ export const selectPaginationInfo = createSelector(
 > - Verify: `cd frontend && npx ng test --include='**/checkout-redirect.component.spec.ts'`
 >
 > **Task 12 -- SCSS Styles** (BEM methodology)
-> - `payment-list.component.scss` -- Table layout, status chip colors (pending=yellow, processing=blue, completed=green, failed=red, refunded=grey, cancelled=grey, expired=brown), empty/error states
+> - `payment-list.component.scss` -- Table layout, status chip colors (pending=yellow, authorized=blue, completed=green, failed=red, refunded=grey, cancelled=grey), empty/error states
 > - `payment-detail.component.scss` -- Timeline dots/connectors, card grid layout, monospace reference values, status chip colors
 > - `checkout-redirect.component.scss` -- Centered card with colored top border, large status icon, action buttons
 > - Verify: Visual inspection

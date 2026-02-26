@@ -469,8 +469,9 @@ public class SubscriptionExpiryJobListener
 
     @Override
     public void afterJob(JobExecution jobExecution) {
+        // Spring Batch 5.x: getStartTime() returns Instant directly
         Duration duration = Duration.between(
-                jobExecution.getStartTime().toInstant(java.time.ZoneOffset.UTC),
+                jobExecution.getStartTime(),
                 Instant.now());
 
         long writeCount = jobExecution.getStepExecutions().stream()

@@ -2,6 +2,25 @@
 
 > Points: ~39 | Stories: 6 | Sprint 5 of Phase 3
 
+> **Codebase Conventions**: See `docs/phases/CONVENTIONS.md` for authoritative conventions.
+
+### Prerequisites
+
+Before starting Sprint 5 implementation:
+
+1. **Parent POM modules**: `association-service` and `payment-service` must be added as `<module>` entries in the parent POM (`backend/pom.xml`):
+   ```xml
+   <modules>
+     <!-- existing modules -->
+     <module>association-service</module>
+     <module>payment-service</module>
+   </modules>
+   ```
+
+2. **HelloAsso shared components**: `HelloAssoTokenManager` and `HelloAssoProperties` should live in the `common` module (shared across `association-service` and `payment-service`), NOT duplicated in each service.
+
+3. **Kafka topic naming**: All Kafka topics must follow the `family-hobbies.<domain>.<event>` naming pattern.
+
 ---
 
 ## Sprint Goal
@@ -99,7 +118,8 @@ association-service/
   |   +-- WebClientConfig.java               (S5-001)
   |   +-- Resilience4jConfig.java            (S5-002)
   +-- dto/
-  |   +-- SyncResultResponse.java            (S5-003)
+  |   +-- response/
+  |       +-- SyncResultResponse.java        (S5-003)
   +-- mapper/
       +-- AssociationMapper.java             (S5-003)
 ```

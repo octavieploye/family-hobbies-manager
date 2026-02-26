@@ -1,3 +1,9 @@
+> **DEPRECATED** — This file is superseded by `sprint-1-security.md` (the single authoritative Sprint 1 document).
+> Do NOT use this file for implementation. It contains outdated JJWT versions, wrong Liquibase formats, and deprecated API patterns.
+> Kept for historical reference only.
+
+---
+
 ## Stories (continued)
 
 ---

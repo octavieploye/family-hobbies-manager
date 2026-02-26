@@ -16,7 +16,7 @@ The `AssociationSyncService` bridges the HelloAsso directory data and our local 
 | 1 | Association JPA entity | `backend/association-service/src/main/java/com/familyhobbies/associationservice/entity/Association.java` | JPA entity mapping `t_association` table | Entity compiles and maps all columns |
 | 2 | AssociationRepository | `backend/association-service/src/main/java/com/familyhobbies/associationservice/repository/AssociationRepository.java` | Spring Data JPA repository with `findByHelloassoSlug` | Query method resolves correctly |
 | 3 | AssociationMapper | `backend/association-service/src/main/java/com/familyhobbies/associationservice/mapper/AssociationMapper.java` | Mapper: HelloAssoOrganization -> Association entity (create + update) | Mapping produces correct field values |
-| 4 | SyncResultResponse DTO | `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/SyncResultResponse.java` | Response DTO with created/updated/unchanged counts | Serializes to expected JSON |
+| 4 | SyncResultResponse DTO | `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/response/SyncResultResponse.java` | Response DTO with created/updated/unchanged counts | Serializes to expected JSON |
 | 5 | HelloAssoSyncCompletedEvent | `backend/common/src/main/java/com/familyhobbies/common/event/HelloAssoSyncCompletedEvent.java` | Kafka event for sync completion | Event serializes/deserializes correctly |
 | 6 | AssociationSyncService interface | `backend/association-service/src/main/java/com/familyhobbies/associationservice/service/AssociationSyncService.java` | Service interface | Compiles |
 | 7 | AssociationSyncServiceImpl | `backend/association-service/src/main/java/com/familyhobbies/associationservice/service/impl/AssociationSyncServiceImpl.java` | Full sync implementation with pagination, upsert, Kafka publish | Sync creates/updates associations, publishes event |
@@ -298,12 +298,12 @@ public class AssociationMapper {
 ## Task 4 Detail: SyncResultResponse DTO
 
 - **What**: Response DTO returned by the admin sync endpoint containing the counts of created, updated, and unchanged associations, plus metadata about the sync operation.
-- **Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/SyncResultResponse.java`
+- **Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/response/SyncResultResponse.java`
 - **Why**: Returned by `POST /api/v1/admin/associations/sync` so the admin can see what happened during the sync. Also used as the payload for the Kafka event.
 - **Content**:
 
 ```java
-package com.familyhobbies.associationservice.dto;
+package com.familyhobbies.associationservice.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -382,11 +382,9 @@ import java.time.Instant;
  *
  * <p>Topic: {@code family-hobbies.association.sync-completed}
  *
- * <p>Follows the same POJO pattern as {@link UserRegisteredEvent}:
- * default no-arg constructor for Jackson deserialization, explicit
- * getters/setters, and a full-arg constructor.
+ * <p>Extends {@link DomainEvent} with event type "HELLOASSO_SYNC_COMPLETED".
  */
-public class HelloAssoSyncCompletedEvent {
+public class HelloAssoSyncCompletedEvent extends DomainEvent {
 
     /** Number of new associations created during this sync. */
     private int created;
@@ -410,12 +408,13 @@ public class HelloAssoSyncCompletedEvent {
     private Long triggeredByUserId;
 
     public HelloAssoSyncCompletedEvent() {
-        // Default constructor required by Jackson deserialization
+        super("HELLOASSO_SYNC_COMPLETED");
     }
 
     public HelloAssoSyncCompletedEvent(int created, int updated, int unchanged,
                                         int totalProcessed, Instant syncedAt,
                                         long durationMs, Long triggeredByUserId) {
+        super("HELLOASSO_SYNC_COMPLETED");
         this.created = created;
         this.updated = updated;
         this.unchanged = unchanged;
@@ -510,7 +509,7 @@ public class HelloAssoSyncCompletedEvent {
 ```java
 package com.familyhobbies.associationservice.service;
 
-import com.familyhobbies.associationservice.dto.SyncResultResponse;
+import com.familyhobbies.associationservice.dto.response.SyncResultResponse;
 import com.familyhobbies.associationservice.entity.Association;
 
 /**
@@ -574,7 +573,7 @@ import com.familyhobbies.associationservice.adapter.dto.HelloAssoDirectoryReques
 import com.familyhobbies.associationservice.adapter.dto.HelloAssoDirectoryResponse;
 import com.familyhobbies.associationservice.adapter.dto.HelloAssoOrganization;
 import com.familyhobbies.associationservice.config.HelloAssoProperties;
-import com.familyhobbies.associationservice.dto.SyncResultResponse;
+import com.familyhobbies.associationservice.dto.response.SyncResultResponse;
 import com.familyhobbies.associationservice.entity.Association;
 import com.familyhobbies.associationservice.mapper.AssociationMapper;
 import com.familyhobbies.associationservice.repository.AssociationRepository;
@@ -874,7 +873,7 @@ public class AssociationSyncServiceImpl implements AssociationSyncService {
 ```java
 package com.familyhobbies.associationservice.controller;
 
-import com.familyhobbies.associationservice.dto.SyncResultResponse;
+import com.familyhobbies.associationservice.dto.response.SyncResultResponse;
 import com.familyhobbies.associationservice.service.AssociationSyncService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

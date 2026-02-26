@@ -16,8 +16,8 @@ The payment-service is the financial backbone of the Family Hobbies Manager plat
 | 1 | PaymentStatus enum | `backend/payment-service/src/main/java/.../enums/PaymentStatus.java` | Enum: PENDING, AUTHORIZED, COMPLETED, FAILED, REFUNDED, CANCELLED | Compiles |
 | 2 | PaymentMethod enum | `backend/payment-service/src/main/java/.../enums/PaymentMethod.java` | Enum: CARD, SEPA, INSTALLMENT_3X, INSTALLMENT_10X | Compiles |
 | 3 | InvoiceStatus enum | `backend/payment-service/src/main/java/.../enums/InvoiceStatus.java` | Enum: DRAFT, ISSUED, PAID, CANCELLED | Compiles |
-| 4 | Liquibase 001 -- t_payment | `backend/payment-service/src/main/resources/db/changesets/001-create-payment-table.xml` | Table with check constraint and 4 indexes | Migration runs clean |
-| 5 | Liquibase 002 -- t_invoice | `backend/payment-service/src/main/resources/db/changesets/002-create-invoice-table.xml` | Table with FK, unique constraint, check constraint | Migration runs clean |
+| 4 | Liquibase 001 -- t_payment | `backend/payment-service/src/main/resources/db/changelog/changesets/001-create-payment-table.xml` | Table with check constraint and 4 indexes | Migration runs clean |
+| 5 | Liquibase 002 -- t_invoice | `backend/payment-service/src/main/resources/db/changelog/changesets/002-create-invoice-table.xml` | Table with FK, unique constraint, check constraint | Migration runs clean |
 | 6 | Payment entity | `backend/payment-service/src/main/java/.../entity/Payment.java` | JPA entity mapping t_payment | Compiles, Hibernate validates |
 | 7 | Invoice entity | `backend/payment-service/src/main/java/.../entity/Invoice.java` | JPA entity mapping t_invoice | Compiles, Hibernate validates |
 | 8 | PaymentRepository | `backend/payment-service/src/main/java/.../repository/PaymentRepository.java` | Spring Data JPA with custom queries | Compiles |
@@ -161,7 +161,7 @@ public enum InvoiceStatus {
 ## Task 4 Detail: Liquibase 001 -- Create t_payment Table
 
 - **What**: Liquibase changeset creating the `t_payment` table with identity PK, check constraint on amount, and 4 indexes
-- **Where**: `backend/payment-service/src/main/resources/db/changesets/001-create-payment-table.xml`
+- **Where**: `backend/payment-service/src/main/resources/db/changelog/changesets/001-create-payment-table.xml`
 - **Why**: Foundation table for all payment data. Must exist before any PaymentRepository operations.
 - **Content**:
 
@@ -242,7 +242,7 @@ public enum InvoiceStatus {
 ## Task 5 Detail: Liquibase 002 -- Create t_invoice Table
 
 - **What**: Liquibase changeset creating the `t_invoice` table with FK to `t_payment`, unique invoice_number, and check constraint on amounts
-- **Where**: `backend/payment-service/src/main/resources/db/changesets/002-create-invoice-table.xml`
+- **Where**: `backend/payment-service/src/main/resources/db/changelog/changesets/002-create-invoice-table.xml`
 - **Why**: Invoices are generated after successful payments. FK to t_payment enforces referential integrity.
 - **Content**:
 
@@ -314,6 +314,29 @@ public enum InvoiceStatus {
 ```
 
 - **Verify**: `mvn liquibase:update -pl backend/payment-service` -> table `t_invoice` created with FK, unique constraint, and check constraint
+
+---
+
+#### Task: Create db.changelog-master.xml for payment-service
+
+**Where**: `backend/payment-service/src/main/resources/db/changelog/db.changelog-master.xml`
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="db/changelog/changesets/001-create-payment-table.xml"/>
+    <include file="db/changelog/changesets/002-create-invoice-table.xml"/>
+    <!-- Add additional changesets as they are created -->
+
+</databaseChangeLog>
+```
+
+- **Verify**: `mvn spring-boot:run -pl backend/payment-service` -> Liquibase runs all changesets in order
 
 ---
 

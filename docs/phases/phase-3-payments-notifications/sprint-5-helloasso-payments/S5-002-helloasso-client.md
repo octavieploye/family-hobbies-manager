@@ -452,6 +452,8 @@ public class HelloAssoClient {
 
 ## Task 7 Detail: Resilience4j Configuration
 
+> **Convention**: Resilience4j version is managed by the Spring Boot 3.2.5 BOM -- do NOT add an explicit version in pom.xml. If both YAML and Java `@Configuration` bean definitions exist for the same Resilience4j settings, keep only one to avoid conflicts. Prefer YAML configuration for Resilience4j settings (circuit breaker, retry, rate limiter parameters).
+
 - **What**: Two deliverables: (1) a `@Configuration` class that defines circuit breaker and retry registries programmatically, and (2) YAML configuration block for `resilience4j.*` in `application.yml` providing declarative settings for the `helloasso-api` instance.
 - **Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/config/ResilienceConfig.java` and `backend/association-service/src/main/resources/application.yml` (merge into existing)
 - **Why**: The Resilience4j annotations (`@CircuitBreaker`, `@Retry`, `@TimeLimiter`) used at the service layer reference the `helloasso-api` instance name defined here. The circuit breaker opens at 50% failure rate over 10 calls, the retry attempts 3 times with exponential backoff, and the time limiter caps each call at 10 seconds.

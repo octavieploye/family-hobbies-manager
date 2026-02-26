@@ -131,13 +131,11 @@ export class PaymentListComponent implements OnInit, OnDestroy {
   getStatusClass(status: PaymentStatus): string {
     const classMap: Record<PaymentStatus, string> = {
       [PaymentStatus.PENDING]: 'payment-list__chip--pending',
-      [PaymentStatus.PROCESSING]: 'payment-list__chip--processing',
+      [PaymentStatus.AUTHORIZED]: 'payment-list__chip--authorized',
       [PaymentStatus.COMPLETED]: 'payment-list__chip--completed',
       [PaymentStatus.FAILED]: 'payment-list__chip--failed',
       [PaymentStatus.REFUNDED]: 'payment-list__chip--refunded',
-      [PaymentStatus.PARTIALLY_REFUNDED]: 'payment-list__chip--refunded',
       [PaymentStatus.CANCELLED]: 'payment-list__chip--cancelled',
-      [PaymentStatus.EXPIRED]: 'payment-list__chip--expired',
     };
     return classMap[status] || '';
   }
@@ -387,13 +385,11 @@ export class PaymentDetailComponent implements OnInit, OnDestroy {
   getStatusClass(status: PaymentStatus): string {
     const classMap: Record<string, string> = {
       PENDING: 'payment-detail__chip--pending',
-      PROCESSING: 'payment-detail__chip--processing',
+      AUTHORIZED: 'payment-detail__chip--authorized',
       COMPLETED: 'payment-detail__chip--completed',
       FAILED: 'payment-detail__chip--failed',
       REFUNDED: 'payment-detail__chip--refunded',
-      PARTIALLY_REFUNDED: 'payment-detail__chip--refunded',
       CANCELLED: 'payment-detail__chip--cancelled',
-      EXPIRED: 'payment-detail__chip--expired',
     };
     return classMap[status] || '';
   }
@@ -427,11 +423,11 @@ export class PaymentDetailComponent implements OnInit, OnDestroy {
   getStatusTimeline(payment: PaymentDetail): { status: string; label: string; reached: boolean }[] {
     const steps = [
       { status: 'PENDING', label: 'Initié', reached: true },
-      { status: 'PROCESSING', label: 'En cours', reached: false },
+      { status: 'AUTHORIZED', label: 'Autorisé', reached: false },
       { status: 'COMPLETED', label: 'Terminé', reached: false },
     ];
 
-    const statusOrder = ['PENDING', 'PROCESSING', 'COMPLETED'];
+    const statusOrder = ['PENDING', 'AUTHORIZED', 'COMPLETED'];
     const currentIndex = statusOrder.indexOf(payment.status);
 
     if (payment.status === 'FAILED') {
@@ -441,7 +437,7 @@ export class PaymentDetailComponent implements OnInit, OnDestroy {
       ];
     }
 
-    if (payment.status === 'REFUNDED' || payment.status === 'PARTIALLY_REFUNDED') {
+    if (payment.status === 'REFUNDED') {
       return [
         { status: 'PENDING', label: 'Initié', reached: true },
         { status: 'COMPLETED', label: 'Terminé', reached: true },
@@ -856,7 +852,7 @@ export class CheckoutRedirectComponent implements OnInit {
       color: #e65100 !important;
     }
 
-    &--processing {
+    &--authorized {
       background-color: #e3f2fd !important;
       color: #1565c0 !important;
     }
@@ -879,11 +875,6 @@ export class CheckoutRedirectComponent implements OnInit {
     &--cancelled {
       background-color: #f5f5f5 !important;
       color: #9e9e9e !important;
-    }
-
-    &--expired {
-      background-color: #efebe9 !important;
-      color: #795548 !important;
     }
   }
 }
@@ -1054,12 +1045,11 @@ export class CheckoutRedirectComponent implements OnInit {
   // Status chip colors (same as list)
   &__chip {
     &--pending { background-color: #fff3e0 !important; color: #e65100 !important; }
-    &--processing { background-color: #e3f2fd !important; color: #1565c0 !important; }
+    &--authorized { background-color: #e3f2fd !important; color: #1565c0 !important; }
     &--completed { background-color: #e8f5e9 !important; color: #2e7d32 !important; }
     &--failed { background-color: #fdecea !important; color: #c62828 !important; }
     &--refunded { background-color: #f5f5f5 !important; color: #616161 !important; }
     &--cancelled { background-color: #f5f5f5 !important; color: #9e9e9e !important; }
-    &--expired { background-color: #efebe9 !important; color: #795548 !important; }
   }
 }
 ```

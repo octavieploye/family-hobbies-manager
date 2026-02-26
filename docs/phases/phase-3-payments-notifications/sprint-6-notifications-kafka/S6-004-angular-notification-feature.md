@@ -95,8 +95,15 @@ export interface NotificationPreferenceResponse {
   categories: Record<NotificationCategory, CategoryPreference>;
 }
 
+/**
+ * Backend expects an array of NotificationPreferenceRequest, NOT an object map.
+ * Each element represents one category's preferences.
+ * Endpoint: PUT /api/v1/notifications/preferences with body: NotificationPreferenceRequest[]
+ */
 export interface NotificationPreferenceRequest {
-  categories: Record<NotificationCategory, CategoryPreference>;
+  category: NotificationCategory;
+  emailEnabled: boolean;
+  inAppEnabled: boolean;
 }
 
 export interface NotificationQueryParams {
@@ -274,13 +281,14 @@ export class NotificationService {
 
   /**
    * Updates notification preferences for the current user.
+   * Backend expects an array of NotificationPreferenceRequest (one per category).
    */
   updatePreferences(
-    request: NotificationPreferenceRequest
+    requests: NotificationPreferenceRequest[]
   ): Observable<NotificationPreferenceResponse> {
     return this.http.put<NotificationPreferenceResponse>(
       `${this.baseUrl}/preferences`,
-      request
+      requests
     );
   }
 }
@@ -411,7 +419,7 @@ export const NotificationActions = createActionGroup({
     'Load Preferences Failure': props<{ error: string }>(),
 
     'Update Preferences': props<{
-      request: NotificationPreferenceRequest;
+      requests: NotificationPreferenceRequest[];
     }>(),
     'Update Preferences Success': props<{
       preferences: NotificationPreferenceResponse;
@@ -856,8 +864,8 @@ export class NotificationEffects {
   updatePreferences$ = createEffect(() =>
     this.actions$.pipe(
       ofType(NotificationActions.updatePreferences),
-      exhaustMap(({ request }) =>
-        this.notificationService.updatePreferences(request).pipe(
+      exhaustMap(({ requests }) =>
+        this.notificationService.updatePreferences(requests).pipe(
           map((preferences) =>
             NotificationActions.updatePreferencesSuccess({ preferences })
           ),
@@ -1698,6 +1706,7 @@ import {
 } from '../../store/notification.selectors';
 import {
   NotificationCategory,
+  NotificationPreferenceRequest,
   NotificationPreferenceResponse,
   CategoryPreference,
   NOTIFICATION_CATEGORY_CONFIG
@@ -1766,19 +1775,15 @@ export class NotificationPreferencesComponent implements OnInit {
       ];
     }
 
-    // Build full request from current rows
-    const categories: Record<string, CategoryPreference> = {};
-    for (const r of this.preferenceRows) {
-      categories[r.category] = {
-        emailEnabled: r.emailEnabled,
-        inAppEnabled: r.inAppEnabled
-      };
-    }
+    // Build array of NotificationPreferenceRequest (backend expects an array, not object map)
+    const requests: NotificationPreferenceRequest[] = this.preferenceRows.map((r) => ({
+      category: r.category,
+      emailEnabled: r.emailEnabled,
+      inAppEnabled: r.inAppEnabled
+    }));
 
     this.store.dispatch(
-      NotificationActions.updatePreferences({
-        request: { categories: categories as Record<NotificationCategory, CategoryPreference> }
-      })
+      NotificationActions.updatePreferences({ requests })
     );
   }
 

@@ -25,6 +25,7 @@ import {
   UnreadCountResponse,
   MarkReadResponse,
   MarkAllReadResponse,
+  NotificationPreferenceRequest,
   NotificationPreferenceResponse
 } from '../../../shared/models/notification.model';
 import { environment } from '../../../../environments/environment';
@@ -180,8 +181,19 @@ describe('NotificationService', () => {
   });
 
   describe('updatePreferences', () => {
-    it('should call PUT /preferences with request body', () => {
-      const request = {
+    it('should call PUT /preferences with array request body', () => {
+      // Backend expects NotificationPreferenceRequest[] (array, not object map)
+      const requests: NotificationPreferenceRequest[] = [
+        { category: NotificationCategory.WELCOME, emailEnabled: false, inAppEnabled: true },
+        { category: NotificationCategory.PAYMENT_SUCCESS, emailEnabled: true, inAppEnabled: true },
+        { category: NotificationCategory.PAYMENT_FAILED, emailEnabled: true, inAppEnabled: true },
+        { category: NotificationCategory.SUBSCRIPTION_CONFIRMED, emailEnabled: true, inAppEnabled: true },
+        { category: NotificationCategory.SUBSCRIPTION_CANCELLED, emailEnabled: true, inAppEnabled: true },
+        { category: NotificationCategory.ATTENDANCE_REMINDER, emailEnabled: true, inAppEnabled: true },
+        { category: NotificationCategory.SYSTEM, emailEnabled: false, inAppEnabled: true }
+      ];
+      const mockResponse: NotificationPreferenceResponse = {
+        userId: 1,
         categories: {
           [NotificationCategory.WELCOME]: { emailEnabled: false, inAppEnabled: true },
           [NotificationCategory.PAYMENT_SUCCESS]: { emailEnabled: true, inAppEnabled: true },
@@ -192,18 +204,14 @@ describe('NotificationService', () => {
           [NotificationCategory.SYSTEM]: { emailEnabled: false, inAppEnabled: true }
         }
       };
-      const mockResponse: NotificationPreferenceResponse = {
-        userId: 1,
-        categories: request.categories
-      };
 
-      service.updatePreferences(request).subscribe((result) => {
+      service.updatePreferences(requests).subscribe((result) => {
         expect(result).toEqual(mockResponse);
       });
 
       const req = httpMock.expectOne(`${baseUrl}/preferences`);
       expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual(request);
+      expect(req.request.body).toEqual(requests);
       req.flush(mockResponse);
     });
   });

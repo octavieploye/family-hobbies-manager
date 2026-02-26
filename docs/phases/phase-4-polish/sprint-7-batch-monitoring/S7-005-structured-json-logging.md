@@ -79,8 +79,8 @@ package com.familyhobbies.common.logging;
  * is active. They are also referenced in {@code logback-spring.xml} to include
  * MDC fields in the JSON output.
  *
- * <p>Key naming convention: snake_case for JSON output compatibility with
- * Elasticsearch field naming conventions.
+ * <p>Key naming convention: camelCase for consistency with Java conventions
+ * and compatibility with logstash-logback-encoder MDC field output.
  */
 public final class LoggingConstants {
 
@@ -94,25 +94,25 @@ public final class LoggingConstants {
      * Distributed trace ID. Propagated from {@code X-Request-Id} header
      * or generated as a UUID if not present.
      */
-    public static final String MDC_TRACE_ID = "trace_id";
+    public static final String MDC_TRACE_ID = "traceId";     // camelCase convention
 
     /**
      * Span ID for the current service hop. Generated as a UUID for each
      * request within a service.
      */
-    public static final String MDC_SPAN_ID = "span_id";
+    public static final String MDC_SPAN_ID = "spanId";       // camelCase convention
 
     /**
      * Authenticated user ID extracted from the {@code X-User-Id} header
      * set by the API gateway after JWT validation.
      */
-    public static final String MDC_USER_ID = "user_id";
+    public static final String MDC_USER_ID = "userId";       // camelCase convention
 
     /**
      * Service name from {@code spring.application.name}. Identifies which
      * microservice produced the log entry.
      */
-    public static final String MDC_SERVICE_NAME = "service_name";
+    public static final String MDC_SERVICE_NAME = "serviceName";  // camelCase convention
 
     // ── HTTP Header Names ────────────────────────────────────────────────
 
@@ -169,10 +169,10 @@ import java.util.UUID;
  *
  * <p>Fields populated:
  * <ul>
- *   <li>{@code trace_id} -- from {@code X-Request-Id} header or generated UUID</li>
- *   <li>{@code span_id} -- new UUID per request (unique to this service hop)</li>
- *   <li>{@code user_id} -- from {@code X-User-Id} header (set by API gateway)</li>
- *   <li>{@code service_name} -- from {@code spring.application.name}</li>
+ *   <li>{@code traceId} -- from {@code X-Request-Id} header or generated UUID</li>
+ *   <li>{@code spanId} -- new UUID per request (unique to this service hop)</li>
+ *   <li>{@code userId} -- from {@code X-User-Id} header (set by API gateway)</li>
+ *   <li>{@code serviceName} -- from {@code spring.application.name}</li>
  * </ul>
  *
  * <p>The trace ID is also set as a response header ({@code X-Request-Id}) so
@@ -229,7 +229,7 @@ public class MdcLoggingFilter extends OncePerRequestFilter {
             // ── Propagate trace ID in response header ────────────────────
             response.setHeader(LoggingConstants.HEADER_REQUEST_ID, traceId);
 
-            log.debug("MDC populated: trace_id={}, span_id={}, user_id={}, service={}",
+            log.debug("MDC populated: traceId={}, spanId={}, userId={}, service={}",
                     traceId, spanId,
                     MDC.get(LoggingConstants.MDC_USER_ID), serviceName);
 
@@ -276,7 +276,7 @@ public class MdcLoggingFilter extends OncePerRequestFilter {
            - default   → Console pattern (fallback)
 
          MDC fields populated by MdcLoggingFilter (common module):
-           trace_id, span_id, user_id, service_name
+           traceId, spanId, userId, serviceName
          ══════════════════════════════════════════════════════════════════ -->
 
     <!-- Service name from Spring application.name (resolved at startup) -->
@@ -288,7 +288,7 @@ public class MdcLoggingFilter extends OncePerRequestFilter {
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                %d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [${SERVICE_NAME}] [%X{trace_id:-no-trace}] [%X{user_id:-anonymous}] %cyan(%logger{36}) - %msg%n%throwable
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [${SERVICE_NAME}] [%X{traceId:-no-trace}] [%X{userId:-anonymous}] %cyan(%logger{36}) - %msg%n%throwable
             </pattern>
             <charset>UTF-8</charset>
         </encoder>
@@ -297,10 +297,10 @@ public class MdcLoggingFilter extends OncePerRequestFilter {
     <!-- ── JSON Appender (docker profile) ───────────────────────────── -->
     <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeMdcKeyName>trace_id</includeMdcKeyName>
-            <includeMdcKeyName>span_id</includeMdcKeyName>
-            <includeMdcKeyName>user_id</includeMdcKeyName>
-            <includeMdcKeyName>service_name</includeMdcKeyName>
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <includeMdcKeyName>serviceName</includeMdcKeyName>
             <fieldNames>
                 <timestamp>timestamp</timestamp>
                 <version>[ignore]</version>
@@ -322,10 +322,10 @@ public class MdcLoggingFilter extends OncePerRequestFilter {
     <appender name="LOGSTASH_TCP" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <destination>${LOGSTASH_HOST:-logstash}:${LOGSTASH_PORT:-5044}</destination>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeMdcKeyName>trace_id</includeMdcKeyName>
-            <includeMdcKeyName>span_id</includeMdcKeyName>
-            <includeMdcKeyName>user_id</includeMdcKeyName>
-            <includeMdcKeyName>service_name</includeMdcKeyName>
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <includeMdcKeyName>serviceName</includeMdcKeyName>
             <fieldNames>
                 <timestamp>timestamp</timestamp>
                 <version>[ignore]</version>
@@ -449,7 +449,7 @@ cd backend/user-service
 mvn spring-boot:run -Dspring-boot.run.profiles=docker 2>&1 | head -5
 ```
 
-Expected: Each line is a valid JSON object with fields `timestamp`, `level`, `logger_name`, `message`, `service_name`.
+Expected: Each line is a valid JSON object with fields `timestamp`, `level`, `logger_name`, `message`, `serviceName`.
 
 ```bash
 # Start with local profile and verify console pattern
@@ -487,27 +487,27 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class LoggingConstantsTest {
 
     @Test
-    @DisplayName("should_define_trace_id_mdc_key")
-    void should_define_trace_id_mdc_key() {
-        assertThat(LoggingConstants.MDC_TRACE_ID).isEqualTo("trace_id");
+    @DisplayName("should_define_traceId_mdc_key")
+    void should_define_traceId_mdc_key() {
+        assertThat(LoggingConstants.MDC_TRACE_ID).isEqualTo("traceId");
     }
 
     @Test
-    @DisplayName("should_define_span_id_mdc_key")
-    void should_define_span_id_mdc_key() {
-        assertThat(LoggingConstants.MDC_SPAN_ID).isEqualTo("span_id");
+    @DisplayName("should_define_spanId_mdc_key")
+    void should_define_spanId_mdc_key() {
+        assertThat(LoggingConstants.MDC_SPAN_ID).isEqualTo("spanId");
     }
 
     @Test
-    @DisplayName("should_define_user_id_mdc_key")
-    void should_define_user_id_mdc_key() {
-        assertThat(LoggingConstants.MDC_USER_ID).isEqualTo("user_id");
+    @DisplayName("should_define_userId_mdc_key")
+    void should_define_userId_mdc_key() {
+        assertThat(LoggingConstants.MDC_USER_ID).isEqualTo("userId");
     }
 
     @Test
-    @DisplayName("should_define_service_name_mdc_key")
-    void should_define_service_name_mdc_key() {
-        assertThat(LoggingConstants.MDC_SERVICE_NAME).isEqualTo("service_name");
+    @DisplayName("should_define_serviceName_mdc_key")
+    void should_define_serviceName_mdc_key() {
+        assertThat(LoggingConstants.MDC_SERVICE_NAME).isEqualTo("serviceName");
     }
 
     @Test
@@ -539,13 +539,13 @@ class LoggingConstantsTest {
     }
 
     @Test
-    @DisplayName("should_use_snake_case_for_all_mdc_keys")
-    void should_use_snake_case_for_all_mdc_keys() {
-        // MDC keys must use snake_case for Elasticsearch compatibility
-        assertThat(LoggingConstants.MDC_TRACE_ID).matches("[a-z_]+");
-        assertThat(LoggingConstants.MDC_SPAN_ID).matches("[a-z_]+");
-        assertThat(LoggingConstants.MDC_USER_ID).matches("[a-z_]+");
-        assertThat(LoggingConstants.MDC_SERVICE_NAME).matches("[a-z_]+");
+    @DisplayName("should_use_camelCase_for_all_mdc_keys")
+    void should_use_camelCase_for_all_mdc_keys() {
+        // MDC keys must use camelCase per codebase convention
+        assertThat(LoggingConstants.MDC_TRACE_ID).matches("[a-zA-Z]+");
+        assertThat(LoggingConstants.MDC_SPAN_ID).matches("[a-zA-Z]+");
+        assertThat(LoggingConstants.MDC_USER_ID).matches("[a-zA-Z]+");
+        assertThat(LoggingConstants.MDC_SERVICE_NAME).matches("[a-zA-Z]+");
     }
 }
 ```
@@ -932,13 +932,13 @@ When running with the `docker` profile, a typical log line looks like:
 {
   "timestamp": "2026-02-24T10:30:15.123+0100",
   "level": "INFO",
-  "logger_name": "com.familyhobbies.userservice.service.impl.UserServiceImpl",
+  "logger_name": "com.familyhobbies.userservice.service.impl.AuthServiceImpl",
   "message": "User registered successfully: userId=42",
   "thread_name": "http-nio-8081-exec-1",
-  "trace_id": "550e8400-e29b-41d4-a716-446655440000",
-  "span_id": "7c9e6679b7f0410a",
-  "user_id": "anonymous",
-  "service_name": "user-service",
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
+  "spanId": "7c9e6679b7f0410a",
+  "userId": "anonymous",
+  "serviceName": "user-service",
   "application": "family-hobbies-manager"
 }
 ```
@@ -952,12 +952,12 @@ When an exception occurs:
   "logger_name": "com.familyhobbies.errorhandling.handler.GlobalExceptionHandler",
   "message": "Resource not found: User with id 999",
   "thread_name": "http-nio-8081-exec-2",
-  "trace_id": "550e8400-e29b-41d4-a716-446655440000",
-  "span_id": "3f2504e04f8911d3",
-  "user_id": "42",
-  "service_name": "user-service",
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
+  "spanId": "3f2504e04f8911d3",
+  "userId": "42",
+  "serviceName": "user-service",
   "application": "family-hobbies-manager",
-  "stack_trace": "com.familyhobbies.errorhandling.exception.web.ResourceNotFoundException: User with id 999\n\tat c.f.u.s.i.UserServiceImpl.findById(UserServiceImpl.java:45)\n\t..."
+  "stack_trace": "com.familyhobbies.errorhandling.exception.web.ResourceNotFoundException: User with id 999\n\tat c.f.u.s.i.AuthServiceImpl.findById(AuthServiceImpl.java:45)\n\t..."
 }
 ```
 
@@ -967,7 +967,7 @@ When an exception occurs:
 
 - [ ] `logstash-logback-encoder` 7.4 added to parent POM `dependencyManagement`
 - [ ] Common module POM declares the dependency (version inherited)
-- [ ] `LoggingConstants` defines MDC keys: `trace_id`, `span_id`, `user_id`, `service_name`
+- [ ] `LoggingConstants` defines MDC keys: `traceId`, `spanId`, `userId`, `serviceName`
 - [ ] `LoggingConstants` defines header names: `X-Request-Id`, `X-User-Id`, `X-User-Roles`
 - [ ] `MdcLoggingFilter` reads `X-Request-Id` header as trace ID
 - [ ] `MdcLoggingFilter` generates UUID trace ID when header missing

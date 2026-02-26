@@ -14,7 +14,7 @@ When a user completes (or fails) a payment on the HelloAsso checkout page, Hello
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|----------------|---------------|
 | 1 | WebhookEventType enum | `backend/payment-service/src/main/java/.../enums/WebhookEventType.java` | Enum: PAYMENT_AUTHORIZED, PAYMENT_COMPLETED, PAYMENT_FAILED, PAYMENT_REFUNDED, ORDER_CREATED | Compiles |
-| 2 | Liquibase 003 -- t_payment_webhook_log | `backend/payment-service/src/main/resources/db/changesets/003-create-payment-webhook-log-table.xml` | Table with indexes for processed status and event type | Migration runs clean |
+| 2 | Liquibase 003 -- t_payment_webhook_log | `backend/payment-service/src/main/resources/db/changelog/changesets/003-create-payment-webhook-log-table.xml` | Table with indexes for processed status and event type | Migration runs clean |
 | 3 | PaymentWebhookLog entity | `backend/payment-service/src/main/java/.../entity/PaymentWebhookLog.java` | JPA entity mapping t_payment_webhook_log | Compiles, Hibernate validates |
 | 4 | PaymentWebhookLogRepository | `backend/payment-service/src/main/java/.../repository/PaymentWebhookLogRepository.java` | Spring Data JPA with idempotency check | Compiles |
 | 5 | WebhookSignatureValidator | `backend/payment-service/src/main/java/.../security/WebhookSignatureValidator.java` | HMAC-SHA256 signature validation | Unit tests pass |
@@ -101,7 +101,7 @@ public enum WebhookEventType {
 ## Task 2 Detail: Liquibase 003 -- Create t_payment_webhook_log Table
 
 - **What**: Liquibase changeset creating the `t_payment_webhook_log` table for idempotent webhook processing and audit trail
-- **Where**: `backend/payment-service/src/main/resources/db/changesets/003-create-payment-webhook-log-table.xml`
+- **Where**: `backend/payment-service/src/main/resources/db/changelog/changesets/003-create-payment-webhook-log-table.xml`
 - **Why**: Every incoming webhook is logged before processing. The `helloasso_event_id` column enables idempotency checks to prevent duplicate processing.
 - **Content**:
 
@@ -778,49 +778,41 @@ import java.time.Instant;
  *
  * <p>Topic: {@code family-hobbies.payment.completed}
  *
+ * <p>Extends {@link DomainEvent} with event type "PAYMENT_COMPLETED".
+ *
  * <p>Consumers:
  * <ul>
  *   <li>notification-service: sends payment confirmation email</li>
  *   <li>association-service: activates the subscription</li>
  * </ul>
  */
-public class PaymentCompletedEvent {
+public class PaymentCompletedEvent extends DomainEvent {
 
     private Long paymentId;
-    private Long subscriptionId;
-    private Long familyId;
+    private Long userId;
     private BigDecimal amount;
     private String currency;
-    private String paymentMethod;
-    private Instant paidAt;
+    private String helloAssoCheckoutId;
 
     public PaymentCompletedEvent() {
-        // Default constructor for Jackson deserialization
+        super("PAYMENT_COMPLETED");
     }
 
-    public PaymentCompletedEvent(Long paymentId, Long subscriptionId,
-                                  Long familyId, BigDecimal amount,
-                                  String currency, String paymentMethod,
-                                  Instant paidAt) {
+    public PaymentCompletedEvent(Long paymentId, Long userId, BigDecimal amount,
+                                  String currency, String helloAssoCheckoutId) {
+        super("PAYMENT_COMPLETED");
         this.paymentId = paymentId;
-        this.subscriptionId = subscriptionId;
-        this.familyId = familyId;
+        this.userId = userId;
         this.amount = amount;
         this.currency = currency;
-        this.paymentMethod = paymentMethod;
-        this.paidAt = paidAt;
+        this.helloAssoCheckoutId = helloAssoCheckoutId;
     }
 
     public Long getPaymentId() { return paymentId; }
     public void setPaymentId(Long paymentId) { this.paymentId = paymentId; }
 
-    public Long getSubscriptionId() { return subscriptionId; }
-    public void setSubscriptionId(Long subscriptionId) {
-        this.subscriptionId = subscriptionId;
-    }
-
-    public Long getFamilyId() { return familyId; }
-    public void setFamilyId(Long familyId) { this.familyId = familyId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
@@ -828,23 +820,19 @@ public class PaymentCompletedEvent {
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
 
-    public String getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public String getHelloAssoCheckoutId() { return helloAssoCheckoutId; }
+    public void setHelloAssoCheckoutId(String helloAssoCheckoutId) {
+        this.helloAssoCheckoutId = helloAssoCheckoutId;
     }
-
-    public Instant getPaidAt() { return paidAt; }
-    public void setPaidAt(Instant paidAt) { this.paidAt = paidAt; }
 
     @Override
     public String toString() {
         return "PaymentCompletedEvent{paymentId=" + paymentId
-                + ", subscriptionId=" + subscriptionId
-                + ", familyId=" + familyId
+                + ", userId=" + userId
                 + ", amount=" + amount
                 + ", currency='" + currency + '\''
-                + ", paymentMethod='" + paymentMethod + '\''
-                + ", paidAt=" + paidAt + '}';
+                + ", helloAssoCheckoutId='" + helloAssoCheckoutId + '\''
+                + '}';
     }
 }
 ```
@@ -870,59 +858,56 @@ import java.time.Instant;
  *
  * <p>Topic: {@code family-hobbies.payment.failed}
  *
+ * <p>Extends {@link DomainEvent} with event type "PAYMENT_FAILED".
+ *
  * <p>Consumers:
  * <ul>
  *   <li>notification-service: sends payment failure notification</li>
  * </ul>
  */
-public class PaymentFailedEvent {
+public class PaymentFailedEvent extends DomainEvent {
 
     private Long paymentId;
-    private Long subscriptionId;
-    private Long familyId;
-    private String errorReason;
-    private Instant failedAt;
+    private Long userId;
+    private String failureReason;
+    private String helloAssoCheckoutId;
 
     public PaymentFailedEvent() {
-        // Default constructor for Jackson deserialization
+        super("PAYMENT_FAILED");
     }
 
-    public PaymentFailedEvent(Long paymentId, Long subscriptionId,
-                               Long familyId, String errorReason,
-                               Instant failedAt) {
+    public PaymentFailedEvent(Long paymentId, Long userId, String failureReason,
+                               String helloAssoCheckoutId) {
+        super("PAYMENT_FAILED");
         this.paymentId = paymentId;
-        this.subscriptionId = subscriptionId;
-        this.familyId = familyId;
-        this.errorReason = errorReason;
-        this.failedAt = failedAt;
+        this.userId = userId;
+        this.failureReason = failureReason;
+        this.helloAssoCheckoutId = helloAssoCheckoutId;
     }
 
     public Long getPaymentId() { return paymentId; }
     public void setPaymentId(Long paymentId) { this.paymentId = paymentId; }
 
-    public Long getSubscriptionId() { return subscriptionId; }
-    public void setSubscriptionId(Long subscriptionId) {
-        this.subscriptionId = subscriptionId;
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+
+    public String getFailureReason() { return failureReason; }
+    public void setFailureReason(String failureReason) {
+        this.failureReason = failureReason;
     }
 
-    public Long getFamilyId() { return familyId; }
-    public void setFamilyId(Long familyId) { this.familyId = familyId; }
-
-    public String getErrorReason() { return errorReason; }
-    public void setErrorReason(String errorReason) {
-        this.errorReason = errorReason;
+    public String getHelloAssoCheckoutId() { return helloAssoCheckoutId; }
+    public void setHelloAssoCheckoutId(String helloAssoCheckoutId) {
+        this.helloAssoCheckoutId = helloAssoCheckoutId;
     }
-
-    public Instant getFailedAt() { return failedAt; }
-    public void setFailedAt(Instant failedAt) { this.failedAt = failedAt; }
 
     @Override
     public String toString() {
         return "PaymentFailedEvent{paymentId=" + paymentId
-                + ", subscriptionId=" + subscriptionId
-                + ", familyId=" + familyId
-                + ", errorReason='" + errorReason + '\''
-                + ", failedAt=" + failedAt + '}';
+                + ", userId=" + userId
+                + ", failureReason='" + failureReason + '\''
+                + ", helloAssoCheckoutId='" + helloAssoCheckoutId + '\''
+                + '}';
     }
 }
 ```

@@ -13,7 +13,7 @@ The association-service already has an `AssociationSyncService` (S5-003) that pe
 
 | # | Task | File Path | What To Create | How To Verify |
 |---|------|-----------|----------------|---------------|
-| 1 | Shared batch config | `backend/association-service/src/main/java/com/familyhobbies/associationservice/batch/config/BatchConfig.java` | @EnableBatchProcessing, async job launcher, thread pool | `mvn compile -pl backend/association-service` |
+| 1 | Shared batch config | `backend/association-service/src/main/java/com/familyhobbies/associationservice/batch/config/BatchConfig.java` | Async job launcher, thread pool (no @EnableBatchProcessing) | `mvn compile -pl backend/association-service` |
 | 2 | Skip policy | `backend/association-service/src/main/java/com/familyhobbies/associationservice/batch/policy/HelloAssoSkipPolicy.java` | Custom SkipPolicy for transient API errors | Unit test verifies skip decisions |
 | 3 | Item reader | `backend/association-service/src/main/java/com/familyhobbies/associationservice/batch/reader/HelloAssoItemReader.java` | Paginated ItemReader using HelloAssoClient | Mock test returns paginated data |
 | 4 | Item processor | `backend/association-service/src/main/java/com/familyhobbies/associationservice/batch/processor/HelloAssoItemProcessor.java` | Map DTO to entity, skip unchanged | Unit test verifies transformation + skip |
@@ -38,7 +38,6 @@ The association-service already has an `AssociationSyncService` (S5-003) that pe
 ```java
 package com.familyhobbies.associationservice.batch.config;
 
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
@@ -51,6 +50,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 /**
  * Shared Spring Batch infrastructure for association-service.
  *
+ * <p><b>Convention</b>: Spring Boot 3.2 / Spring Batch 5.x -- do NOT use
+ * {@code @EnableBatchProcessing} as it disables auto-configuration. Let Spring Boot
+ * auto-configure {@code JobRepository} and {@code PlatformTransactionManager} beans.
+ *
  * <p>Provides:
  * <ul>
  *   <li>{@code batchTaskExecutor} -- thread pool for async job execution</li>
@@ -62,7 +65,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  * in {@link BatchSchedulerConfig}.
  */
 @Configuration
-@EnableBatchProcessing
 @EnableScheduling
 public class BatchConfig {
 
@@ -703,7 +705,7 @@ import org.springframework.batch.core.listener.StepExecutionListenerSupport;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Structured logging listener for the HelloAsso sync batch job.
@@ -717,6 +719,9 @@ import java.time.LocalDateTime;
  *
  * <p>Output is JSON-structured (via logback-spring.xml) for ingestion
  * by ELK stack, Graylog, or any log aggregator.
+ *
+ * <p><b>Convention</b>: Spring Batch 5.x {@code JobExecution.getStartTime()} and
+ * {@code getEndTime()} return {@link Instant}, not {@code LocalDateTime}.
  */
 @Component
 public class SyncJobListener extends StepExecutionListenerSupport
@@ -735,10 +740,10 @@ public class SyncJobListener extends StepExecutionListenerSupport
 
     @Override
     public void afterJob(JobExecution jobExecution) {
-        LocalDateTime startTime = jobExecution.getStartTime();
-        LocalDateTime endTime = jobExecution.getEndTime() != null
+        Instant startTime = jobExecution.getStartTime();
+        Instant endTime = jobExecution.getEndTime() != null
                 ? jobExecution.getEndTime()
-                : LocalDateTime.now();
+                : Instant.now();
         Duration duration = Duration.between(startTime, endTime);
 
         long itemsRead = jobExecution.getStepExecutions().stream()
@@ -801,7 +806,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * CRON scheduler for all batch jobs in association-service.
@@ -840,11 +845,11 @@ public class BatchSchedulerConfig {
     @Scheduled(cron = "0 0 2 * * *")
     public void runHelloAssoSync() {
         log.info("CRON trigger: launching helloAssoSyncJob at {}",
-                LocalDateTime.now());
+                Instant.now());
         try {
             JobParameters params = new JobParametersBuilder()
                     .addString("trigger", "CRON")
-                    .addLocalDateTime("timestamp", LocalDateTime.now())
+                    .addString("timestamp", Instant.now().toString())
                     .toJobParameters();
             jobLauncher.run(helloAssoSyncJob, params);
         } catch (Exception e) {
@@ -883,7 +888,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 
 /**
@@ -929,7 +934,7 @@ public class AdminBatchController {
         try {
             JobParameters params = new JobParametersBuilder()
                     .addString("trigger", "ADMIN")
-                    .addLocalDateTime("timestamp", LocalDateTime.now())
+                    .addString("timestamp", Instant.now().toString())
                     .toJobParameters();
 
             JobExecution execution = asyncJobLauncher.run(
@@ -983,8 +988,9 @@ public class AdminBatchController {
 
     <changeSet id="006-spring-batch-metadata" author="familyhobbies">
         <comment>
-            Spring Batch 5.x metadata tables.
-            Alternative to spring.batch.jdbc.initialize-schema=always.
+            Spring Batch 5.x metadata tables managed by Liquibase.
+            Convention: Use spring.batch.jdbc.initialize-schema=never and include
+            batch schema tables in Liquibase changesets instead of auto-initialization.
             These tables track job execution history, step details, and parameters.
         </comment>
         <sql>
@@ -1073,7 +1079,9 @@ public class AdminBatchController {
 </databaseChangeLog>
 ```
 
-- **Verify**: `spring.batch.jdbc.initialize-schema=always` or Liquibase migration creates all `BATCH_*` tables. `SELECT * FROM BATCH_JOB_INSTANCE;` returns empty result set.
+- **Verify**: Liquibase migration creates all `BATCH_*` tables. `SELECT * FROM BATCH_JOB_INSTANCE;` returns empty result set.
+
+> **Convention**: Batch schema is managed by Liquibase migration -- do NOT use Spring Batch auto-initialization (`always`). Use `never` and include batch schema tables in Liquibase changesets.
 
 ---
 
@@ -1089,7 +1097,7 @@ public class AdminBatchController {
 spring:
   batch:
     jdbc:
-      initialize-schema: always   # Auto-create BATCH_* metadata tables
+      initialize-schema: never    # Batch schema managed by Liquibase -- do NOT use 'always'
     job:
       enabled: false              # Do NOT auto-run jobs on startup
 

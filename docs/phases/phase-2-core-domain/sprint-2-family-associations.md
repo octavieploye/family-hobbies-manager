@@ -4,6 +4,9 @@
 > **Points**: ~38 (35 P0 + 3 P1)
 > **Priority**: All P0 except S2-006 (P1)
 
+> **Codebase Conventions**: See `docs/phases/CONVENTIONS.md` for authoritative conventions.
+> Key conventions for this sprint: entities in `entity/` package, DTOs in `dto/request/` + `dto/response/`, DTOs as Java records, events extend `DomainEvent` with constructor pattern.
+
 ---
 
 ## Sprint Goal
@@ -61,15 +64,15 @@ authorization, and REST controller. Without this, no family management is possib
 | 1 | Liquibase: create family table | `backend/user-service/src/main/resources/db/changelog/changesets/003-create-family-table.xml` | t_family DDL | `docker exec` SQL check |
 | 2 | Liquibase: create family_member table | `backend/user-service/src/main/resources/db/changelog/changesets/004-create-family-member-table.xml` | t_family_member DDL | `docker exec` SQL check |
 | 3 | Update changelog master | `backend/user-service/src/main/resources/db/changelog/db.changelog-master.xml` | Include new changesets | Service starts without errors |
-| 4 | Create Relationship enum | `backend/user-service/src/main/java/com/familyhobbies/userservice/model/enums/Relationship.java` | PARENT, CHILD, SPOUSE, SIBLING, OTHER | Compiles |
-| 5 | Create Family entity | `backend/user-service/src/main/java/com/familyhobbies/userservice/model/Family.java` | JPA entity | Compiles |
-| 6 | Create FamilyMember entity | `backend/user-service/src/main/java/com/familyhobbies/userservice/model/FamilyMember.java` | JPA entity | Compiles |
+| 4 | Create Relationship enum | `backend/user-service/src/main/java/com/familyhobbies/userservice/entity/enums/Relationship.java` | PARENT, CHILD, SPOUSE, SIBLING, OTHER | Compiles |
+| 5 | Create Family entity | `backend/user-service/src/main/java/com/familyhobbies/userservice/entity/Family.java` | JPA entity | Compiles |
+| 6 | Create FamilyMember entity | `backend/user-service/src/main/java/com/familyhobbies/userservice/entity/FamilyMember.java` | JPA entity | Compiles |
 | 7 | Create FamilyRepository | `backend/user-service/src/main/java/com/familyhobbies/userservice/repository/FamilyRepository.java` | JpaRepository | Compiles |
 | 8 | Create FamilyMemberRepository | `backend/user-service/src/main/java/com/familyhobbies/userservice/repository/FamilyMemberRepository.java` | JpaRepository | Compiles |
-| 9 | Create FamilyRequest DTO | `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/FamilyRequest.java` | Validated request | Compiles |
-| 10 | Create FamilyResponse DTO | `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/FamilyResponse.java` | Response shape | Compiles |
-| 11 | Create FamilyMemberRequest DTO | `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/FamilyMemberRequest.java` | Validated request | Compiles |
-| 12 | Create FamilyMemberResponse DTO | `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/FamilyMemberResponse.java` | Response with computed age | Compiles |
+| 9 | Create FamilyRequest DTO | `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/request/FamilyRequest.java` | Validated request | Compiles |
+| 10 | Create FamilyResponse DTO | `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/response/FamilyResponse.java` | Response shape | Compiles |
+| 11 | Create FamilyMemberRequest DTO | `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/request/FamilyMemberRequest.java` | Validated request | Compiles |
+| 12 | Create FamilyMemberResponse DTO | `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/response/FamilyMemberResponse.java` | Response with computed age | Compiles |
 | 13 | Create FamilyService interface | `backend/user-service/src/main/java/com/familyhobbies/userservice/service/FamilyService.java` | Service contract | Compiles |
 | 14 | Create FamilyServiceImpl | `backend/user-service/src/main/java/com/familyhobbies/userservice/service/FamilyServiceImpl.java` | Full implementation | Tests pass |
 | 15 | Create FamilyController | `backend/user-service/src/main/java/com/familyhobbies/userservice/controller/FamilyController.java` | REST controller | Integration tests pass |
@@ -262,14 +265,14 @@ kill %1
 
 **What**: Java enum for family member relationship types.
 
-**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/model/enums/Relationship.java`
+**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/entity/enums/Relationship.java`
 
 **Why**: Used in FamilyMember entity and validated in DTOs. Defines allowed relationship values.
 
 **Content**:
 
 ```java
-package com.familyhobbies.userservice.model.enums;
+package com.familyhobbies.userservice.entity.enums;
 
 public enum Relationship {
     PARENT,
@@ -293,7 +296,7 @@ cd backend && mvn compile -pl user-service -q
 
 **What**: JPA entity mapped to `t_family`.
 
-**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/model/Family.java`
+**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/entity/Family.java`
 
 **Why**: Core domain entity. A family groups members together and is linked to the user who created it.
 
@@ -357,7 +360,7 @@ cd backend && mvn compile -pl user-service -q
 
 **What**: JPA entity mapped to `t_family_member`.
 
-**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/model/FamilyMember.java`
+**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/entity/FamilyMember.java`
 
 **Why**: Represents an individual person in a family. Tracks name, DOB, relationship, and optional medical notes.
 
@@ -366,7 +369,7 @@ cd backend && mvn compile -pl user-service -q
 ```java
 package com.familyhobbies.userservice.model;
 
-import com.familyhobbies.userservice.model.enums.Relationship;
+import com.familyhobbies.userservice.entity.enums.Relationship;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -443,7 +446,7 @@ cd backend && mvn compile -pl user-service -q
 ```java
 package com.familyhobbies.userservice.repository;
 
-import com.familyhobbies.userservice.model.Family;
+import com.familyhobbies.userservice.entity.Family;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -480,7 +483,7 @@ cd backend && mvn compile -pl user-service -q
 ```java
 package com.familyhobbies.userservice.repository;
 
-import com.familyhobbies.userservice.model.FamilyMember;
+import com.familyhobbies.userservice.entity.FamilyMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -506,32 +509,23 @@ cd backend && mvn compile -pl user-service -q
 
 **What**: Request DTO for creating/updating a family.
 
-**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/FamilyRequest.java`
+**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/request/FamilyRequest.java`
 
-**Why**: Validates incoming JSON. Name is required, max 150 chars.
+**Why**: Validates incoming JSON. Name is required, max 100 chars.
 
 **Content**:
 
 ```java
-package com.familyhobbies.userservice.dto;
+package com.familyhobbies.userservice.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class FamilyRequest {
-
+public record FamilyRequest(
     @NotBlank(message = "Family name is required")
-    @Size(max = 150, message = "Family name must not exceed 150 characters")
-    private String name;
-}
+    @Size(max = 100, message = "Family name must not exceed 100 characters")
+    String name
+) {}
 ```
 
 **Verify**:
@@ -546,34 +540,24 @@ cd backend && mvn compile -pl user-service -q
 
 **What**: Response DTO for family data including members list.
 
-**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/FamilyResponse.java`
+**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/response/FamilyResponse.java`
 
 **Content**:
 
 ```java
-package com.familyhobbies.userservice.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+package com.familyhobbies.userservice.dto.response;
 
 import java.time.Instant;
 import java.util.List;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class FamilyResponse {
-
-    private Long id;
-    private String name;
-    private Long createdBy;
-    private List<FamilyMemberResponse> members;
-    private Instant createdAt;
-    private Instant updatedAt;
-}
+public record FamilyResponse(
+    Long id,
+    String name,
+    Long createdBy,
+    List<FamilyMemberResponse> members,
+    Instant createdAt,
+    Instant updatedAt
+) {}
 ```
 
 **Verify**:
@@ -588,49 +572,40 @@ cd backend && mvn compile -pl user-service -q
 
 **What**: Request DTO for adding/updating a family member.
 
-**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/FamilyMemberRequest.java`
+**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/request/FamilyMemberRequest.java`
 
 **Content**:
 
 ```java
-package com.familyhobbies.userservice.dto;
+package com.familyhobbies.userservice.dto.request;
 
-import com.familyhobbies.userservice.model.enums.Relationship;
+import com.familyhobbies.userservice.entity.enums.Relationship;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class FamilyMemberRequest {
-
+public record FamilyMemberRequest(
     @NotBlank(message = "First name is required")
     @Size(max = 100, message = "First name must not exceed 100 characters")
-    private String firstName;
+    String firstName,
 
     @NotBlank(message = "Last name is required")
     @Size(max = 100, message = "Last name must not exceed 100 characters")
-    private String lastName;
+    String lastName,
 
     @NotNull(message = "Date of birth is required")
     @Past(message = "Date of birth must be in the past")
-    private LocalDate dateOfBirth;
+    LocalDate dateOfBirth,
 
     @NotNull(message = "Relationship is required")
-    private Relationship relationship;
+    Relationship relationship,
 
     @Size(max = 500, message = "Medical note must not exceed 500 characters")
-    private String medicalNote;
-}
+    String medicalNote
+) {}
 ```
 
 **Verify**:
@@ -645,38 +620,28 @@ cd backend && mvn compile -pl user-service -q
 
 **What**: Response DTO with computed age field.
 
-**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/FamilyMemberResponse.java`
+**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/dto/response/FamilyMemberResponse.java`
 
 **Content**:
 
 ```java
-package com.familyhobbies.userservice.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+package com.familyhobbies.userservice.dto.response;
 
 import java.time.Instant;
 import java.time.LocalDate;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class FamilyMemberResponse {
-
-    private Long id;
-    private Long familyId;
-    private String firstName;
-    private String lastName;
-    private LocalDate dateOfBirth;
-    private Integer age;
-    private String relationship;
-    private String medicalNote;
-    private Instant createdAt;
-    private Instant updatedAt;
-}
+public record FamilyMemberResponse(
+    Long id,
+    Long familyId,
+    String firstName,
+    String lastName,
+    LocalDate dateOfBirth,
+    Integer age,
+    String relationship,
+    String medicalNote,
+    Instant createdAt,
+    Instant updatedAt
+) {}
 ```
 
 **Verify**:
@@ -698,7 +663,8 @@ cd backend && mvn compile -pl user-service -q
 ```java
 package com.familyhobbies.userservice.service;
 
-import com.familyhobbies.userservice.dto.*;
+import com.familyhobbies.userservice.dto.request.*;
+import com.familyhobbies.userservice.dto.response.*;
 
 public interface FamilyService {
 
@@ -742,9 +708,10 @@ package com.familyhobbies.userservice.service;
 import com.familyhobbies.errorhandling.exception.web.ConflictException;
 import com.familyhobbies.errorhandling.exception.web.ForbiddenException;
 import com.familyhobbies.errorhandling.exception.web.ResourceNotFoundException;
-import com.familyhobbies.userservice.dto.*;
-import com.familyhobbies.userservice.model.Family;
-import com.familyhobbies.userservice.model.FamilyMember;
+import com.familyhobbies.userservice.dto.request.*;
+import com.familyhobbies.userservice.dto.response.*;
+import com.familyhobbies.userservice.entity.Family;
+import com.familyhobbies.userservice.entity.FamilyMember;
 import com.familyhobbies.userservice.repository.FamilyMemberRepository;
 import com.familyhobbies.userservice.repository.FamilyRepository;
 import lombok.RequiredArgsConstructor;
@@ -773,7 +740,7 @@ public class FamilyServiceImpl implements FamilyService {
         }
 
         Family family = Family.builder()
-                .name(request.getName())
+                .name(request.name())
                 .createdBy(userId)
                 .build();
 
@@ -803,7 +770,7 @@ public class FamilyServiceImpl implements FamilyService {
         Family family = findFamilyOrThrow(familyId);
         verifyOwnership(family, userId);
 
-        family.setName(request.getName());
+        family.setName(request.name());
         Family saved = familyRepository.save(family);
         log.info("Family updated: id={}, newName={}", saved.getId(), saved.getName());
         return mapToFamilyResponse(saved);
@@ -816,11 +783,11 @@ public class FamilyServiceImpl implements FamilyService {
 
         FamilyMember member = FamilyMember.builder()
                 .family(family)
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .dateOfBirth(request.getDateOfBirth())
-                .relationship(request.getRelationship())
-                .medicalNote(request.getMedicalNote())
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .dateOfBirth(request.dateOfBirth())
+                .relationship(request.relationship())
+                .medicalNote(request.medicalNote())
                 .build();
 
         FamilyMember saved = familyMemberRepository.save(member);
@@ -842,11 +809,11 @@ public class FamilyServiceImpl implements FamilyService {
             throw new ResourceNotFoundException("Member does not belong to this family");
         }
 
-        member.setFirstName(request.getFirstName());
-        member.setLastName(request.getLastName());
-        member.setDateOfBirth(request.getDateOfBirth());
-        member.setRelationship(request.getRelationship());
-        member.setMedicalNote(request.getMedicalNote());
+        member.setFirstName(request.firstName());
+        member.setLastName(request.lastName());
+        member.setDateOfBirth(request.dateOfBirth());
+        member.setRelationship(request.relationship());
+        member.setMedicalNote(request.medicalNote());
 
         FamilyMember saved = familyMemberRepository.save(member);
         log.info("Member updated: id={}, familyId={}", saved.getId(), familyId);
@@ -885,29 +852,27 @@ public class FamilyServiceImpl implements FamilyService {
                 .map(this::mapToMemberResponse)
                 .collect(Collectors.toList());
 
-        return FamilyResponse.builder()
-                .id(family.getId())
-                .name(family.getName())
-                .createdBy(family.getCreatedBy())
-                .members(memberResponses)
-                .createdAt(family.getCreatedAt())
-                .updatedAt(family.getUpdatedAt())
-                .build();
+        return new FamilyResponse(
+                family.getId(),
+                family.getName(),
+                family.getCreatedBy(),
+                memberResponses,
+                family.getCreatedAt(),
+                family.getUpdatedAt());
     }
 
     private FamilyMemberResponse mapToMemberResponse(FamilyMember member) {
-        return FamilyMemberResponse.builder()
-                .id(member.getId())
-                .familyId(member.getFamily().getId())
-                .firstName(member.getFirstName())
-                .lastName(member.getLastName())
-                .dateOfBirth(member.getDateOfBirth())
-                .age(calculateAge(member.getDateOfBirth()))
-                .relationship(member.getRelationship().name())
-                .medicalNote(member.getMedicalNote())
-                .createdAt(member.getCreatedAt())
-                .updatedAt(member.getUpdatedAt())
-                .build();
+        return new FamilyMemberResponse(
+                member.getId(),
+                member.getFamily().getId(),
+                member.getFirstName(),
+                member.getLastName(),
+                member.getDateOfBirth(),
+                calculateAge(member.getDateOfBirth()),
+                member.getRelationship().name(),
+                member.getMedicalNote(),
+                member.getCreatedAt(),
+                member.getUpdatedAt());
     }
 
     private Integer calculateAge(LocalDate dateOfBirth) {
@@ -939,7 +904,8 @@ cd backend && mvn compile -pl user-service -q
 ```java
 package com.familyhobbies.userservice.controller;
 
-import com.familyhobbies.userservice.dto.*;
+import com.familyhobbies.userservice.dto.request.*;
+import com.familyhobbies.userservice.dto.response.*;
 import com.familyhobbies.userservice.service.FamilyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -963,7 +929,7 @@ public class FamilyController {
 
         FamilyResponse response = familyService.createFamily(userId, request);
         return ResponseEntity
-                .created(URI.create("/api/v1/families/" + response.getId()))
+                .created(URI.create("/api/v1/families/" + response.id()))
                 .body(response);
     }
 
@@ -999,7 +965,7 @@ public class FamilyController {
 
         FamilyMemberResponse response = familyService.addMember(familyId, userId, request);
         return ResponseEntity
-                .created(URI.create("/api/v1/families/" + familyId + "/members/" + response.getId()))
+                .created(URI.create("/api/v1/families/" + familyId + "/members/" + response.id()))
                 .body(response);
     }
 
@@ -1009,7 +975,7 @@ public class FamilyController {
             @RequestHeader("X-User-Id") Long userId) {
 
         FamilyResponse family = familyService.getFamilyById(familyId, userId);
-        return ResponseEntity.ok(family.getMembers());
+        return ResponseEntity.ok(family.members());
     }
 
     @PutMapping("/{familyId}/members/{memberId}")
@@ -1083,10 +1049,11 @@ package com.familyhobbies.userservice.service;
 import com.familyhobbies.errorhandling.exception.web.ConflictException;
 import com.familyhobbies.errorhandling.exception.web.ForbiddenException;
 import com.familyhobbies.errorhandling.exception.web.ResourceNotFoundException;
-import com.familyhobbies.userservice.dto.*;
-import com.familyhobbies.userservice.model.Family;
-import com.familyhobbies.userservice.model.FamilyMember;
-import com.familyhobbies.userservice.model.enums.Relationship;
+import com.familyhobbies.userservice.dto.request.*;
+import com.familyhobbies.userservice.dto.response.*;
+import com.familyhobbies.userservice.entity.Family;
+import com.familyhobbies.userservice.entity.FamilyMember;
+import com.familyhobbies.userservice.entity.enums.Relationship;
 import com.familyhobbies.userservice.repository.FamilyMemberRepository;
 import com.familyhobbies.userservice.repository.FamilyRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -1157,10 +1124,10 @@ class FamilyServiceImplTest {
             when(familyRepository.save(any(Family.class))).thenReturn(testFamily);
 
             FamilyResponse response = familyService.createFamily(10L,
-                    FamilyRequest.builder().name("Famille Dupont").build());
+                    new FamilyRequest("Famille Dupont"));
 
-            assertThat(response.getName()).isEqualTo("Famille Dupont");
-            assertThat(response.getCreatedBy()).isEqualTo(10L);
+            assertThat(response.name()).isEqualTo("Famille Dupont");
+            assertThat(response.createdBy()).isEqualTo(10L);
             verify(familyRepository).save(any(Family.class));
         }
 
@@ -1170,7 +1137,7 @@ class FamilyServiceImplTest {
             when(familyRepository.existsByCreatedBy(10L)).thenReturn(true);
 
             assertThatThrownBy(() -> familyService.createFamily(10L,
-                    FamilyRequest.builder().name("Famille Dupont").build()))
+                    new FamilyRequest("Famille Dupont")))
                     .isInstanceOf(ConflictException.class);
 
             verify(familyRepository, never()).save(any());
@@ -1212,17 +1179,15 @@ class FamilyServiceImplTest {
             when(familyRepository.findById(1L)).thenReturn(Optional.of(testFamily));
             when(familyMemberRepository.save(any(FamilyMember.class))).thenReturn(testMember);
 
-            FamilyMemberRequest request = FamilyMemberRequest.builder()
-                    .firstName("Lucas")
-                    .lastName("Dupont")
-                    .dateOfBirth(LocalDate.of(2015, 3, 20))
-                    .relationship(Relationship.CHILD)
-                    .build();
+            FamilyMemberRequest request = new FamilyMemberRequest(
+                    "Lucas", "Dupont",
+                    LocalDate.of(2015, 3, 20),
+                    Relationship.CHILD, null);
 
             FamilyMemberResponse response = familyService.addMember(1L, 10L, request);
 
-            assertThat(response.getFirstName()).isEqualTo("Lucas");
-            assertThat(response.getRelationship()).isEqualTo("CHILD");
+            assertThat(response.firstName()).isEqualTo("Lucas");
+            assertThat(response.relationship()).isEqualTo("CHILD");
             verify(familyMemberRepository).save(any(FamilyMember.class));
         }
 
@@ -1232,10 +1197,9 @@ class FamilyServiceImplTest {
             when(familyRepository.findById(1L)).thenReturn(Optional.of(testFamily));
 
             assertThatThrownBy(() -> familyService.addMember(1L, 999L,
-                    FamilyMemberRequest.builder()
-                            .firstName("X").lastName("Y")
-                            .dateOfBirth(LocalDate.of(2015, 1, 1))
-                            .relationship(Relationship.CHILD).build()))
+                    new FamilyMemberRequest("X", "Y",
+                            LocalDate.of(2015, 1, 1),
+                            Relationship.CHILD, null)))
                     .isInstanceOf(ForbiddenException.class);
         }
     }
@@ -1251,10 +1215,9 @@ class FamilyServiceImplTest {
             when(familyMemberRepository.findById(999L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> familyService.updateMember(1L, 999L, 10L,
-                    FamilyMemberRequest.builder()
-                            .firstName("X").lastName("Y")
-                            .dateOfBirth(LocalDate.of(2015, 1, 1))
-                            .relationship(Relationship.CHILD).build()))
+                    new FamilyMemberRequest("X", "Y",
+                            LocalDate.of(2015, 1, 1),
+                            Relationship.CHILD, null)))
                     .isInstanceOf(ResourceNotFoundException.class);
         }
     }
@@ -1283,7 +1246,8 @@ class FamilyServiceImplTest {
 ```java
 package com.familyhobbies.userservice.controller;
 
-import com.familyhobbies.userservice.dto.*;
+import com.familyhobbies.userservice.dto.request.*;
+import com.familyhobbies.userservice.dto.response.*;
 import com.familyhobbies.userservice.service.FamilyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -1319,10 +1283,10 @@ class FamilyControllerIntegrationTest {
     @Test
     @DisplayName("POST /api/v1/families should return 201 Created")
     void createFamily_shouldReturn201() throws Exception {
-        FamilyResponse response = FamilyResponse.builder()
-                .id(1L).name("Famille Dupont").createdBy(10L)
-                .members(List.of())
-                .createdAt(Instant.now()).updatedAt(Instant.now()).build();
+        FamilyResponse response = new FamilyResponse(
+                1L, "Famille Dupont", 10L,
+                List.of(),
+                Instant.now(), Instant.now());
 
         when(familyService.createFamily(eq(10L), any(FamilyRequest.class))).thenReturn(response);
 
@@ -1339,15 +1303,15 @@ class FamilyControllerIntegrationTest {
     @Test
     @DisplayName("GET /api/v1/families/me should return 200 OK")
     void getMyFamily_shouldReturn200() throws Exception {
-        FamilyMemberResponse member = FamilyMemberResponse.builder()
-                .id(100L).familyId(1L).firstName("Lucas").lastName("Dupont")
-                .dateOfBirth(LocalDate.of(2015, 3, 20)).age(10).relationship("CHILD")
-                .createdAt(Instant.now()).build();
+        FamilyMemberResponse member = new FamilyMemberResponse(
+                100L, 1L, "Lucas", "Dupont",
+                LocalDate.of(2015, 3, 20), 10, "CHILD",
+                null, Instant.now(), null);
 
-        FamilyResponse response = FamilyResponse.builder()
-                .id(1L).name("Famille Dupont").createdBy(10L)
-                .members(List.of(member))
-                .createdAt(Instant.now()).updatedAt(Instant.now()).build();
+        FamilyResponse response = new FamilyResponse(
+                1L, "Famille Dupont", 10L,
+                List.of(member),
+                Instant.now(), Instant.now());
 
         when(familyService.getMyFamily(10L)).thenReturn(response);
 
@@ -1361,18 +1325,18 @@ class FamilyControllerIntegrationTest {
     @Test
     @DisplayName("POST /api/v1/families/{id}/members should return 201 Created")
     void addMember_shouldReturn201() throws Exception {
-        FamilyMemberResponse response = FamilyMemberResponse.builder()
-                .id(100L).familyId(1L).firstName("Lucas").lastName("Dupont")
-                .dateOfBirth(LocalDate.of(2015, 3, 20)).age(10).relationship("CHILD")
-                .createdAt(Instant.now()).build();
+        FamilyMemberResponse response = new FamilyMemberResponse(
+                100L, 1L, "Lucas", "Dupont",
+                LocalDate.of(2015, 3, 20), 10, "CHILD",
+                null, Instant.now(), null);
 
         when(familyService.addMember(eq(1L), eq(10L), any(FamilyMemberRequest.class)))
                 .thenReturn(response);
 
-        String body = objectMapper.writeValueAsString(FamilyMemberRequest.builder()
-                .firstName("Lucas").lastName("Dupont")
-                .dateOfBirth(LocalDate.of(2015, 3, 20))
-                .relationship(com.familyhobbies.userservice.model.enums.Relationship.CHILD).build());
+        String body = objectMapper.writeValueAsString(new FamilyMemberRequest(
+                "Lucas", "Dupont",
+                LocalDate.of(2015, 3, 20),
+                com.familyhobbies.userservice.entity.enums.Relationship.CHILD, null));
 
         mockMvc.perform(post("/api/v1/families/1/members")
                         .header("X-User-Id", "10")
@@ -2343,12 +2307,12 @@ gateway route.
 | 5 | Add DB to Docker init | `docker/init-databases.sql` | CREATE DATABASE | `docker exec` check |
 | 6 | Liquibase: association table | `backend/association-service/src/main/resources/db/changelog/changesets/001-create-association-table.xml` | t_association DDL | Migration runs |
 | 7 | Create changelog master | `backend/association-service/src/main/resources/db/changelog/db.changelog-master.xml` | Include changeset | Service starts |
-| 8 | Create AssociationCategory enum | `backend/association-service/src/main/java/com/familyhobbies/associationservice/model/enums/AssociationCategory.java` | Enum | Compiles |
-| 9 | Create AssociationStatus enum | `backend/association-service/src/main/java/com/familyhobbies/associationservice/model/enums/AssociationStatus.java` | Enum | Compiles |
-| 10 | Create Association entity | `backend/association-service/src/main/java/com/familyhobbies/associationservice/model/Association.java` | JPA entity | Compiles |
+| 8 | Create AssociationCategory enum | `backend/association-service/src/main/java/com/familyhobbies/associationservice/entity/enums/AssociationCategory.java` | Enum | Compiles |
+| 9 | Create AssociationStatus enum | `backend/association-service/src/main/java/com/familyhobbies/associationservice/entity/enums/AssociationStatus.java` | Enum | Compiles |
+| 10 | Create Association entity | `backend/association-service/src/main/java/com/familyhobbies/associationservice/entity/Association.java` | JPA entity | Compiles |
 | 11 | Create AssociationRepository | `backend/association-service/src/main/java/com/familyhobbies/associationservice/repository/AssociationRepository.java` | JpaRepository + Spec | Compiles |
 | 12 | Create AssociationSpecification | `backend/association-service/src/main/java/com/familyhobbies/associationservice/repository/AssociationSpecification.java` | Dynamic query | Compiles |
-| 13 | Create DTOs | `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/` | Search, Response, Detail | Compiles |
+| 13 | Create DTOs | `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/request/` + `dto/response/` | Search, Response, Detail | Compiles |
 | 14 | Create AssociationService | `backend/association-service/src/main/java/com/familyhobbies/associationservice/service/AssociationServiceImpl.java` | Service impl | Tests pass |
 | 15 | Create AssociationController | `backend/association-service/src/main/java/com/familyhobbies/associationservice/controller/AssociationController.java` | REST controller | Integration tests |
 | 16 | Register gateway route | `backend/api-gateway/src/main/resources/application.yml` | Route associations | curl through gateway |
@@ -2722,10 +2686,10 @@ docker exec fhm-postgres psql -U fhm_admin -d familyhobbies_associations \
 
 **Task 8 — AssociationCategory**
 
-**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/model/enums/AssociationCategory.java`
+**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/entity/enums/AssociationCategory.java`
 
 ```java
-package com.familyhobbies.associationservice.model.enums;
+package com.familyhobbies.associationservice.entity.enums;
 
 public enum AssociationCategory {
     SPORT,
@@ -2741,10 +2705,10 @@ public enum AssociationCategory {
 
 **Task 9 — AssociationStatus**
 
-**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/model/enums/AssociationStatus.java`
+**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/entity/enums/AssociationStatus.java`
 
 ```java
-package com.familyhobbies.associationservice.model.enums;
+package com.familyhobbies.associationservice.entity.enums;
 
 public enum AssociationStatus {
     ACTIVE,
@@ -2757,15 +2721,15 @@ public enum AssociationStatus {
 
 #### Task 10 Detail: Create Association Entity
 
-**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/model/Association.java`
+**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/entity/Association.java`
 
 **Content**:
 
 ```java
 package com.familyhobbies.associationservice.model;
 
-import com.familyhobbies.associationservice.model.enums.AssociationCategory;
-import com.familyhobbies.associationservice.model.enums.AssociationStatus;
+import com.familyhobbies.associationservice.entity.enums.AssociationCategory;
+import com.familyhobbies.associationservice.entity.enums.AssociationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -2861,7 +2825,7 @@ public class Association {
 ```java
 package com.familyhobbies.associationservice.repository;
 
-import com.familyhobbies.associationservice.model.Association;
+import com.familyhobbies.associationservice.entity.Association;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -2893,9 +2857,9 @@ public interface AssociationRepository extends JpaRepository<Association, Long>,
 ```java
 package com.familyhobbies.associationservice.repository;
 
-import com.familyhobbies.associationservice.dto.AssociationSearchRequest;
-import com.familyhobbies.associationservice.model.Association;
-import com.familyhobbies.associationservice.model.enums.AssociationStatus;
+import com.familyhobbies.associationservice.dto.request.AssociationSearchRequest;
+import com.familyhobbies.associationservice.entity.Association;
+import com.familyhobbies.associationservice.entity.enums.AssociationStatus;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -2913,26 +2877,26 @@ public class AssociationSpecification {
             // Always filter for ACTIVE only
             predicates.add(cb.equal(root.get("status"), AssociationStatus.ACTIVE));
 
-            if (request.getCity() != null && !request.getCity().isBlank()) {
+            if (request.city() != null && !request.city().isBlank()) {
                 predicates.add(cb.equal(
                         cb.lower(root.get("city")),
-                        request.getCity().toLowerCase().trim()));
+                        request.city().toLowerCase().trim()));
             }
 
-            if (request.getPostalCode() != null && !request.getPostalCode().isBlank()) {
-                predicates.add(cb.equal(root.get("postalCode"), request.getPostalCode().trim()));
+            if (request.postalCode() != null && !request.postalCode().isBlank()) {
+                predicates.add(cb.equal(root.get("postalCode"), request.postalCode().trim()));
             }
 
-            if (request.getDepartment() != null && !request.getDepartment().isBlank()) {
-                predicates.add(cb.equal(root.get("department"), request.getDepartment().trim()));
+            if (request.department() != null && !request.department().isBlank()) {
+                predicates.add(cb.equal(root.get("department"), request.department().trim()));
             }
 
-            if (request.getCategory() != null) {
-                predicates.add(cb.equal(root.get("category"), request.getCategory()));
+            if (request.category() != null) {
+                predicates.add(cb.equal(root.get("category"), request.category()));
             }
 
-            if (request.getSearch() != null && !request.getSearch().isBlank()) {
-                String pattern = "%" + request.getSearch().toLowerCase().trim() + "%";
+            if (request.search() != null && !request.search().isBlank()) {
+                String pattern = "%" + request.search().toLowerCase().trim() + "%";
                 predicates.add(cb.or(
                         cb.like(cb.lower(root.get("name")), pattern),
                         cb.like(cb.lower(root.get("description")), pattern)));
@@ -2950,99 +2914,73 @@ public class AssociationSpecification {
 
 **AssociationSearchRequest**
 
-**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/AssociationSearchRequest.java`
+**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/request/AssociationSearchRequest.java`
 
 ```java
-package com.familyhobbies.associationservice.dto;
+package com.familyhobbies.associationservice.dto.request;
 
-import com.familyhobbies.associationservice.model.enums.AssociationCategory;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.familyhobbies.associationservice.entity.enums.AssociationCategory;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AssociationSearchRequest {
-    private String search;
-    private String city;
-    private String postalCode;
-    private String department;
-    private AssociationCategory category;
-}
+public record AssociationSearchRequest(
+    String search,
+    String city,
+    String postalCode,
+    String department,
+    AssociationCategory category
+) {}
 ```
 
 **AssociationResponse** (list/card view)
 
-**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/AssociationResponse.java`
+**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/response/AssociationResponse.java`
 
 ```java
-package com.familyhobbies.associationservice.dto;
+package com.familyhobbies.associationservice.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AssociationResponse {
-    private Long id;
-    private String name;
-    private String slug;
-    private String city;
-    private String postalCode;
-    private String department;
-    private String category;
-    private String logoUrl;
-    private String status;
-    private int activityCount;
-    private int memberCount;
-}
+public record AssociationResponse(
+    Long id,
+    String name,
+    String slug,
+    String city,
+    String postalCode,
+    String department,
+    String category,
+    String logoUrl,
+    String status,
+    int activityCount,
+    int memberCount
+) {}
 ```
 
 **AssociationDetailResponse** (full detail view)
 
-**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/AssociationDetailResponse.java`
+**Where**: `backend/association-service/src/main/java/com/familyhobbies/associationservice/dto/response/AssociationDetailResponse.java`
 
 ```java
-package com.familyhobbies.associationservice.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+package com.familyhobbies.associationservice.dto.response;
 
 import java.time.Instant;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AssociationDetailResponse {
-    private Long id;
-    private String name;
-    private String slug;
-    private String description;
-    private String address;
-    private String city;
-    private String postalCode;
-    private String department;
-    private String region;
-    private String phone;
-    private String email;
-    private String website;
-    private String logoUrl;
-    private String category;
-    private String status;
-    private String helloassoSlug;
-    private Instant createdAt;
-    private Instant updatedAt;
-}
+public record AssociationDetailResponse(
+    Long id,
+    String name,
+    String slug,
+    String description,
+    String address,
+    String city,
+    String postalCode,
+    String department,
+    String region,
+    String phone,
+    String email,
+    String website,
+    String logoUrl,
+    String category,
+    String status,
+    String helloassoSlug,
+    Instant createdAt,
+    Instant updatedAt
+) {}
 ```
 
 ---
@@ -3056,8 +2994,9 @@ public class AssociationDetailResponse {
 ```java
 package com.familyhobbies.associationservice.service;
 
-import com.familyhobbies.associationservice.dto.*;
-import com.familyhobbies.associationservice.model.Association;
+import com.familyhobbies.associationservice.dto.request.*;
+import com.familyhobbies.associationservice.dto.response.*;
+import com.familyhobbies.associationservice.entity.Association;
 import com.familyhobbies.associationservice.repository.AssociationRepository;
 import com.familyhobbies.associationservice.repository.AssociationSpecification;
 import com.familyhobbies.errorhandling.exception.web.ResourceNotFoundException;
@@ -3098,42 +3037,41 @@ public class AssociationServiceImpl implements AssociationService {
     }
 
     private AssociationResponse mapToResponse(Association a) {
-        return AssociationResponse.builder()
-                .id(a.getId())
-                .name(a.getName())
-                .slug(a.getSlug())
-                .city(a.getCity())
-                .postalCode(a.getPostalCode())
-                .department(a.getDepartment())
-                .category(a.getCategory().name())
-                .logoUrl(a.getLogoUrl())
-                .status(a.getStatus().name())
-                .activityCount(0) // populated in Sprint 3
-                .memberCount(0)   // populated later
-                .build();
+        return new AssociationResponse(
+                a.getId(),
+                a.getName(),
+                a.getSlug(),
+                a.getCity(),
+                a.getPostalCode(),
+                a.getDepartment(),
+                a.getCategory().name(),
+                a.getLogoUrl(),
+                a.getStatus().name(),
+                0, // activityCount — populated in Sprint 3
+                0  // memberCount — populated later
+        );
     }
 
     private AssociationDetailResponse mapToDetailResponse(Association a) {
-        return AssociationDetailResponse.builder()
-                .id(a.getId())
-                .name(a.getName())
-                .slug(a.getSlug())
-                .description(a.getDescription())
-                .address(a.getAddress())
-                .city(a.getCity())
-                .postalCode(a.getPostalCode())
-                .department(a.getDepartment())
-                .region(a.getRegion())
-                .phone(a.getPhone())
-                .email(a.getEmail())
-                .website(a.getWebsite())
-                .logoUrl(a.getLogoUrl())
-                .category(a.getCategory().name())
-                .status(a.getStatus().name())
-                .helloassoSlug(a.getHelloassoSlug())
-                .createdAt(a.getCreatedAt())
-                .updatedAt(a.getUpdatedAt())
-                .build();
+        return new AssociationDetailResponse(
+                a.getId(),
+                a.getName(),
+                a.getSlug(),
+                a.getDescription(),
+                a.getAddress(),
+                a.getCity(),
+                a.getPostalCode(),
+                a.getDepartment(),
+                a.getRegion(),
+                a.getPhone(),
+                a.getEmail(),
+                a.getWebsite(),
+                a.getLogoUrl(),
+                a.getCategory().name(),
+                a.getStatus().name(),
+                a.getHelloassoSlug(),
+                a.getCreatedAt(),
+                a.getUpdatedAt());
     }
 }
 ```
@@ -3145,7 +3083,8 @@ public class AssociationServiceImpl implements AssociationService {
 ```java
 package com.familyhobbies.associationservice.service;
 
-import com.familyhobbies.associationservice.dto.*;
+import com.familyhobbies.associationservice.dto.request.*;
+import com.familyhobbies.associationservice.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -3167,8 +3106,9 @@ public interface AssociationService {
 ```java
 package com.familyhobbies.associationservice.controller;
 
-import com.familyhobbies.associationservice.dto.*;
-import com.familyhobbies.associationservice.model.enums.AssociationCategory;
+import com.familyhobbies.associationservice.dto.request.*;
+import com.familyhobbies.associationservice.dto.response.*;
+import com.familyhobbies.associationservice.entity.enums.AssociationCategory;
 import com.familyhobbies.associationservice.service.AssociationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -3196,13 +3136,8 @@ public class AssociationController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "name,asc") String sort) {
 
-        AssociationSearchRequest request = AssociationSearchRequest.builder()
-                .search(search)
-                .city(city)
-                .postalCode(postalCode)
-                .department(department)
-                .category(category)
-                .build();
+        AssociationSearchRequest request = new AssociationSearchRequest(
+                search, city, postalCode, department, category);
 
         String[] sortParts = sort.split(",");
         Sort sortObj = Sort.by(Sort.Direction.fromString(sortParts.length > 1 ? sortParts[1] : "asc"),
@@ -3246,10 +3181,11 @@ public class AssociationController {
 ```java
 package com.familyhobbies.associationservice.service;
 
-import com.familyhobbies.associationservice.dto.*;
-import com.familyhobbies.associationservice.model.Association;
-import com.familyhobbies.associationservice.model.enums.AssociationCategory;
-import com.familyhobbies.associationservice.model.enums.AssociationStatus;
+import com.familyhobbies.associationservice.dto.request.*;
+import com.familyhobbies.associationservice.dto.response.*;
+import com.familyhobbies.associationservice.entity.Association;
+import com.familyhobbies.associationservice.entity.enums.AssociationCategory;
+import com.familyhobbies.associationservice.entity.enums.AssociationStatus;
 import com.familyhobbies.associationservice.repository.AssociationRepository;
 import com.familyhobbies.errorhandling.exception.web.ResourceNotFoundException;
 import org.junit.jupiter.api.DisplayName;
@@ -3296,7 +3232,7 @@ class AssociationServiceImplTest {
                 .thenReturn(page);
 
         Page<AssociationResponse> result = associationService.search(
-                AssociationSearchRequest.builder().city("Lyon").build(),
+                new AssociationSearchRequest(null, "Lyon", null, null, null),
                 PageRequest.of(0, 20));
 
         assertThat(result.getTotalElements()).isEqualTo(1);
@@ -3343,7 +3279,8 @@ class AssociationServiceImplTest {
 ```java
 package com.familyhobbies.associationservice.controller;
 
-import com.familyhobbies.associationservice.dto.*;
+import com.familyhobbies.associationservice.dto.request.*;
+import com.familyhobbies.associationservice.dto.response.*;
 import com.familyhobbies.associationservice.service.AssociationService;
 import com.familyhobbies.errorhandling.exception.web.ResourceNotFoundException;
 import org.junit.jupiter.api.DisplayName;
@@ -3375,13 +3312,15 @@ class AssociationControllerIntegrationTest {
     @Test
     @DisplayName("GET /api/v1/associations should return 200 with paginated results")
     void search_shouldReturn200() throws Exception {
-        AssociationResponse resp = AssociationResponse.builder()
-                .id(1L).name("AS Lyon Judo").slug("as-lyon-judo")
-                .city("Lyon").postalCode("69001").category("MARTIAL_ARTS").status("ACTIVE").build();
+        AssociationResponse resp = new AssociationResponse(
+                1L, "AS Lyon Judo", "as-lyon-judo",
+                "Lyon", "69001", null, "MARTIAL_ARTS", null, "ACTIVE", 0, 0);
         Page<AssociationResponse> page = new PageImpl<>(List.of(resp));
         when(associationService.search(any(), any())).thenReturn(page);
 
-        mockMvc.perform(get("/api/v1/associations"))
+        mockMvc.perform(get("/api/v1/associations")
+                        .header("X-User-Id", "1")
+                        .header("X-User-Roles", "FAMILY"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("AS Lyon Judo"))
                 .andExpect(jsonPath("$.totalElements").value(1));
@@ -3393,19 +3332,24 @@ class AssociationControllerIntegrationTest {
         Page<AssociationResponse> page = new PageImpl<>(List.of());
         when(associationService.search(any(), any())).thenReturn(page);
 
-        mockMvc.perform(get("/api/v1/associations").param("city", "Lyon"))
+        mockMvc.perform(get("/api/v1/associations").param("city", "Lyon")
+                        .header("X-User-Id", "1")
+                        .header("X-User-Roles", "FAMILY"))
                 .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("GET /api/v1/associations/{id} should return 200")
     void getById_shouldReturn200() throws Exception {
-        AssociationDetailResponse detail = AssociationDetailResponse.builder()
-                .id(1L).name("AS Lyon Judo").slug("as-lyon-judo")
-                .city("Lyon").postalCode("69001").category("MARTIAL_ARTS").status("ACTIVE").build();
+        AssociationDetailResponse detail = new AssociationDetailResponse(
+                1L, "AS Lyon Judo", "as-lyon-judo", null, null,
+                "Lyon", "69001", null, null, null, null, null, null,
+                "MARTIAL_ARTS", "ACTIVE", null, null, null);
         when(associationService.getById(1L)).thenReturn(detail);
 
-        mockMvc.perform(get("/api/v1/associations/1"))
+        mockMvc.perform(get("/api/v1/associations/1")
+                        .header("X-User-Id", "1")
+                        .header("X-User-Roles", "FAMILY"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("AS Lyon Judo"));
     }
@@ -3415,7 +3359,9 @@ class AssociationControllerIntegrationTest {
     void getById_shouldReturn404() throws Exception {
         when(associationService.getById(999L)).thenThrow(new ResourceNotFoundException("Not found"));
 
-        mockMvc.perform(get("/api/v1/associations/999"))
+        mockMvc.perform(get("/api/v1/associations/999")
+                        .header("X-User-Id", "1")
+                        .header("X-User-Roles", "FAMILY"))
                 .andExpect(status().isNotFound());
     }
 }
@@ -4672,7 +4618,7 @@ exceptions — registration must succeed even if Kafka is temporarily unavailabl
 | 2 | Create KafkaProducerConfig | `backend/user-service/src/main/java/com/familyhobbies/userservice/config/KafkaProducerConfig.java` | KafkaTemplate bean | Compiles |
 | 3 | Add Kafka to application.yml | `backend/user-service/src/main/resources/application.yml` | bootstrap-servers config | Service starts |
 | 4 | Create UserEventPublisher | `backend/user-service/src/main/java/com/familyhobbies/userservice/event/UserEventPublisher.java` | Fire-and-forget publisher | Tests pass |
-| 5 | Wire into UserServiceImpl | `backend/user-service/src/main/java/com/familyhobbies/userservice/service/UserServiceImpl.java` | Publish after save | Tests pass |
+| 5 | Wire into AuthServiceImpl | `backend/user-service/src/main/java/com/familyhobbies/userservice/service/impl/AuthServiceImpl.java` | Publish after save | Tests pass |
 
 ---
 
@@ -4824,9 +4770,9 @@ public class UserEventPublisher {
 
 ---
 
-#### Task 5 Detail: Wire Publisher into UserServiceImpl
+#### Task 5 Detail: Wire Publisher into AuthServiceImpl
 
-**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/service/UserServiceImpl.java`
+**Where**: `backend/user-service/src/main/java/com/familyhobbies/userservice/service/impl/AuthServiceImpl.java`
 
 **What**: Inject `UserEventPublisher`, call `publishUserRegistered()` after successful user save.
 
@@ -4837,7 +4783,6 @@ Add imports:
 ```java
 import com.familyhobbies.userservice.event.UserEventPublisher;
 import com.familyhobbies.common.event.UserRegisteredEvent;
-import java.time.Instant;
 ```
 
 Add field (class uses `@RequiredArgsConstructor`):
@@ -4850,13 +4795,11 @@ Add after `User savedUser = userRepository.save(user);` in `register()`:
 
 ```java
         // Publish registration event to Kafka (fire-and-forget)
-        UserRegisteredEvent event = UserRegisteredEvent.builder()
-                .userId(savedUser.getId())
-                .email(savedUser.getEmail())
-                .firstName(savedUser.getFirstName())
-                .lastName(savedUser.getLastName())
-                .registeredAt(Instant.now())
-                .build();
+        UserRegisteredEvent event = new UserRegisteredEvent(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getFirstName(),
+                savedUser.getLastName());
         userEventPublisher.publishUserRegistered(event);
 ```
 
@@ -4888,7 +4831,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 
-import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -4912,10 +4854,8 @@ class UserEventPublisherTest {
 
     @BeforeEach
     void setUp() {
-        testEvent = UserRegisteredEvent.builder()
-                .userId(42L).email("test@example.com")
-                .firstName("Jean").lastName("Dupont")
-                .registeredAt(Instant.now()).build();
+        testEvent = new UserRegisteredEvent(
+                42L, "test@example.com", "Jean", "Dupont");
     }
 
     @Test
@@ -4956,15 +4896,15 @@ class UserEventPublisherTest {
 }
 ```
 
-**Test File 2**: `backend/user-service/src/test/java/com/familyhobbies/userservice/service/UserServiceImplKafkaTest.java`
+**Test File 2**: `backend/user-service/src/test/java/com/familyhobbies/userservice/service/AuthServiceImplKafkaTest.java`
 
 ```java
 package com.familyhobbies.userservice.service;
 
 import com.familyhobbies.common.event.UserRegisteredEvent;
-import com.familyhobbies.userservice.dto.RegisterRequest;
+import com.familyhobbies.userservice.dto.request.RegisterRequest;
 import com.familyhobbies.userservice.event.UserEventPublisher;
-import com.familyhobbies.userservice.model.User;
+import com.familyhobbies.userservice.entity.User;
 import com.familyhobbies.userservice.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -4980,13 +4920,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("UserServiceImpl Kafka Publishing Tests")
-class UserServiceImplKafkaTest {
+@DisplayName("AuthServiceImpl Kafka Publishing Tests")
+class AuthServiceImplKafkaTest {
 
     @Mock private UserRepository userRepository;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private UserEventPublisher userEventPublisher;
-    @InjectMocks private UserServiceImpl userService;
+    @InjectMocks private AuthServiceImpl authService;
 
     @Test
     @DisplayName("register should publish UserRegisteredEvent after save")
@@ -4994,10 +4934,10 @@ class UserServiceImplKafkaTest {
         when(userRepository.existsByEmail(any())).thenReturn(false);
         when(passwordEncoder.encode(any())).thenReturn("encoded");
         User saved = User.builder().id(99L).email("test@test.com")
-                .firstName("Marie").lastName("Martin").password("encoded").build();
+                .firstName("Marie").lastName("Martin").passwordHash("encoded").build();
         when(userRepository.save(any())).thenReturn(saved);
 
-        userService.register(RegisterRequest.builder()
+        authService.register(RegisterRequest.builder()
                 .email("test@test.com").password("Pass123!")
                 .firstName("Marie").lastName("Martin").build());
 
@@ -5013,12 +4953,12 @@ class UserServiceImplKafkaTest {
         when(userRepository.existsByEmail(any())).thenReturn(false);
         when(passwordEncoder.encode(any())).thenReturn("encoded");
         User saved = User.builder().id(99L).email("test@test.com")
-                .firstName("Marie").lastName("Martin").password("encoded").build();
+                .firstName("Marie").lastName("Martin").passwordHash("encoded").build();
         when(userRepository.save(any())).thenReturn(saved);
         doThrow(new RuntimeException("Kafka down")).when(userEventPublisher).publishUserRegistered(any());
 
         assertThatNoException().isThrownBy(() ->
-                userService.register(RegisterRequest.builder()
+                authService.register(RegisterRequest.builder()
                         .email("test@test.com").password("Pass123!")
                         .firstName("Marie").lastName("Martin").build()));
     }
@@ -5052,7 +4992,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -5093,9 +5032,8 @@ class UserRegisteredEventIntegrationTest {
     @Test
     @DisplayName("should publish and consume UserRegisteredEvent with correct data")
     void shouldPublishAndConsumeEvent() {
-        UserRegisteredEvent event = UserRegisteredEvent.builder()
-                .userId(7L).email("pierre@test.com").firstName("Pierre").lastName("Durand")
-                .registeredAt(Instant.parse("2026-02-24T14:30:00Z")).build();
+        UserRegisteredEvent event = new UserRegisteredEvent(
+                7L, "pierre@test.com", "Pierre", "Durand");
 
         userEventPublisher.publishUserRegistered(event);
 

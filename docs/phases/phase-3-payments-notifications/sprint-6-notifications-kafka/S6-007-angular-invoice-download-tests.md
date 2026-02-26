@@ -60,9 +60,7 @@ describe('InvoiceService', () => {
         lineItems: [
           {
             description: 'Cotisation Judo enfant - Saison 2025-2026',
-            quantity: 1,
-            unitPrice: 150.0,
-            total: 150.0
+            amount: 150.0
           }
         ],
         subtotal: 150.0,

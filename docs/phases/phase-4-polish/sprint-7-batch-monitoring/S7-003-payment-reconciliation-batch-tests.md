@@ -303,7 +303,7 @@ class PaymentReconciliationProcessorTest {
         // Given
         Payment payment = buildPayment(6L, "checkout-006");
         when(helloAssoCheckoutClient.getCheckoutStatus("checkout-006"))
-                .thenThrow(new ExternalApiException("HelloAsso API unavailable"));
+                .thenThrow(new ExternalApiException("HelloAsso API unavailable", "HelloAsso", 503));
 
         // When / Then
         assertThatThrownBy(() -> processor.process(payment))
@@ -498,7 +498,7 @@ class HelloAssoApiSkipPolicyTest {
     void shouldSkipExternalApiExceptionUnderLimit() {
         // Given
         HelloAssoApiSkipPolicy policy = new HelloAssoApiSkipPolicy(10);
-        ExternalApiException exception = new ExternalApiException("HelloAsso unavailable");
+        ExternalApiException exception = new ExternalApiException("HelloAsso unavailable", "HelloAsso", 503);
 
         // When / Then
         assertThat(policy.shouldSkip(exception, 0)).isTrue();
@@ -511,7 +511,7 @@ class HelloAssoApiSkipPolicyTest {
     void shouldNotSkipWhenMaxCountReached() {
         // Given
         HelloAssoApiSkipPolicy policy = new HelloAssoApiSkipPolicy(10);
-        ExternalApiException exception = new ExternalApiException("HelloAsso unavailable");
+        ExternalApiException exception = new ExternalApiException("HelloAsso unavailable", "HelloAsso", 503);
 
         // When / Then
         assertThat(policy.shouldSkip(exception, 10)).isFalse();
@@ -523,7 +523,7 @@ class HelloAssoApiSkipPolicyTest {
     void shouldAllowUnlimitedSkips() {
         // Given
         HelloAssoApiSkipPolicy policy = new HelloAssoApiSkipPolicy(-1);
-        ExternalApiException exception = new ExternalApiException("HelloAsso unavailable");
+        ExternalApiException exception = new ExternalApiException("HelloAsso unavailable", "HelloAsso", 503);
 
         // When / Then
         assertThat(policy.shouldSkip(exception, 0)).isTrue();
@@ -669,7 +669,7 @@ class PaymentReconciliationJobConfigTest {
 
         // First payment: API error (should be skipped)
         when(helloAssoCheckoutClient.getCheckoutStatus("checkout-001"))
-                .thenThrow(new ExternalApiException("HelloAsso unavailable"));
+                .thenThrow(new ExternalApiException("HelloAsso unavailable", "HelloAsso", 503));
 
         // Second payment: success
         HelloAssoCheckoutStatusResponse response = new HelloAssoCheckoutStatusResponse(
@@ -797,7 +797,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -823,19 +823,19 @@ class AdminBatchControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("POST /admin/batch/payment-reconciliation should trigger job and return execution ID")
+    @DisplayName("POST /admin/batch/payment-reconciliation should trigger job and return 202 Accepted")
     void shouldTriggerJobAndReturnExecutionId() throws Exception {
         // Given
         JobExecution mockExecution = new JobExecution(42L);
         mockExecution.setStatus(BatchStatus.COMPLETED);
-        mockExecution.setStartTime(LocalDateTime.of(2026, 2, 24, 8, 0, 0));
+        mockExecution.setStartTime(Instant.parse("2026-02-24T08:00:00Z"));
 
         when(jobLauncher.run(eq(paymentReconciliationJob), any(JobParameters.class)))
                 .thenReturn(mockExecution);
 
         // When / Then
         mockMvc.perform(post("/admin/batch/payment-reconciliation"))
-                .andExpect(status().isOk())
+                .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.jobExecutionId").value(42))
                 .andExpect(jsonPath("$.jobName").value("paymentReconciliationJob"))
                 .andExpect(jsonPath("$.status").value("COMPLETED"))

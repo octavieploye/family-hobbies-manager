@@ -92,6 +92,7 @@ The notification-service needs a persistent data model to store in-app notificat
             <column name="message" type="TEXT">
                 <constraints nullable="false"/>
             </column>
+            <column name="action_url" type="VARCHAR(500)"/>
             <column name="read" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
@@ -380,6 +381,10 @@ public class Notification {
 
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
+
+    /** Optional deep-link URL for navigating to the related resource. */
+    @Column(name = "action_url", length = 500)
+    private String actionUrl;
 
     @Builder.Default
     @Column(name = "read", nullable = false)
@@ -750,7 +755,7 @@ The companion file contains:
 ## Acceptance Criteria Checklist
 
 - [ ] All 3 Liquibase changesets apply without error
-- [ ] `t_notification` table has 11 columns, 3 indexes
+- [ ] `t_notification` table has 12 columns (including action_url), 3 indexes
 - [ ] `t_email_template` table has 8 columns, 1 unique constraint, 2 indexes
 - [ ] `t_notification_preference` table has 7 columns, 1 unique constraint, 1 index
 - [ ] `NotificationType` enum has 3 values: EMAIL, IN_APP, SMS

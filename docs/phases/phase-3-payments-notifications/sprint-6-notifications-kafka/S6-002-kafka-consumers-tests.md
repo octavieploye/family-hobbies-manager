@@ -28,7 +28,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,13 +84,13 @@ class UserEventConsumerTest {
         @DisplayName("should_create_welcome_notification_when_user_registered")
         void should_create_welcome_notification_when_user_registered() {
             // Given
+            // Available UserRegisteredEvent fields: userId, email, firstName, lastName
+            // Timestamp via DomainEvent base class: getOccurredAt()
             UserRegisteredEvent event = new UserRegisteredEvent();
             event.setUserId(1L);
             event.setEmail("marie.dupont@example.fr");
             event.setFirstName("Marie");
             event.setLastName("Dupont");
-            event.setRole("FAMILY");
-            event.setRegisteredAt(Instant.now());
 
             // When
             userEventConsumer.handleUserRegistered(event);
@@ -122,8 +121,6 @@ class UserEventConsumerTest {
             event.setEmail("pierre.martin@example.fr");
             event.setFirstName("Pierre");
             event.setLastName("Martin");
-            event.setRole("FAMILY");
-            event.setRegisteredAt(Instant.now());
 
             // When
             userEventConsumer.handleUserRegistered(event);
@@ -147,11 +144,11 @@ class UserEventConsumerTest {
         @DisplayName("should_delete_all_notifications_when_user_deleted")
         void should_delete_all_notifications_when_user_deleted() {
             // Given
+            // Available UserDeletedEvent fields: userId, deletionType
+            // Note: getEmail(), getDeletedAt(), getReason() do NOT exist on this event
             UserDeletedEvent event = new UserDeletedEvent();
             event.setUserId(1L);
-            event.setEmail("marie.dupont@example.fr");
-            event.setDeletedAt(Instant.now());
-            event.setReason("User requested account deletion");
+            event.setDeletionType("USER_REQUESTED");
 
             // When
             userEventConsumer.handleUserDeleted(event);
@@ -166,9 +163,7 @@ class UserEventConsumerTest {
             // Given
             UserDeletedEvent event = new UserDeletedEvent();
             event.setUserId(1L);
-            event.setEmail("marie.dupont@example.fr");
-            event.setDeletedAt(Instant.now());
-            event.setReason("RGPD request");
+            event.setDeletionType("RGPD_REQUEST");
 
             // When
             userEventConsumer.handleUserDeleted(event);

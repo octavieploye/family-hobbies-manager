@@ -230,6 +230,7 @@ export default defineConfig({
   },
   "devDependencies": {
     "@playwright/test": "^1.42.0",
+    "@axe-core/playwright": "^4.8.0",
     "dotenv": "^16.4.0"
   }
 }

@@ -3,6 +3,8 @@
 > 5 points | Priority: P0 | Service: association-service
 > Sprint file: [Back to Sprint Index](./_index.md)
 
+> **Architecture Note**: `HelloAssoTokenManager` and `HelloAssoProperties` are defined here in the `common` module so they can be shared across `association-service` and `payment-service`. Do NOT duplicate these classes in individual service modules.
+
 ---
 
 ## Context

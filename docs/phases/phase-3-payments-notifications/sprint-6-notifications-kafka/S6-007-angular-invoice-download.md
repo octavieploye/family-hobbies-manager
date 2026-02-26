@@ -49,9 +49,7 @@ export enum InvoiceStatus {
 
 export interface LineItemResponse {
   description: string;
-  quantity: number;
-  unitPrice: number;
-  total: number;
+  amount: number;
 }
 
 export interface InvoiceResponse {

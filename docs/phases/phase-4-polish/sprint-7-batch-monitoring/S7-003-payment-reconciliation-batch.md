@@ -25,7 +25,7 @@ The HelloAsso checkout flow is inherently asynchronous: when a family initiates 
 | 9 | HelloAssoApiSkipPolicy | `backend/payment-service/src/main/java/.../batch/policy/HelloAssoApiSkipPolicy.java` | Spring Batch `SkipPolicy` for HelloAsso API errors | Unit tests pass |
 | 10 | PaymentReconciliationJobConfig | `backend/payment-service/src/main/java/.../batch/config/PaymentReconciliationJobConfig.java` | Full Spring Batch job configuration | Job bean created |
 | 11 | BatchSchedulerConfig | `backend/payment-service/src/main/java/.../batch/config/BatchSchedulerConfig.java` | CRON scheduling at `0 0 8 * * *` | Scheduled trigger fires |
-| 12 | AdminBatchController | `backend/payment-service/src/main/java/.../controller/AdminBatchController.java` | POST `/admin/batch/payment-reconciliation` | Returns 200 with job execution ID |
+| 12 | AdminBatchController | `backend/payment-service/src/main/java/.../controller/AdminBatchController.java` | POST `/admin/batch/payment-reconciliation` | Returns 202 Accepted with job execution ID |
 | 13 | application.yml -- batch config | `backend/payment-service/src/main/resources/application.yml` | Spring Batch configuration properties | Service starts |
 | 14 | Failing tests (TDD) | See companion file | 6 JUnit 5 test classes, ~30 test cases | Tests compile, fail (TDD) |
 
@@ -74,9 +74,9 @@ The HelloAsso checkout flow is inherently asynchronous: when a family initiates 
 
     <changeSet id="006-spring-batch-metadata-tables" author="family-hobbies-team">
         <comment>
-            Spring Batch 5.x metadata tables are auto-created by Spring Boot
-            via spring.batch.jdbc.initialize-schema=always.
-            This changeset is a documentation marker only.
+            Spring Batch 5.x metadata tables managed by Liquibase.
+            Convention: Use spring.batch.jdbc.initialize-schema=never and include
+            batch schema tables in Liquibase changesets instead of auto-initialization.
         </comment>
         <tagDatabase tag="spring-batch-metadata-initialized"/>
     </changeSet>
@@ -210,13 +210,13 @@ public class HelloAssoCheckoutClient {
                     checkoutId, e.getStatusCode(), e.getResponseBodyAsString());
             throw new ExternalApiException(
                     "HelloAsso API error for checkout " + checkoutId + ": " + e.getStatusCode(),
-                    e
+                    "HelloAsso", e.getStatusCode().value(), e
             );
         } catch (Exception e) {
             log.error("Failed to reach HelloAsso API for checkoutId={}: {}", checkoutId, e.getMessage());
             throw new ExternalApiException(
                     "HelloAsso API unavailable for checkout " + checkoutId,
-                    e
+                    "HelloAsso", 503, e
             );
         }
     }
@@ -580,6 +580,9 @@ import org.springframework.batch.item.ItemWriter;
 
 /**
  * Writes reconciled payments to the database and publishes Kafka events.
+ *
+ * <p><b>Cross-reference</b>: {@code PaymentEventPublisher} is defined in Sprint 5 (S5-005).
+ * It publishes {@code PaymentCompletedEvent} and {@code PaymentFailedEvent} via Kafka.
  *
  * <p>For each payment in the chunk:
  * <ol>
@@ -986,7 +989,7 @@ public class AdminBatchController {
      *
      * <p>POST /admin/batch/payment-reconciliation
      *
-     * @return 200 OK with the job execution ID and status
+     * @return 202 Accepted with the job execution ID and status
      */
     @PostMapping("/payment-reconciliation")
     @PreAuthorize("hasRole('ADMIN')")
@@ -1011,7 +1014,7 @@ public class AdminBatchController {
             );
 
             log.info("Payment reconciliation job triggered: executionId={}", execution.getId());
-            return ResponseEntity.ok(response);
+            return ResponseEntity.accepted().body(response);
 
         } catch (Exception e) {
             log.error("Failed to trigger payment reconciliation job: {}", e.getMessage(), e);
@@ -1024,7 +1027,7 @@ public class AdminBatchController {
 }
 ```
 
-- **Verify**: `curl -X POST http://localhost:8083/admin/batch/payment-reconciliation -H "Authorization: Bearer {admin-jwt}"` -> 200 with job execution ID
+- **Verify**: `curl -X POST http://localhost:8083/admin/batch/payment-reconciliation -H "Authorization: Bearer {admin-jwt}"` -> 202 Accepted with job execution ID
 
 ---
 
@@ -1040,7 +1043,7 @@ public class AdminBatchController {
 spring:
   batch:
     jdbc:
-      initialize-schema: always  # Create BATCH_* metadata tables if missing
+      initialize-schema: never   # Batch schema managed by Liquibase -- do NOT use 'always'
     job:
       enabled: false  # Do not auto-run jobs on application startup
 

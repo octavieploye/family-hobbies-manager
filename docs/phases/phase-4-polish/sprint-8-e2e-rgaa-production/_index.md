@@ -1,5 +1,7 @@
 # Phase 4 / Sprint 8: E2E Tests + RGAA + Final Polish
 
+> **Codebase Conventions**: See `docs/phases/CONVENTIONS.md` for authoritative conventions.
+
 > Points: ~39 | Stories: 6 | Sprint 8 of Phase 4
 
 ---

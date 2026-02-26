@@ -1,5 +1,8 @@
 # Phase 4 / Sprint 7: Batch Processing + Monitoring
 
+> **Codebase Conventions**: See `docs/phases/CONVENTIONS.md` for authoritative conventions.
+> Key conventions for this sprint: Spring Batch 5.x (no @EnableBatchProcessing), Instant timestamps, Liquibase-managed batch schema, camelCase MDC keys.
+
 > Points: ~34 | Stories: 7 | Sprint 7 of Phase 4
 
 ---
@@ -125,7 +128,7 @@ association-service/
   src/main/java/com/familyhobbies/associationservice/
   +-- batch/
   |   +-- config/
-  |   |   +-- BatchConfig.java                    (shared: @EnableBatchProcessing, async launcher)
+  |   |   +-- BatchConfig.java                    (shared: async launcher, @EnableScheduling)
   |   |   +-- HelloAssoSyncJobConfig.java         (S7-001)
   |   |   +-- BatchSchedulerConfig.java           (S7-001)
   |   |   +-- SubscriptionExpiryJobConfig.java    (S7-002)
@@ -162,7 +165,7 @@ payment-service/
   src/main/java/com/familyhobbies/paymentservice/
   +-- batch/
   |   +-- config/
-  |   |   +-- BatchConfig.java                        (shared: @EnableBatchProcessing)
+  |   |   +-- BatchConfig.java                        (shared: async launcher, @EnableScheduling)
   |   |   +-- PaymentReconciliationJobConfig.java     (S7-003)
   |   +-- reader/
   |   |   +-- UnreconciledPaymentReader.java          (S7-003)
@@ -183,7 +186,7 @@ user-service/
   src/main/java/com/familyhobbies/userservice/
   +-- batch/
   |   +-- config/
-  |   |   +-- BatchConfig.java                        (shared: @EnableBatchProcessing)
+  |   |   +-- BatchConfig.java                        (shared: async launcher, @EnableScheduling)
   |   |   +-- RgpdCleanupJobConfig.java               (S7-004)
   |   +-- reader/
   |   |   +-- DeletionRequestReader.java              (S7-004)
@@ -224,7 +227,6 @@ Every service that runs batch jobs includes this shared `BatchConfig.java`:
 ```java
 package com.familyhobbies.{servicename}.batch.config;
 
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
@@ -234,8 +236,12 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+/**
+ * Convention: Spring Boot 3.2 / Spring Batch 5.x -- do NOT use @EnableBatchProcessing
+ * as it disables auto-configuration. Let Spring Boot auto-configure JobRepository
+ * and PlatformTransactionManager beans.
+ */
 @Configuration
-@EnableBatchProcessing
 @EnableScheduling
 public class BatchConfig {
 
@@ -270,7 +276,7 @@ public class BatchConfig {
 spring:
   batch:
     jdbc:
-      initialize-schema: always    # Create BATCH_* metadata tables
+      initialize-schema: never     # Batch schema managed by Liquibase -- do NOT use 'always'
     job:
       enabled: false               # Do not auto-run jobs on startup
 ```

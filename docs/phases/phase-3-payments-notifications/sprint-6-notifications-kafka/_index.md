@@ -1,5 +1,7 @@
 # Phase 3 / Sprint 6: Notifications + Kafka Integration
 
+> **Codebase Conventions**: See `docs/phases/CONVENTIONS.md` for authoritative conventions.
+
 > Points: ~34 | Stories: 7 | Sprint 6 of Phase 3
 
 ---
@@ -20,6 +22,22 @@ All Kafka events flowing between services end-to-end. Notification system delive
 - [ ] Spring Mail + Thymeleaf dependencies available in `notification-service` pom.xml
 - [ ] Kafka broker running on `localhost:9092` (Docker Compose)
 - [ ] SMTP server configured (MailHog for development: `localhost:1025`)
+
+### Prerequisites — Event Classes in Common Module
+
+Before starting Sprint 6, ensure the following event classes exist in `backend/common/`:
+
+| Event | Module Created In | Fields |
+|-------|------------------|--------|
+| `UserRegisteredEvent` | Sprint 1 (exists) | `userId`, `email`, `firstName`, `lastName` |
+| `UserDeletedEvent` | Sprint 1 (exists) | `userId`, `deletionType` |
+| `PaymentCompletedEvent` | Sprint 5 (S5-005) | `paymentId`, `userId`, `amount`, `currency`, `helloAssoCheckoutId` |
+| `PaymentFailedEvent` | Sprint 5 (S5-005) | `paymentId`, `userId`, `failureReason`, `helloAssoCheckoutId` |
+| `SubscriptionCreatedEvent` | Sprint 2 or prerequisite | `subscriptionId`, `userId`, `familyId`, `associationId`, `subscriptionType` |
+| `SubscriptionCancelledEvent` | Sprint 2 or prerequisite | `subscriptionId`, `userId`, `cancellationReason` |
+| `AttendanceMarkedEvent` | Sprint 2 or prerequisite | `attendanceId`, `memberId`, `sessionId`, `status` |
+
+All events extend `DomainEvent` and use constructor pattern (NOT builder). Timestamps come from `DomainEvent.getOccurredAt()`.
 
 ## Dependency Map
 

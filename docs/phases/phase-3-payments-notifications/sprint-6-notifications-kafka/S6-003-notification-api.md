@@ -63,6 +63,8 @@ public class NotificationResponse {
     private String category;
     private String title;
     private String message;
+    /** Optional deep-link URL for navigating to the related resource (e.g. "/payments/42"). */
+    private String actionUrl;
     private boolean read;
     private Instant readAt;
     private Instant createdAt;
@@ -331,6 +333,7 @@ public class NotificationMapper {
                 .category(entity.getCategory().name())
                 .title(entity.getTitle())
                 .message(entity.getMessage())
+                .actionUrl(entity.getActionUrl())
                 .read(entity.getRead())
                 .readAt(entity.getReadAt())
                 .createdAt(entity.getCreatedAt())
