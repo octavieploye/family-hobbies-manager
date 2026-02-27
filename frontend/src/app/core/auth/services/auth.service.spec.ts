@@ -1,8 +1,9 @@
 // frontend/src/app/core/auth/services/auth.service.spec.ts
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
@@ -14,6 +15,7 @@ import { AuthResponse } from '../models/auth.models';
  *
  * Story: S1-006 — Implement Angular Auth Scaffolding
  * Updated for: H-015 — TokenStorageService extraction
+ * Updated for: M-023 — Replace deprecated HttpClientTestingModule
  * Tests: 5 test methods
  *
  * These tests verify:
@@ -23,7 +25,7 @@ import { AuthResponse } from '../models/auth.models';
  * 4. isAuthenticated() returns true when token exists
  * 5. logout() clears tokens via TokenStorageService and navigates to /auth/login
  *
- * Uses HttpClientTestingModule to intercept HTTP requests without a real server.
+ * Uses provideHttpClient() + provideHttpClientTesting() (Angular 17+ API).
  */
 describe('AuthService', () => {
   let service: AuthService;
@@ -52,8 +54,9 @@ describe('AuthService', () => {
     } as unknown as jest.Mocked<TokenStorageService>;
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         AuthService,
         { provide: Router, useValue: routerSpy },
         { provide: TokenStorageService, useValue: tokenStorageSpy },
@@ -68,7 +71,7 @@ describe('AuthService', () => {
     httpMock.verify();
   });
 
-  it('login_shouldCallApiAndReturnResponse', () => {
+  it('should call API and return response when login requested', () => {
     service
       .login({ email: 'test@example.com', password: 'password123' })
       .subscribe((response) => {
@@ -84,7 +87,7 @@ describe('AuthService', () => {
     req.flush(mockAuthResponse);
   });
 
-  it('register_shouldCallApiAndReturnResponse', () => {
+  it('should call API and return response when register requested', () => {
     const registerPayload = {
       email: 'new@example.com',
       password: 'password123',
@@ -102,7 +105,7 @@ describe('AuthService', () => {
     req.flush(mockAuthResponse);
   });
 
-  it('getAccessToken_shouldDelegateToTokenStorageService', () => {
+  it('should delegate to TokenStorageService when getAccessToken called', () => {
     tokenStorageSpy.getAccessToken.mockReturnValue(null);
     expect(service.getAccessToken()).toBeNull();
 
@@ -110,7 +113,7 @@ describe('AuthService', () => {
     expect(service.getAccessToken()).toBe('stored-token');
   });
 
-  it('isAuthenticated_shouldDelegateToTokenStorageService', () => {
+  it('should delegate to TokenStorageService when isAuthenticated called', () => {
     tokenStorageSpy.hasAccessToken.mockReturnValue(false);
     expect(service.isAuthenticated()).toBe(false);
 
@@ -118,10 +121,39 @@ describe('AuthService', () => {
     expect(service.isAuthenticated()).toBe(true);
   });
 
-  it('logout_shouldClearTokensAndNavigateToLogin', () => {
+  it('should clear tokens and navigate to login when logout called', () => {
     service.logout();
 
     expect(tokenStorageSpy.clearTokens).toHaveBeenCalled();
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/auth/login']);
+  });
+
+  it('should call refresh endpoint and return response when refreshToken called', () => {
+    // given
+    tokenStorageSpy.getRefreshToken.mockReturnValue('current-refresh-token');
+
+    // when
+    service.refreshToken().subscribe((response) => {
+      // then
+      expect(response).toEqual(mockAuthResponse);
+      // storeTokens should be called via the tap() operator inside refreshToken()
+      expect(tokenStorageSpy.storeTokens).toHaveBeenCalledWith(
+        'test-access-token',
+        'test-refresh-token'
+      );
+    });
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/auth/refresh'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ refreshToken: 'current-refresh-token' });
+    req.flush(mockAuthResponse);
+  });
+
+  it('should delegate to TokenStorageService when storeTokens called', () => {
+    // when
+    service.storeTokens('new-access', 'new-refresh');
+
+    // then
+    expect(tokenStorageSpy.storeTokens).toHaveBeenCalledWith('new-access', 'new-refresh');
   });
 });

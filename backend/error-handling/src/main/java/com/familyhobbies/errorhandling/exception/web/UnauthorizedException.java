@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class UnauthorizedException extends BaseException {
 
     public UnauthorizedException(String message) {
-        super(message, ErrorCode.UNAUTHORIZED, 401);
+        super(message, ErrorCode.UNAUTHORIZED);
     }
 
     public UnauthorizedException(String message, Throwable cause) {
-        super(message, ErrorCode.UNAUTHORIZED, 401, cause);
+        super(message, ErrorCode.UNAUTHORIZED, cause);
     }
 }

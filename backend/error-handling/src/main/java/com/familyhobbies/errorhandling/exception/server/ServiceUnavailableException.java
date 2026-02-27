@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class ServiceUnavailableException extends BaseException {
 
     public ServiceUnavailableException(String message) {
-        super(message, ErrorCode.SERVICE_UNAVAILABLE, 503);
+        super(message, ErrorCode.SERVICE_UNAVAILABLE);
     }
 
     public ServiceUnavailableException(String message, Throwable cause) {
-        super(message, ErrorCode.SERVICE_UNAVAILABLE, 503, cause);
+        super(message, ErrorCode.SERVICE_UNAVAILABLE, cause);
     }
 }

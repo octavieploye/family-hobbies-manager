@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class BadGatewayException extends BaseException {
 
     public BadGatewayException(String message) {
-        super(message, ErrorCode.BAD_GATEWAY, 502);
+        super(message, ErrorCode.BAD_GATEWAY);
     }
 
     public BadGatewayException(String message, Throwable cause) {
-        super(message, ErrorCode.BAD_GATEWAY, 502, cause);
+        super(message, ErrorCode.BAD_GATEWAY, cause);
     }
 }

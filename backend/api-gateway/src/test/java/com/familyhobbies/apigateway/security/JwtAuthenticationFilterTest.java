@@ -1,5 +1,6 @@
 package com.familyhobbies.apigateway.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -32,26 +33,24 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for JwtAuthenticationFilter (API Gateway).
  *
- * Story: S1-004 — Implement Gateway JWT Authentication Filter
- * Tests: 6 test methods (5 from sprint spec + 1 from review finding F-08)
+ * Story: S1-004 -- Implement Gateway JWT Authentication Filter
+ * Tests: 11 test methods (original 6 + C-001/C-002 SecurityContext tests + M-017 method-awareness)
  *
- * These tests verify the six critical behaviors:
+ * These tests verify the critical behaviors:
  * 1. Valid token -> calls validateToken and getRolesFromClaims (renamed per F-01, H-006)
  * 2. Expired token -> 401 with "Token expired"
  * 3. Invalid token -> 401 with "Invalid token"
  * 4. Missing Authorization header on protected path -> 401
  * 5. Public path -> bypass authentication (no token needed)
  * 6. Non-Bearer auth scheme -> 401 (added per F-08)
+ * 7-9. SecurityContext population (C-001/C-002)
+ * 10-11. SecurityContext NOT populated for expired tokens / public paths
+ *
+ * M-017: Updated test 5 to verify method-aware public path matching (POST /api/v1/auth/login).
+ * M-019: ObjectMapper is now injected for JSON serialization (no behavioral change for tests).
  *
  * Uses MockServerWebExchange (Spring WebFlux test utility) and Mockito
  * to mock JwtTokenProvider.
- *
- * Review findings incorporated:
- * - F-01 (BLOCKER): Renamed first test from validToken_shouldForwardRequestWithUserHeaders
- *   to validToken_shouldCallValidateAndExtractRoles because MockServerWebExchange does not
- *   support mutate() returning another MockServerWebExchange, so we can only verify method
- *   calls, not mutated headers. Added TODO for integration test.
- * - F-08 (WARNING): Added nonBearerAuthScheme_shouldReturn401 test for Authorization: Basic.
  */
 @ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
@@ -59,11 +58,13 @@ class JwtAuthenticationFilterTest {
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     private JwtAuthenticationFilter filter;
 
     @BeforeEach
     void setUp() {
-        filter = new JwtAuthenticationFilter(jwtTokenProvider);
+        filter = new JwtAuthenticationFilter(jwtTokenProvider, objectMapper);
     }
 
     /**
@@ -80,7 +81,7 @@ class JwtAuthenticationFilterTest {
      */
     @Test
     @DisplayName("should call validateToken and extractRoles for valid token")
-    void validToken_shouldCallValidateAndExtractRoles() {
+    void should_callValidateAndExtractRoles_when_tokenIsValid() {
         // given
         MockServerHttpRequest request = MockServerHttpRequest
             .get("/api/v1/families/1")
@@ -98,7 +99,7 @@ class JwtAuthenticationFilterTest {
         // when
         filter.filter(exchange, chain).block();
 
-        // then — verify that validateToken and getRolesFromClaims were called (H-006: single parse)
+        // then -- verify that validateToken and getRolesFromClaims were called (H-006: single parse)
         verify(jwtTokenProvider).validateToken("valid-token");
         verify(jwtTokenProvider).getRolesFromClaims(claims);
 
@@ -106,14 +107,14 @@ class JwtAuthenticationFilterTest {
         assertNotEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
     }
 
-    // ── C-001 / C-002 fix: SecurityContext population tests ──────────────────
+    // -- C-001 / C-002 fix: SecurityContext population tests --
 
     /**
      * Test 2: An expired JWT token should return a 401 Unauthorized response.
      */
     @Test
     @DisplayName("should return 401 when token is expired")
-    void expiredToken_shouldReturn401() {
+    void should_return401_when_tokenIsExpired() {
         // given
         MockServerHttpRequest request = MockServerHttpRequest
             .get("/api/v1/families/1")
@@ -143,7 +144,7 @@ class JwtAuthenticationFilterTest {
      */
     @Test
     @DisplayName("should return 401 when token is invalid (bad signature)")
-    void invalidToken_shouldReturn401() {
+    void should_return401_when_tokenIsInvalid() {
         // given
         MockServerHttpRequest request = MockServerHttpRequest
             .get("/api/v1/families/1")
@@ -173,8 +174,8 @@ class JwtAuthenticationFilterTest {
      */
     @Test
     @DisplayName("should return 401 when Authorization header is missing on protected path")
-    void missingAuthHeader_shouldReturn401ForProtectedPath() {
-        // given — no Authorization header
+    void should_return401_when_authorizationHeaderMissingOnProtectedPath() {
+        // given -- no Authorization header
         MockServerHttpRequest request = MockServerHttpRequest
             .get("/api/v1/families/1")
             .build();
@@ -197,11 +198,12 @@ class JwtAuthenticationFilterTest {
 
     /**
      * Test 5: A request to a public path should bypass authentication entirely.
+     * M-017: Now uses method-aware public route matching.
      */
     @Test
     @DisplayName("should bypass authentication for public paths")
-    void publicPath_shouldBypassAuthentication() {
-        // given — public path, no token
+    void should_bypassAuthentication_when_publicPath() {
+        // given -- public path, no token
         MockServerHttpRequest request = MockServerHttpRequest
             .post("/api/v1/auth/login")
             .build();
@@ -217,7 +219,7 @@ class JwtAuthenticationFilterTest {
         // when
         filter.filter(exchange, chain).block();
 
-        // then — chain was invoked (request passed through)
+        // then -- chain was invoked (request passed through)
         assertTrue(chainCalled.get(), "Filter chain should be invoked for public paths");
 
         // JwtTokenProvider should never be called for public paths
@@ -233,8 +235,8 @@ class JwtAuthenticationFilterTest {
      */
     @Test
     @DisplayName("should return 401 when Authorization uses non-Bearer scheme")
-    void nonBearerAuthScheme_shouldReturn401() {
-        // given — Authorization header with Basic scheme instead of Bearer
+    void should_return401_when_authorizationUsesNonBearerScheme() {
+        // given -- Authorization header with Basic scheme instead of Bearer
         MockServerHttpRequest request = MockServerHttpRequest
             .get("/api/v1/families/1")
             .header(HttpHeaders.AUTHORIZATION, "Basic dXNlcjpwYXNz")
@@ -256,7 +258,56 @@ class JwtAuthenticationFilterTest {
         verifyNoInteractions(jwtTokenProvider);
     }
 
-    // ── C-001 / C-002 fix: SecurityContext population tests ──────────────────
+    /**
+     * Test (M-017): GET request to /api/v1/associations/ should be public
+     * but POST to the same path should require auth.
+     */
+    @Test
+    @DisplayName("should bypass authentication for GET on associations (M-017 method-awareness)")
+    void should_bypassAuthentication_when_getAssociations() {
+        // given -- GET to associations is public
+        MockServerHttpRequest request = MockServerHttpRequest
+            .get("/api/v1/associations/1")
+            .build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        AtomicReference<Boolean> chainCalled = new AtomicReference<>(false);
+        WebFilterChain chain = filterExchange -> {
+            chainCalled.set(true);
+            return Mono.empty();
+        };
+
+        // when
+        filter.filter(exchange, chain).block();
+
+        // then
+        assertTrue(chainCalled.get(), "GET on associations should bypass authentication");
+        verifyNoInteractions(jwtTokenProvider);
+    }
+
+    @Test
+    @DisplayName("should require auth for POST on associations (M-017 method-awareness)")
+    void should_requireAuth_when_postAssociations() {
+        // given -- POST to /api/v1/associations/ is NOT public (except /search)
+        MockServerHttpRequest request = MockServerHttpRequest
+            .post("/api/v1/associations/sync")
+            .build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        WebFilterChain chain = filterExchange -> {
+            fail("Filter chain should not be invoked for POST on associations without token");
+            return Mono.empty();
+        };
+
+        // when
+        filter.filter(exchange, chain).block();
+
+        // then
+        assertEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
+        verifyNoInteractions(jwtTokenProvider);
+    }
+
+    // -- C-001 / C-002 fix: SecurityContext population tests --
 
     /**
      * Tests that verify the filter populates ReactiveSecurityContextHolder
@@ -273,7 +324,7 @@ class JwtAuthenticationFilterTest {
          */
         @Test
         @DisplayName("should populate SecurityContext with Authentication for valid token (single role)")
-        void validToken_shouldPopulateSecurityContextWithSingleRole() {
+        void should_populateSecurityContext_when_validTokenWithSingleRole() {
             // given
             MockServerHttpRequest request = MockServerHttpRequest
                 .get("/api/v1/families/1")
@@ -296,7 +347,7 @@ class JwtAuthenticationFilterTest {
             // when
             filter.filter(exchange, chain).block();
 
-            // then — SecurityContext should be populated
+            // then -- SecurityContext should be populated
             assertNotNull(capturedContext.get(), "SecurityContext should be populated");
 
             Authentication auth = capturedContext.get().getAuthentication();
@@ -319,7 +370,7 @@ class JwtAuthenticationFilterTest {
          */
         @Test
         @DisplayName("should populate SecurityContext with multiple ROLE_-prefixed authorities")
-        void validToken_shouldPopulateSecurityContextWithMultipleRoles() {
+        void should_populateSecurityContext_when_validTokenWithMultipleRoles() {
             // given
             MockServerHttpRequest request = MockServerHttpRequest
                 .get("/api/v1/families/1")
@@ -365,7 +416,7 @@ class JwtAuthenticationFilterTest {
          */
         @Test
         @DisplayName("should prefix roles with ROLE_ so hasRole() works in SecurityConfig")
-        void validToken_authoritiesShouldUseRolePrefix() {
+        void should_prefixRolesWithROLE_when_validTokenProvided() {
             // given
             MockServerHttpRequest request = MockServerHttpRequest
                 .get("/api/v1/users/1")
@@ -387,7 +438,7 @@ class JwtAuthenticationFilterTest {
             // when
             filter.filter(exchange, chain).block();
 
-            // then — authority must be "ROLE_ADMIN", not "ADMIN"
+            // then -- authority must be "ROLE_ADMIN", not "ADMIN"
             Authentication auth = capturedContext.get().getAuthentication();
             boolean hasRolePrefixedAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
@@ -405,7 +456,7 @@ class JwtAuthenticationFilterTest {
          */
         @Test
         @DisplayName("should not populate SecurityContext when token is expired")
-        void expiredToken_shouldNotPopulateSecurityContext() {
+        void should_notPopulateSecurityContext_when_tokenIsExpired() {
             // given
             MockServerHttpRequest request = MockServerHttpRequest
                 .get("/api/v1/families/1")
@@ -428,7 +479,7 @@ class JwtAuthenticationFilterTest {
             // when
             filter.filter(exchange, chain).block();
 
-            // then — SecurityContext should not have been captured (chain not called)
+            // then -- SecurityContext should not have been captured (chain not called)
             assertNull(capturedContext.get(),
                 "SecurityContext should not be populated for expired tokens");
             assertEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
@@ -439,7 +490,7 @@ class JwtAuthenticationFilterTest {
          */
         @Test
         @DisplayName("should not populate SecurityContext for public paths")
-        void publicPath_shouldNotPopulateSecurityContext() {
+        void should_notPopulateSecurityContext_when_publicPath() {
             // given
             MockServerHttpRequest request = MockServerHttpRequest
                 .post("/api/v1/auth/login")
@@ -456,7 +507,7 @@ class JwtAuthenticationFilterTest {
             // when
             filter.filter(exchange, chain).block();
 
-            // then — no authentication was set, so context retrieval should yield nothing
+            // then -- no authentication was set, so context retrieval should yield nothing
             assertNull(capturedContext.get(),
                 "SecurityContext should not be populated for public paths (no token processed)");
             verifyNoInteractions(jwtTokenProvider);

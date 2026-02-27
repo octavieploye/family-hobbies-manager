@@ -60,7 +60,7 @@ describe('authGuard', () => {
     });
   });
 
-  it('shouldAllowAuthenticatedUser', () => {
+  it('should allow access when user is authenticated', () => {
     authServiceSpy.isAuthenticated.mockReturnValue(true);
 
     const mockState = { url: '/dashboard' } as RouterStateSnapshot;
@@ -72,7 +72,7 @@ describe('authGuard', () => {
     expect(result).toBe(true);
   });
 
-  it('shouldRedirectUnauthenticatedUser', () => {
+  it('should redirect to login when user is not authenticated', () => {
     authServiceSpy.isAuthenticated.mockReturnValue(false);
 
     const expectedUrlTree = {} as UrlTree;

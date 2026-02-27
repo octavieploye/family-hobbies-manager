@@ -20,7 +20,7 @@ import { AuthState } from '../models/auth.models';
  * a new state. No TestBed or DI needed.
  */
 describe('authReducer', () => {
-  it('shouldReturnInitialState', () => {
+  it('should return initial state when unknown action dispatched', () => {
     const state = authReducer(undefined, { type: 'UNKNOWN' });
 
     expect(state).toEqual(initialState);
@@ -31,7 +31,7 @@ describe('authReducer', () => {
     expect(state.error).toBeNull();
   });
 
-  it('loginSuccess_shouldSetTokenAndAuthenticated', () => {
+  it('should set token and authenticated when loginSuccess dispatched', () => {
     const response = {
       accessToken: 'jwt-token',
       refreshToken: 'refresh-token',
@@ -51,7 +51,7 @@ describe('authReducer', () => {
     expect(state.error).toBeNull();
   });
 
-  it('loginFailure_shouldSetError', () => {
+  it('should set error and clear tokens when loginFailure dispatched', () => {
     // First set loading to true via login action
     const loadingState = authReducer(initialState, AuthActions.login({ email: 'a@b.com', password: 'p' }));
     expect(loadingState.loading).toBe(true);
@@ -68,7 +68,7 @@ describe('authReducer', () => {
     expect(state.error).toBe('Invalid credentials');
   });
 
-  it('logout_shouldClearState', () => {
+  it('should clear all auth state when logout dispatched', () => {
     // Start from an authenticated state
     const authenticatedState: AuthState = {
       accessToken: 'jwt-token',
@@ -87,7 +87,7 @@ describe('authReducer', () => {
     expect(state.error).toBeNull();
   });
 
-  it('initAuth_shouldRestoreFromPayload', () => {
+  it('should restore tokens from payload when initAuth dispatched', () => {
     const state = authReducer(
       initialState,
       AuthActions.initAuth({

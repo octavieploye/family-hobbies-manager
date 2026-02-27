@@ -9,11 +9,11 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class DatabaseConnectionException extends BaseException {
 
     public DatabaseConnectionException(String message) {
-        super(message, ErrorCode.DATABASE_CONNECTION_FAILURE, 503);
+        super(message, ErrorCode.DATABASE_CONNECTION_FAILURE);
     }
 
     public DatabaseConnectionException(String message, Throwable cause) {
-        super(message, ErrorCode.DATABASE_CONNECTION_FAILURE, 503, cause);
+        super(message, ErrorCode.DATABASE_CONNECTION_FAILURE, cause);
     }
 
     /**

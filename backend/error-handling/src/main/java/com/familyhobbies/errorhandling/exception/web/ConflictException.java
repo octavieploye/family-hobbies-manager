@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class ConflictException extends BaseException {
 
     public ConflictException(String message) {
-        super(message, ErrorCode.CONFLICT, 409);
+        super(message, ErrorCode.CONFLICT);
     }
 
     public ConflictException(String message, Throwable cause) {
-        super(message, ErrorCode.CONFLICT, 409, cause);
+        super(message, ErrorCode.CONFLICT, cause);
     }
 }

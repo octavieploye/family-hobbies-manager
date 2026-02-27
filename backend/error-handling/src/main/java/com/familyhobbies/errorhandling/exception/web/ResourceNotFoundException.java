@@ -13,13 +13,19 @@ public class ResourceNotFoundException extends BaseException {
     private final String resourceId;
 
     public ResourceNotFoundException(String message) {
-        super(message, ErrorCode.RESOURCE_NOT_FOUND, 404);
+        super(message, ErrorCode.RESOURCE_NOT_FOUND);
+        this.resourceType = null;
+        this.resourceId = null;
+    }
+
+    public ResourceNotFoundException(String message, Throwable cause) {
+        super(message, ErrorCode.RESOURCE_NOT_FOUND, cause);
         this.resourceType = null;
         this.resourceId = null;
     }
 
     public ResourceNotFoundException(String resourceType, String resourceId, String message) {
-        super(message, ErrorCode.RESOURCE_NOT_FOUND, 404);
+        super(message, ErrorCode.RESOURCE_NOT_FOUND);
         this.resourceType = resourceType;
         this.resourceId = resourceId;
     }

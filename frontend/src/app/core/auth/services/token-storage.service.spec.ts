@@ -28,28 +28,28 @@ describe('TokenStorageService', () => {
     localStorage.clear();
   });
 
-  it('storeTokens_shouldPersistBothTokens', () => {
+  it('should persist both tokens when storeTokens called', () => {
     service.storeTokens('access-abc', 'refresh-xyz');
 
     expect(localStorage.getItem('access_token')).toBe('access-abc');
     expect(localStorage.getItem('refresh_token')).toBe('refresh-xyz');
   });
 
-  it('getAccessToken_shouldReturnStoredTokenOrNull', () => {
+  it('should return stored token or null when getAccessToken called', () => {
     expect(service.getAccessToken()).toBeNull();
 
     localStorage.setItem('access_token', 'my-token');
     expect(service.getAccessToken()).toBe('my-token');
   });
 
-  it('getRefreshToken_shouldReturnStoredTokenOrNull', () => {
+  it('should return stored token or null when getRefreshToken called', () => {
     expect(service.getRefreshToken()).toBeNull();
 
     localStorage.setItem('refresh_token', 'my-refresh');
     expect(service.getRefreshToken()).toBe('my-refresh');
   });
 
-  it('clearTokens_shouldRemoveAllTokens', () => {
+  it('should remove all tokens when clearTokens called', () => {
     localStorage.setItem('access_token', 'token-a');
     localStorage.setItem('refresh_token', 'token-r');
 
@@ -59,7 +59,7 @@ describe('TokenStorageService', () => {
     expect(localStorage.getItem('refresh_token')).toBeNull();
   });
 
-  it('hasAccessToken_shouldReturnCorrectBoolean', () => {
+  it('should return correct boolean when hasAccessToken called', () => {
     expect(service.hasAccessToken()).toBe(false);
 
     localStorage.setItem('access_token', 'some-token');

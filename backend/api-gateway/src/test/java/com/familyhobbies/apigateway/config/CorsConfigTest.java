@@ -57,7 +57,7 @@ class CorsConfigTest {
 
     @Test
     @DisplayName("should return CORS headers on preflight OPTIONS request")
-    void preflightOptions_shouldReturnCorsHeaders() {
+    void should_returnCorsHeaders_when_preflightOptionsRequest() {
         webTestClient.options()
             .uri("/api/v1/auth/login")
             .header(HttpHeaders.ORIGIN, "http://localhost:4200")
@@ -76,7 +76,7 @@ class CorsConfigTest {
 
     @Test
     @DisplayName("should include CORS headers on cross-origin GET request")
-    void crossOriginGet_shouldIncludeCorsHeaders() {
+    void should_includeCorsHeaders_when_crossOriginGetRequest() {
         // The actual status depends on the route handler (405 for GET on a POST-only endpoint),
         // but CORS headers should still be present regardless of the response status.
         webTestClient.get()

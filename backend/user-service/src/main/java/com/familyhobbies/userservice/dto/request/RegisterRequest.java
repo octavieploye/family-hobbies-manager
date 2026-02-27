@@ -29,5 +29,6 @@ public record RegisterRequest(
     String lastName,
 
     @Size(max = 20, message = "Phone must not exceed 20 characters")
+    @Pattern(regexp = "^\\+?[0-9\\s\\-\\.]{7,20}$", message = "Phone number format is invalid")
     String phone
 ) {}

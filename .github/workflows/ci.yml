@@ -19,11 +19,5 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build and test error-handling
-        run: cd backend && mvn clean test -pl error-handling
-
-      - name: Build common
-        run: cd backend && mvn clean compile -pl common
-
-      - name: Build all modules
-        run: cd backend && mvn clean package -DskipTests
+      - name: Build and test all modules
+        run: cd backend && mvn clean verify

@@ -32,6 +32,18 @@ spring:
         # --- payment-service routes added in Sprint 5 ---
         # --- notification-service routes added in Sprint 6 ---
 
+helloasso:
+  base-url: ${HELLOASSO_BASE_URL:https://api.helloasso-sandbox.com}
+
+security:
+  headers:
+    content-type-options: nosniff
+    frame-options: DENY
+    xss-protection: "0"
+    strict-transport-security: "max-age=31536000; includeSubDomains; preload"
+    referrer-policy: strict-origin-when-cross-origin
+    permissions-policy: "camera=(), microphone=(), geolocation=()"
+
 jwt:
   secret: ${JWT_SECRET:default-dev-secret-that-is-at-least-256-bits-long-for-hmac-sha256}
 
@@ -54,6 +66,15 @@ cors:
     - X-Correlation-Id
   allow-credentials: true
   max-age: 3600
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
 
 eureka:
   client:

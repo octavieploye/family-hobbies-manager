@@ -93,7 +93,7 @@ class AuthFlowTest {
 
     @Test
     @DisplayName("should return 200 with tokens when credentials are valid")
-    void login_validCredentials_shouldReturn200WithTokens() {
+    void should_return200WithTokens_when_credentialsAreValid() {
         // given
         LoginRequest request = new LoginRequest("dupont@email.com", "SecureP@ss1");
 
@@ -119,7 +119,7 @@ class AuthFlowTest {
 
     @Test
     @DisplayName("should return 401 when password is wrong")
-    void login_wrongPassword_shouldReturn401() {
+    void should_return401_when_passwordIsWrong() {
         // given
         LoginRequest request = new LoginRequest("dupont@email.com", "WrongPassword1!");
 
@@ -134,7 +134,7 @@ class AuthFlowTest {
 
     @Test
     @DisplayName("should return 401 when email does not exist")
-    void login_unknownEmail_shouldReturn401() {
+    void should_return401_when_emailDoesNotExist() {
         // given
         LoginRequest request = new LoginRequest("unknown@email.com", "SecureP@ss1");
 
@@ -149,7 +149,7 @@ class AuthFlowTest {
 
     @Test
     @DisplayName("should return 401 when user account is inactive")
-    void login_inactiveUser_shouldReturn401() {
+    void should_return401_when_userAccountIsInactive() {
         // given — set the user to INACTIVE
         // NOTE (F-10): We intentionally return 401 (not 403) to avoid leaking account
         // status information. All authentication failures return the same generic error
@@ -172,7 +172,7 @@ class AuthFlowTest {
 
     @Test
     @DisplayName("should return 200 with new tokens when refresh token is valid")
-    void refresh_validToken_shouldReturn200WithNewTokens() {
+    void should_return200WithNewTokens_when_refreshTokenIsValid() {
         // given — login to get a valid refresh token
         LoginRequest loginRequest = new LoginRequest("dupont@email.com", "SecureP@ss1");
         ResponseEntity<AuthResponse> loginResponse = restTemplate.postForEntity(
@@ -204,7 +204,7 @@ class AuthFlowTest {
 
     @Test
     @DisplayName("should return 401 when refresh token has been revoked")
-    void refresh_revokedToken_shouldReturn401() {
+    void should_return401_when_refreshTokenHasBeenRevoked() {
         // given — login to get a refresh token
         LoginRequest loginRequest = new LoginRequest("dupont@email.com", "SecureP@ss1");
         ResponseEntity<AuthResponse> loginResponse = restTemplate.postForEntity(
@@ -232,7 +232,7 @@ class AuthFlowTest {
 
     @Test
     @DisplayName("should return 401 when refresh token has expired")
-    void refresh_expiredToken_shouldReturn401() {
+    void should_return401_when_refreshTokenHasExpired() {
         // given — create a refresh token that is already expired
         RefreshToken expiredToken = RefreshToken.builder()
             .user(existingUser)
@@ -254,7 +254,7 @@ class AuthFlowTest {
 
     @Test
     @DisplayName("should revoke the used refresh token after rotation")
-    void refresh_shouldRotateToken() {
+    void should_revokeUsedRefreshToken_when_tokenIsRotated() {
         // given — login to get a refresh token
         LoginRequest loginRequest = new LoginRequest("dupont@email.com", "SecureP@ss1");
         ResponseEntity<AuthResponse> loginResponse = restTemplate.postForEntity(
@@ -280,7 +280,7 @@ class AuthFlowTest {
 
     @Test
     @DisplayName("should revoke all refresh tokens on logout")
-    void logout_shouldRevokeAllRefreshTokens() {
+    void should_revokeAllRefreshTokens_when_logoutCalled() {
         // given — login twice to create two refresh tokens
         LoginRequest loginRequest = new LoginRequest("dupont@email.com", "SecureP@ss1");
         ResponseEntity<AuthResponse> loginResponse1 = restTemplate.postForEntity(

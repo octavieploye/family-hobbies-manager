@@ -12,13 +12,13 @@ public class ExternalApiException extends BaseException {
     private final int upstreamStatus;
 
     public ExternalApiException(String message, String apiName, int upstreamStatus) {
-        super(message, ErrorCode.EXTERNAL_API_FAILURE, 502);
+        super(message, ErrorCode.EXTERNAL_API_FAILURE);
         this.apiName = apiName;
         this.upstreamStatus = upstreamStatus;
     }
 
     public ExternalApiException(String message, String apiName, int upstreamStatus, Throwable cause) {
-        super(message, ErrorCode.EXTERNAL_API_FAILURE, 502, cause);
+        super(message, ErrorCode.EXTERNAL_API_FAILURE, cause);
         this.apiName = apiName;
         this.upstreamStatus = upstreamStatus;
     }

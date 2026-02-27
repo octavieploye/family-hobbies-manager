@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class InternalServerException extends BaseException {
 
     public InternalServerException(String message) {
-        super(message, ErrorCode.INTERNAL_SERVER_ERROR, 500);
+        super(message, ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
     public InternalServerException(String message, Throwable cause) {
-        super(message, ErrorCode.INTERNAL_SERVER_ERROR, 500, cause);
+        super(message, ErrorCode.INTERNAL_SERVER_ERROR, cause);
     }
 }

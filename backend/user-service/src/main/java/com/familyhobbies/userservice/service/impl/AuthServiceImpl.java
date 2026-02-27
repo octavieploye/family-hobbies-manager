@@ -42,14 +42,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        // Step 1: Check email uniqueness
-        if (userRepository.existsByEmail(request.email())) {
-            throw new ConflictException("Email already registered: " + request.email());
+        // Step 1: Normalize email to lowercase for case-insensitive uniqueness (M-011)
+        String normalizedEmail = request.email().toLowerCase();
+
+        // Step 2: Check email uniqueness
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            // M-012: Generic message — do NOT include the email to prevent user enumeration
+            throw new ConflictException("An account with this email already exists");
         }
 
-        // Step 2: Create user with hashed password
+        // Step 3: Create user with hashed password
         User user = User.builder()
-            .email(request.email())
+            .email(normalizedEmail)
             .passwordHash(passwordEncoder.encode(request.password()))
             .firstName(request.firstName())
             .lastName(request.lastName())
@@ -73,26 +77,29 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        // Step 1: Find user by email
-        User user = userRepository.findByEmail(request.email())
+        // Step 1: Normalize email to lowercase for case-insensitive lookup (M-011)
+        String normalizedEmail = request.email().toLowerCase();
+
+        // Step 2: Find user by email
+        User user = userRepository.findByEmail(normalizedEmail)
             .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
-        // Step 2: Verify password with BCrypt
+        // Step 3: Verify password with BCrypt
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        // Step 3: Check account is active
+        // Step 4: Check account is active
         if (!user.isActive()) {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        // Step 4: Update last login timestamp
+        // Step 5: Update last login timestamp
         user.setLastLoginAt(Instant.now());
         user.setUpdatedAt(Instant.now());
         userRepository.save(user);
 
-        // Step 5: Generate token pair
+        // Step 6: Generate token pair
         String accessToken = jwtTokenProvider.generateAccessToken(user);
         String refreshTokenValue = createAndSaveRefreshToken(user);
 

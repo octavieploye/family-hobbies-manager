@@ -63,7 +63,7 @@ class UserRegistrationTest {
 
     @Test
     @DisplayName("should return 201 with tokens when registration is valid")
-    void register_shouldReturn201WithTokens() {
+    void should_return201WithTokens_when_registrationIsValid() {
         // given
         RegisterRequest request = new RegisterRequest(
             "dupont@email.com", "SecureP@ss1", "Jean", "Dupont", "+33612345678");
@@ -90,7 +90,7 @@ class UserRegistrationTest {
 
     @Test
     @DisplayName("should return 409 when email is already registered")
-    void register_duplicateEmail_shouldReturn409() {
+    void should_return409_when_emailAlreadyRegistered() {
         // given
         RegisterRequest request = new RegisterRequest(
             "dupont@email.com", "SecureP@ss1", "Jean", "Dupont", null);
@@ -109,7 +109,7 @@ class UserRegistrationTest {
 
     @Test
     @DisplayName("should return 400 when email format is invalid")
-    void register_invalidEmail_shouldReturn400() {
+    void should_return400_when_emailFormatIsInvalid() {
         // given
         RegisterRequest request = new RegisterRequest(
             "not-an-email", "SecureP@ss1", "Jean", "Dupont", null);
@@ -125,7 +125,7 @@ class UserRegistrationTest {
 
     @Test
     @DisplayName("should return 400 when password is blank")
-    void register_blankPassword_shouldReturn400() {
+    void should_return400_when_passwordIsBlank() {
         // given
         RegisterRequest request = new RegisterRequest(
             "dupont@email.com", "", "Jean", "Dupont", null);
@@ -141,7 +141,7 @@ class UserRegistrationTest {
 
     @Test
     @DisplayName("should hash password with BCrypt before storing")
-    void register_shouldHashPassword() {
+    void should_hashPasswordWithBCrypt_when_registrationIsValid() {
         // given
         RegisterRequest request = new RegisterRequest(
             "dupont@email.com", "SecureP@ss1", "Jean", "Dupont", null);
@@ -167,7 +167,7 @@ class UserRegistrationTest {
 
     @Test
     @DisplayName("should assign FAMILY role and ACTIVE status to new user")
-    void register_shouldAssignFamilyRole() {
+    void should_assignFamilyRoleAndActiveStatus_when_newUserRegistered() {
         // given
         RegisterRequest request = new RegisterRequest(
             "dupont@email.com", "SecureP@ss1", "Jean", "Dupont", null);
@@ -190,7 +190,7 @@ class UserRegistrationTest {
 
     @Test
     @DisplayName("should save refresh token in database")
-    void register_shouldSaveRefreshTokenInDb() {
+    void should_saveRefreshTokenInDb_when_registrationSucceeds() {
         // given
         RegisterRequest request = new RegisterRequest(
             "dupont@email.com", "SecureP@ss1", "Jean", "Dupont", null);
@@ -221,7 +221,7 @@ class UserRegistrationTest {
 
     @Test
     @DisplayName("should return 400 when password is too short (< 8 chars)")
-    void register_shortPassword_shouldReturn400() {
+    void should_return400_when_passwordIsTooShort() {
         // given — password "Sh@1" is only 4 characters (min 8 required)
         RegisterRequest request = new RegisterRequest(
             "dupont@email.com", "Sh@1", "Jean", "Dupont", null);
@@ -237,7 +237,7 @@ class UserRegistrationTest {
 
     @Test
     @DisplayName("should return 400 when password has no uppercase letter")
-    void register_noUppercase_shouldReturn400() {
+    void should_return400_when_passwordHasNoUppercase() {
         // given — password "secure@1pass" has no uppercase letter
         RegisterRequest request = new RegisterRequest(
             "dupont@email.com", "secure@1pass", "Jean", "Dupont", null);
@@ -253,7 +253,7 @@ class UserRegistrationTest {
 
     @Test
     @DisplayName("should return 400 when password has no special character")
-    void register_noSpecialChar_shouldReturn400() {
+    void should_return400_when_passwordHasNoSpecialCharacter() {
         // given — password "SecurePass1" has no special character
         RegisterRequest request = new RegisterRequest(
             "dupont@email.com", "SecurePass1", "Jean", "Dupont", null);

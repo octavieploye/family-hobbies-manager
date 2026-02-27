@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class TooManyRequestsException extends BaseException {
 
     public TooManyRequestsException(String message) {
-        super(message, ErrorCode.TOO_MANY_REQUESTS, 429);
+        super(message, ErrorCode.TOO_MANY_REQUESTS);
     }
 
     public TooManyRequestsException(String message, Throwable cause) {
-        super(message, ErrorCode.TOO_MANY_REQUESTS, 429, cause);
+        super(message, ErrorCode.TOO_MANY_REQUESTS, cause);
     }
 }

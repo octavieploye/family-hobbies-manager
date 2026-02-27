@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class BadRequestException extends BaseException {
 
     public BadRequestException(String message) {
-        super(message, ErrorCode.VALIDATION_FAILED, 400);
+        super(message, ErrorCode.VALIDATION_FAILED);
     }
 
     public BadRequestException(String message, Throwable cause) {
-        super(message, ErrorCode.VALIDATION_FAILED, 400, cause);
+        super(message, ErrorCode.VALIDATION_FAILED, cause);
     }
 }

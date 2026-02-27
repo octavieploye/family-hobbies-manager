@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class ForbiddenException extends BaseException {
 
     public ForbiddenException(String message) {
-        super(message, ErrorCode.FORBIDDEN, 403);
+        super(message, ErrorCode.FORBIDDEN);
     }
 
     public ForbiddenException(String message, Throwable cause) {
-        super(message, ErrorCode.FORBIDDEN, 403, cause);
+        super(message, ErrorCode.FORBIDDEN, cause);
     }
 }

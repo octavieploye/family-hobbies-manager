@@ -1,5 +1,6 @@
 package com.familyhobbies.common.security;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -52,7 +53,7 @@ public final class UserContext {
     }
 
     public List<String> getRoles() {
-        return roles;
+        return Collections.unmodifiableList(roles);
     }
 
     public boolean hasRole(String role) {

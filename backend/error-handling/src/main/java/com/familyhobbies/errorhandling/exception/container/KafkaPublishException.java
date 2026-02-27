@@ -11,12 +11,12 @@ public class KafkaPublishException extends BaseException {
     private final String topic;
 
     public KafkaPublishException(String message, String topic) {
-        super(message, ErrorCode.KAFKA_PUBLISH_FAILURE, 503);
+        super(message, ErrorCode.KAFKA_PUBLISH_FAILURE);
         this.topic = topic;
     }
 
     public KafkaPublishException(String message, String topic, Throwable cause) {
-        super(message, ErrorCode.KAFKA_PUBLISH_FAILURE, 503, cause);
+        super(message, ErrorCode.KAFKA_PUBLISH_FAILURE, cause);
         this.topic = topic;
     }
 

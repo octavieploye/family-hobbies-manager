@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 public class UserDeletedEvent extends DomainEvent {
 
     private Long userId;
-    private String deletionType;
+    private DeletionType deletionType;
 
-    public UserDeletedEvent(Long userId, String deletionType) {
+    public UserDeletedEvent(Long userId, DeletionType deletionType) {
         super("USER_DELETED");
         this.userId = userId;
         this.deletionType = deletionType;

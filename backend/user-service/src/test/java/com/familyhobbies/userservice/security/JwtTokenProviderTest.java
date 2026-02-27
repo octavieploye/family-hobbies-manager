@@ -67,7 +67,7 @@ class JwtTokenProviderTest {
 
     @Test
     @DisplayName("should generate a valid access token with 3 JWT parts")
-    void shouldGenerateValidAccessToken() {
+    void should_generateValidAccessToken_when_userProvided() {
         // given
         // testUser is set up in @BeforeEach
 
@@ -85,7 +85,7 @@ class JwtTokenProviderTest {
 
     @Test
     @DisplayName("should include correct claims in access token (sub, email, roles, firstName, lastName, iat, exp)")
-    void accessTokenShouldContainCorrectClaims() {
+    void should_containCorrectClaims_when_accessTokenGenerated() {
         // given
         // testUser is set up in @BeforeEach
 
@@ -115,7 +115,7 @@ class JwtTokenProviderTest {
 
     @Test
     @DisplayName("should validate a valid token and return claims")
-    void shouldValidateValidToken() {
+    void should_returnClaims_when_tokenIsValid() {
         // given
         String token = jwtTokenProvider.generateAccessToken(testUser);
 
@@ -129,7 +129,7 @@ class JwtTokenProviderTest {
 
     @Test
     @DisplayName("should reject an expired token with ExpiredJwtException")
-    void shouldRejectExpiredToken() {
+    void should_throwExpiredJwtException_when_tokenIsExpired() {
         // given — create a token that expired 1 hour ago
         SecretKey key = Keys.hmacShaKeyFor(TEST_SECRET.getBytes(StandardCharsets.UTF_8));
         Date pastDate = new Date(System.currentTimeMillis() - 7_200_000); // 2 hours ago
@@ -150,7 +150,7 @@ class JwtTokenProviderTest {
 
     @Test
     @DisplayName("should reject a tampered token with JwtException")
-    void shouldRejectTamperedToken() {
+    void should_throwJwtException_when_tokenIsTampered() {
         // given
         String token = jwtTokenProvider.generateAccessToken(testUser);
 
@@ -167,7 +167,7 @@ class JwtTokenProviderTest {
 
     @Test
     @DisplayName("should extract user ID from a valid token")
-    void shouldExtractUserIdFromToken() {
+    void should_extractUserId_when_tokenIsValid() {
         // given
         String token = jwtTokenProvider.generateAccessToken(testUser);
 
@@ -180,7 +180,7 @@ class JwtTokenProviderTest {
 
     @Test
     @DisplayName("should extract roles from a valid token")
-    void shouldExtractRolesFromToken() {
+    void should_extractRoles_when_tokenIsValid() {
         // given
         String token = jwtTokenProvider.generateAccessToken(testUser);
 
@@ -195,7 +195,7 @@ class JwtTokenProviderTest {
 
     @Test
     @DisplayName("should generate unique refresh tokens in UUID format")
-    void shouldGenerateUniqueRefreshTokens() {
+    void should_generateUniqueUUIDs_when_refreshTokensGenerated() {
         // when
         String token1 = jwtTokenProvider.generateRefreshToken();
         String token2 = jwtTokenProvider.generateRefreshToken();

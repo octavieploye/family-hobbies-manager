@@ -49,6 +49,7 @@ function mapToFrenchMessage(status: number, fallback: string): string {
     401: 'Votre session a expiré. Veuillez vous reconnecter.',
     403: 'Vous n\'avez pas les droits nécessaires pour cette action.',
     404: 'La ressource demandée est introuvable.',
+    408: 'La requête a expiré. Veuillez réessayer.',
     409: 'Un conflit a été détecté. Les données ont peut-être été modifiées.',
     422: 'L\'opération ne peut pas être effectuée en raison d\'une règle métier.',
     429: 'Trop de requêtes. Veuillez patienter avant de réessayer.',
@@ -66,6 +67,7 @@ function mapStatusToErrorCode(status: number): ErrorCode {
     401: ErrorCode.UNAUTHORIZED,
     403: ErrorCode.FORBIDDEN,
     404: ErrorCode.RESOURCE_NOT_FOUND,
+    408: ErrorCode.GATEWAY_TIMEOUT,
     409: ErrorCode.CONFLICT,
     422: ErrorCode.UNPROCESSABLE_ENTITY,
     429: ErrorCode.TOO_MANY_REQUESTS,
@@ -78,5 +80,8 @@ function mapStatusToErrorCode(status: number): ErrorCode {
 }
 
 function isRetryableError(status: number): boolean {
-  return [0, 408, 429, 500, 502, 503, 504].includes(status);
+  // Only idempotent-safe retryable statuses:
+  // 0 = network error, 408 = request timeout, 429 = rate limit, 503 = service unavailable
+  // 500/502/504 are NOT retryable: server errors may have side-effects (double-charge, double-submit)
+  return [0, 408, 429, 503].includes(status);
 }

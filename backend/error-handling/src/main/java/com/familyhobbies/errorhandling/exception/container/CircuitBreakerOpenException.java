@@ -11,12 +11,12 @@ public class CircuitBreakerOpenException extends BaseException {
     private final String serviceName;
 
     public CircuitBreakerOpenException(String message, String serviceName) {
-        super(message, ErrorCode.CIRCUIT_BREAKER_OPEN, 503);
+        super(message, ErrorCode.CIRCUIT_BREAKER_OPEN);
         this.serviceName = serviceName;
     }
 
     public CircuitBreakerOpenException(String message, String serviceName, Throwable cause) {
-        super(message, ErrorCode.CIRCUIT_BREAKER_OPEN, 503, cause);
+        super(message, ErrorCode.CIRCUIT_BREAKER_OPEN, cause);
         this.serviceName = serviceName;
     }
 

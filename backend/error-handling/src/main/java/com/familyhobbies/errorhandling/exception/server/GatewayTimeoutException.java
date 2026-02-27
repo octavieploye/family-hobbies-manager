@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class GatewayTimeoutException extends BaseException {
 
     public GatewayTimeoutException(String message) {
-        super(message, ErrorCode.GATEWAY_TIMEOUT, 504);
+        super(message, ErrorCode.GATEWAY_TIMEOUT);
     }
 
     public GatewayTimeoutException(String message, Throwable cause) {
-        super(message, ErrorCode.GATEWAY_TIMEOUT, 504, cause);
+        super(message, ErrorCode.GATEWAY_TIMEOUT, cause);
     }
 }

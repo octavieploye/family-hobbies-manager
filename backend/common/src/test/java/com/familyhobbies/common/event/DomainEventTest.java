@@ -86,12 +86,12 @@ class DomainEventTest {
     @DisplayName("UserDeletedEvent should have correct eventType and field values")
     void userDeletedEvent_shouldHaveCorrectEventType() {
         // when
-        UserDeletedEvent event = new UserDeletedEvent(42L, "SOFT");
+        UserDeletedEvent event = new UserDeletedEvent(42L, DeletionType.SOFT);
 
         // then
         assertEquals("USER_DELETED", event.getEventType());
         assertEquals(42L, event.getUserId());
-        assertEquals("SOFT", event.getDeletionType());
+        assertEquals(DeletionType.SOFT, event.getDeletionType());
     }
 
     @Test

@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class ServiceDiscoveryException extends BaseException {
 
     public ServiceDiscoveryException(String message) {
-        super(message, ErrorCode.SERVICE_DISCOVERY_FAILURE, 503);
+        super(message, ErrorCode.SERVICE_DISCOVERY_FAILURE);
     }
 
     public ServiceDiscoveryException(String message, Throwable cause) {
-        super(message, ErrorCode.SERVICE_DISCOVERY_FAILURE, 503, cause);
+        super(message, ErrorCode.SERVICE_DISCOVERY_FAILURE, cause);
     }
 }

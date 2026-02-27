@@ -65,8 +65,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         router.navigate(['/forbidden']);
       }
 
-      // Show toast notification for user-facing errors (skip 401 since it triggers refresh above)
-      if (parsed.status !== 401) {
+      // Show toast notification for user-facing errors
+      // Skip 401 (triggers refresh above) and 403 (forbidden page explains the situation)
+      if (parsed.status !== 401 && parsed.status !== 403) {
         snackBar.open(parsed.message, 'Fermer', {
           duration: 5000,
           panelClass: parsed.status >= 500 ? 'snackbar-error' : 'snackbar-warning',

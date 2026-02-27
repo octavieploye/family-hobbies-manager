@@ -63,7 +63,7 @@ describe('Auth Effects', () => {
   });
 
   describe('login$', () => {
-    it('shouldDispatchLoginSuccessOnSuccessfulLogin', (done) => {
+    it('should dispatch loginSuccess when login succeeds', (done) => {
       authServiceSpy.login.mockReturnValue(of(mockAuthResponse));
 
       actions$ = of(AuthActions.login({ email: 'test@example.com', password: 'password123' }));
@@ -81,7 +81,7 @@ describe('Auth Effects', () => {
       });
     });
 
-    it('shouldDispatchLoginFailureOnError', (done) => {
+    it('should dispatch loginFailure when login fails', (done) => {
       const errorResponse = { error: { message: 'Invalid credentials' } };
       authServiceSpy.login.mockReturnValue(throwError(() => errorResponse));
 
@@ -98,7 +98,7 @@ describe('Auth Effects', () => {
   });
 
   describe('loginSuccess$', () => {
-    it('shouldStoreTokensAndNavigateToDashboard', (done) => {
+    it('should store tokens and navigate to dashboard when loginSuccess dispatched', (done) => {
       actions$ = of(AuthActions.loginSuccess({ response: mockAuthResponse }));
 
       TestBed.runInInjectionContext(() => {
@@ -116,7 +116,7 @@ describe('Auth Effects', () => {
   });
 
   describe('register$', () => {
-    it('shouldDispatchRegisterSuccessOnSuccessfulRegistration', (done) => {
+    it('should dispatch registerSuccess when registration succeeds', (done) => {
       authServiceSpy.register.mockReturnValue(of(mockAuthResponse));
 
       actions$ = of(
@@ -144,7 +144,7 @@ describe('Auth Effects', () => {
       });
     });
 
-    it('shouldDispatchRegisterFailureOnError', (done) => {
+    it('should dispatch registerFailure when registration fails', (done) => {
       const errorResponse = { error: { message: 'Email already exists' } };
       authServiceSpy.register.mockReturnValue(throwError(() => errorResponse));
 
@@ -168,7 +168,7 @@ describe('Auth Effects', () => {
   });
 
   describe('registerSuccess$', () => {
-    it('shouldStoreTokensAndNavigateToDashboard', (done) => {
+    it('should store tokens and navigate to dashboard when registerSuccess dispatched', (done) => {
       actions$ = of(AuthActions.registerSuccess({ response: mockAuthResponse }));
 
       TestBed.runInInjectionContext(() => {
@@ -186,7 +186,7 @@ describe('Auth Effects', () => {
   });
 
   describe('refresh$', () => {
-    it('shouldDispatchRefreshSuccessOnSuccessfulRefresh', (done) => {
+    it('should dispatch refreshSuccess when refresh succeeds', (done) => {
       authServiceSpy.refreshToken.mockReturnValue(of(mockAuthResponse));
 
       actions$ = of(AuthActions.refresh());
@@ -203,7 +203,7 @@ describe('Auth Effects', () => {
   });
 
   describe('logout$', () => {
-    it('shouldCallAuthServiceLogout', (done) => {
+    it('should call authService.logout when logout dispatched', (done) => {
       actions$ = of(AuthActions.logout());
 
       TestBed.runInInjectionContext(() => {

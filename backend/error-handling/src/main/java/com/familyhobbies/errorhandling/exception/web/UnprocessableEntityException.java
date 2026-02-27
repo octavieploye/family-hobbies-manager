@@ -9,10 +9,10 @@ import com.familyhobbies.errorhandling.exception.BaseException;
 public class UnprocessableEntityException extends BaseException {
 
     public UnprocessableEntityException(String message) {
-        super(message, ErrorCode.UNPROCESSABLE_ENTITY, 422);
+        super(message, ErrorCode.UNPROCESSABLE_ENTITY);
     }
 
     public UnprocessableEntityException(String message, Throwable cause) {
-        super(message, ErrorCode.UNPROCESSABLE_ENTITY, 422, cause);
+        super(message, ErrorCode.UNPROCESSABLE_ENTITY, cause);
     }
 }

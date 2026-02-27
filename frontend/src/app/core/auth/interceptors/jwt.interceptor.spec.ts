@@ -61,7 +61,7 @@ describe('jwtInterceptor', () => {
     httpMock.verify();
   });
 
-  it('shouldAttachBearerTokenToRequest', () => {
+  it('should attach Bearer token when access token is stored', () => {
     authServiceSpy.getAccessToken.mockReturnValue('my-jwt-token');
 
     httpClient.get('/api/v1/families').subscribe();
@@ -73,7 +73,7 @@ describe('jwtInterceptor', () => {
     req.flush({});
   });
 
-  it('shouldSkipAuthForPublicPaths', () => {
+  it('should skip auth header when request targets public path', () => {
     authServiceSpy.getAccessToken.mockReturnValue('my-jwt-token');
 
     httpClient.post('/api/v1/auth/login', {}).subscribe();
@@ -83,7 +83,7 @@ describe('jwtInterceptor', () => {
     req.flush({});
   });
 
-  it('shouldNotAttachHeaderWhenNoTokenStored', () => {
+  it('should not attach header when no token is stored', () => {
     authServiceSpy.getAccessToken.mockReturnValue(null);
 
     httpClient.get('/api/v1/families').subscribe();
@@ -93,7 +93,7 @@ describe('jwtInterceptor', () => {
     req.flush({});
   });
 
-  it('shouldPassThrough401WithoutIntercepting', () => {
+  it('should pass through 401 without intercepting when response is unauthorized', () => {
     authServiceSpy.getAccessToken.mockReturnValue('expired-token');
 
     httpClient.get('/api/v1/families').subscribe({
