@@ -1,8 +1,17 @@
 package com.familyhobbies.errorhandling.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Arrays;
+
 /**
  * Centralized error codes for the Family Hobbies Manager platform.
  * Each code maps to an HTTP status and a human-readable description.
+ *
+ * <p>Jackson serializes/deserializes this enum using the {@code code} field
+ * (e.g. {@code "ERR_VALIDATION"}) rather than the Java constant name
+ * (e.g. {@code "VALIDATION_FAILED"}), ensuring frontend/backend alignment.</p>
  */
 public enum ErrorCode {
 
@@ -38,6 +47,7 @@ public enum ErrorCode {
         this.description = description;
     }
 
+    @JsonValue
     public String getCode() {
         return code;
     }
@@ -48,5 +58,22 @@ public enum ErrorCode {
 
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Deserializes a JSON string (e.g. {@code "ERR_VALIDATION"}) back to the
+     * corresponding {@link ErrorCode} enum constant.
+     *
+     * @param code the code string from JSON
+     * @return the matching ErrorCode
+     * @throws IllegalArgumentException if no constant matches the given code
+     */
+    @JsonCreator
+    public static ErrorCode fromCode(String code) {
+        return Arrays.stream(values())
+                .filter(e -> e.code.equals(code))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown ErrorCode: " + code));
     }
 }

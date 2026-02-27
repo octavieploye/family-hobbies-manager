@@ -11,6 +11,7 @@ export interface ApiError {
   error: string;
   message: string;
   path: string;
+  correlationId?: string;
   errorCode: ErrorCode;
   details?: FieldError[];
 }

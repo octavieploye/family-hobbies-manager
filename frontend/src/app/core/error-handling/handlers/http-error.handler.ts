@@ -5,6 +5,7 @@ export interface ParsedError {
   status: number;
   errorCode: ErrorCode;
   message: string;
+  correlationId?: string;
   details?: { field: string; message: string }[];
   isRetryable: boolean;
 }
@@ -17,6 +18,7 @@ export function parseHttpError(error: HttpErrorResponse): ParsedError {
       status: apiError.status,
       errorCode: apiError.errorCode as ErrorCode,
       message: mapToFrenchMessage(apiError.status, apiError.message),
+      correlationId: apiError.correlationId,
       details: apiError.details,
       isRetryable: isRetryableError(apiError.status),
     };

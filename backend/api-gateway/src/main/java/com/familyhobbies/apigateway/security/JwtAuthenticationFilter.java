@@ -4,6 +4,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -63,9 +67,18 @@ public class JwtAuthenticationFilter implements WebFilter {
             // Step 4: Validate token and extract claims
             var claims = jwtTokenProvider.validateToken(token);
             String userId = claims.getSubject();
-            String roles = String.join(",", jwtTokenProvider.getRolesFromToken(token));
+            List<String> rolesList = jwtTokenProvider.getRolesFromToken(token);
+            String roles = String.join(",", rolesList);
 
-            // Step 5: Mutate request to add trusted headers for downstream services
+            // Step 5: Create Spring Security Authentication with ROLE_-prefixed authorities
+            List<SimpleGrantedAuthority> authorities = rolesList.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .toList();
+
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userId, null, authorities);
+
+            // Step 6: Mutate request to add trusted headers for downstream services
             ServerHttpRequest mutatedRequest = request.mutate()
                 .header(HEADER_USER_ID, userId)
                 .header(HEADER_USER_ROLES, roles)
@@ -75,7 +88,9 @@ public class JwtAuthenticationFilter implements WebFilter {
                 .request(mutatedRequest)
                 .build();
 
-            return chain.filter(mutatedExchange);
+            // Step 7: Continue filter chain with authentication in reactive SecurityContext
+            return chain.filter(mutatedExchange)
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
 
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             return unauthorizedResponse(exchange, "Token expired");

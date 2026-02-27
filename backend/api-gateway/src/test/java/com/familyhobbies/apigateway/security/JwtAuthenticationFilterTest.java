@@ -6,6 +6,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -14,6 +15,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
@@ -100,6 +105,8 @@ class JwtAuthenticationFilterTest {
         // The filter should NOT have set a 401 status
         assertNotEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
     }
+
+    // ── C-001 / C-002 fix: SecurityContext population tests ──────────────────
 
     /**
      * Test 2: An expired JWT token should return a 401 Unauthorized response.
@@ -247,5 +254,212 @@ class JwtAuthenticationFilterTest {
 
         // JwtTokenProvider should never be called for non-Bearer tokens
         verifyNoInteractions(jwtTokenProvider);
+    }
+
+    // ── C-001 / C-002 fix: SecurityContext population tests ──────────────────
+
+    /**
+     * Tests that verify the filter populates ReactiveSecurityContextHolder
+     * so that Spring Security RBAC rules in SecurityConfig are enforced.
+     * These tests address critical issues C-001 and C-002.
+     */
+    @Nested
+    @DisplayName("SecurityContext population (C-001/C-002 fix)")
+    class SecurityContextPopulationTests {
+
+        /**
+         * Test 7 (C-001): Valid token with single role should populate SecurityContext
+         * with an Authentication containing the correct principal and ROLE_-prefixed authority.
+         */
+        @Test
+        @DisplayName("should populate SecurityContext with Authentication for valid token (single role)")
+        void validToken_shouldPopulateSecurityContextWithSingleRole() {
+            // given
+            MockServerHttpRequest request = MockServerHttpRequest
+                .get("/api/v1/families/1")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer valid-token")
+                .build();
+            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+            Claims claims = Jwts.claims().subject("42").build();
+            when(jwtTokenProvider.validateToken("valid-token")).thenReturn(claims);
+            when(jwtTokenProvider.getRolesFromToken("valid-token")).thenReturn(List.of("FAMILY"));
+
+            // Capture the SecurityContext from within the reactive chain
+            AtomicReference<SecurityContext> capturedContext = new AtomicReference<>();
+
+            WebFilterChain chain = filterExchange ->
+                ReactiveSecurityContextHolder.getContext()
+                    .doOnNext(capturedContext::set)
+                    .then();
+
+            // when
+            filter.filter(exchange, chain).block();
+
+            // then — SecurityContext should be populated
+            assertNotNull(capturedContext.get(), "SecurityContext should be populated");
+
+            Authentication auth = capturedContext.get().getAuthentication();
+            assertNotNull(auth, "Authentication should not be null");
+            assertTrue(auth.isAuthenticated(), "Authentication should be marked as authenticated");
+            assertEquals("42", auth.getPrincipal(), "Principal should be the user ID from JWT subject");
+            assertNull(auth.getCredentials(), "Credentials should be null (token already validated)");
+
+            // Verify ROLE_FAMILY authority is present
+            assertTrue(
+                auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_FAMILY")),
+                "Should contain ROLE_FAMILY authority"
+            );
+            assertEquals(1, auth.getAuthorities().size(), "Should have exactly 1 authority");
+        }
+
+        /**
+         * Test 8 (C-001): Valid token with multiple roles should populate SecurityContext
+         * with all ROLE_-prefixed authorities.
+         */
+        @Test
+        @DisplayName("should populate SecurityContext with multiple ROLE_-prefixed authorities")
+        void validToken_shouldPopulateSecurityContextWithMultipleRoles() {
+            // given
+            MockServerHttpRequest request = MockServerHttpRequest
+                .get("/api/v1/families/1")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer multi-role-token")
+                .build();
+            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+            Claims claims = Jwts.claims().subject("99").build();
+            when(jwtTokenProvider.validateToken("multi-role-token")).thenReturn(claims);
+            when(jwtTokenProvider.getRolesFromToken("multi-role-token"))
+                .thenReturn(List.of("FAMILY", "ASSOCIATION", "ADMIN"));
+
+            AtomicReference<SecurityContext> capturedContext = new AtomicReference<>();
+
+            WebFilterChain chain = filterExchange ->
+                ReactiveSecurityContextHolder.getContext()
+                    .doOnNext(capturedContext::set)
+                    .then();
+
+            // when
+            filter.filter(exchange, chain).block();
+
+            // then
+            assertNotNull(capturedContext.get(), "SecurityContext should be populated");
+            Authentication auth = capturedContext.get().getAuthentication();
+            assertNotNull(auth, "Authentication should not be null");
+            assertEquals("99", auth.getPrincipal(), "Principal should be user ID 99");
+
+            // Verify all three ROLE_-prefixed authorities
+            assertEquals(3, auth.getAuthorities().size(), "Should have 3 authorities");
+            assertTrue(auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_FAMILY")),
+                "Should contain ROLE_FAMILY");
+            assertTrue(auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ASSOCIATION")),
+                "Should contain ROLE_ASSOCIATION");
+            assertTrue(auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")),
+                "Should contain ROLE_ADMIN");
+        }
+
+        /**
+         * Test 9 (C-002): Verifies that hasRole("ADMIN") in SecurityConfig can match
+         * because the filter sets ROLE_ADMIN authority (not just "ADMIN").
+         * Spring Security's hasRole("ADMIN") checks for "ROLE_ADMIN" internally.
+         */
+        @Test
+        @DisplayName("should prefix roles with ROLE_ so hasRole() works in SecurityConfig")
+        void validToken_authoritiesShouldUseRolePrefix() {
+            // given
+            MockServerHttpRequest request = MockServerHttpRequest
+                .get("/api/v1/users/1")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer admin-token")
+                .build();
+            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+            Claims claims = Jwts.claims().subject("1").build();
+            when(jwtTokenProvider.validateToken("admin-token")).thenReturn(claims);
+            when(jwtTokenProvider.getRolesFromToken("admin-token")).thenReturn(List.of("ADMIN"));
+
+            AtomicReference<SecurityContext> capturedContext = new AtomicReference<>();
+
+            WebFilterChain chain = filterExchange ->
+                ReactiveSecurityContextHolder.getContext()
+                    .doOnNext(capturedContext::set)
+                    .then();
+
+            // when
+            filter.filter(exchange, chain).block();
+
+            // then — authority must be "ROLE_ADMIN", not "ADMIN"
+            Authentication auth = capturedContext.get().getAuthentication();
+            boolean hasRolePrefixedAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            assertTrue(hasRolePrefixedAdmin,
+                "Authority must be ROLE_ADMIN (with prefix) for hasRole('ADMIN') to work");
+
+            boolean hasUnprefixedAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ADMIN"));
+            assertFalse(hasUnprefixedAdmin,
+                "Authority must NOT be bare 'ADMIN' without ROLE_ prefix");
+        }
+
+        /**
+         * Test 10: Expired token should NOT populate SecurityContext.
+         */
+        @Test
+        @DisplayName("should not populate SecurityContext when token is expired")
+        void expiredToken_shouldNotPopulateSecurityContext() {
+            // given
+            MockServerHttpRequest request = MockServerHttpRequest
+                .get("/api/v1/families/1")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer expired-token")
+                .build();
+            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+            when(jwtTokenProvider.validateToken("expired-token"))
+                .thenThrow(new ExpiredJwtException(null, null, "Token has expired"));
+
+            AtomicReference<SecurityContext> capturedContext = new AtomicReference<>();
+
+            // Chain should NOT be called for expired tokens, but if it were,
+            // SecurityContext should be empty
+            WebFilterChain chain = filterExchange ->
+                ReactiveSecurityContextHolder.getContext()
+                    .doOnNext(capturedContext::set)
+                    .then();
+
+            // when
+            filter.filter(exchange, chain).block();
+
+            // then — SecurityContext should not have been captured (chain not called)
+            assertNull(capturedContext.get(),
+                "SecurityContext should not be populated for expired tokens");
+            assertEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
+        }
+
+        /**
+         * Test 11: Public paths should not populate SecurityContext.
+         */
+        @Test
+        @DisplayName("should not populate SecurityContext for public paths")
+        void publicPath_shouldNotPopulateSecurityContext() {
+            // given
+            MockServerHttpRequest request = MockServerHttpRequest
+                .post("/api/v1/auth/login")
+                .build();
+            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+            AtomicReference<SecurityContext> capturedContext = new AtomicReference<>();
+
+            WebFilterChain chain = filterExchange ->
+                ReactiveSecurityContextHolder.getContext()
+                    .doOnNext(capturedContext::set)
+                    .then(Mono.empty());
+
+            // when
+            filter.filter(exchange, chain).block();
+
+            // then — no authentication was set, so context retrieval should yield nothing
+            assertNull(capturedContext.get(),
+                "SecurityContext should not be populated for public paths (no token processed)");
+            verifyNoInteractions(jwtTokenProvider);
+        }
     }
 }
