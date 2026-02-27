@@ -152,6 +152,16 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("should return 503 when ServiceDiscoveryException thrown")
+    void should_return503_when_serviceDiscoveryExceptionThrown() {
+        ServiceDiscoveryException ex = new ServiceDiscoveryException("user-service not found in Eureka");
+        ResponseEntity<ErrorResponse> response = handler.handleServiceDiscovery(ex, request);
+        assertThat(response.getStatusCode().value()).isEqualTo(503);
+        assertThat(response.getBody().getErrorCode()).isEqualTo(ErrorCode.SERVICE_DISCOVERY_FAILURE);
+        assertThat(response.getBody().getMessage()).contains("user-service");
+    }
+
+    @Test
     @DisplayName("should return 502 when ExternalApiException thrown")
     void should_return502_when_externalApiExceptionThrown() {
         ExternalApiException ex = ExternalApiException.forApi("HelloAsso", 500, "Server Error");
@@ -181,5 +191,40 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = handler.handleBadRequest(ex, request);
         assertThat(response.getBody().getTimestamp()).isNotNull();
         assertThat(response.getBody().getPath()).isEqualTo("/api/v1/test");
+    }
+
+    // --- Correlation ID propagation ---
+
+    @Test
+    @DisplayName("should include correlationId when X-Correlation-Id header is present")
+    void should_includeCorrelationId_when_headerPresent() {
+        when(request.getHeader("X-Correlation-Id")).thenReturn("trace-abc-123");
+
+        BadRequestException ex = new BadRequestException("Invalid input");
+        ResponseEntity<ErrorResponse> response = handler.handleBadRequest(ex, request);
+
+        assertThat(response.getBody().getCorrelationId()).isEqualTo("trace-abc-123");
+    }
+
+    @Test
+    @DisplayName("should omit correlationId when X-Correlation-Id header is absent")
+    void should_omitCorrelationId_when_headerAbsent() {
+        // request.getHeader("X-Correlation-Id") returns null by default (Mockito mock)
+
+        BadRequestException ex = new BadRequestException("Invalid input");
+        ResponseEntity<ErrorResponse> response = handler.handleBadRequest(ex, request);
+
+        assertThat(response.getBody().getCorrelationId()).isNull();
+    }
+
+    @Test
+    @DisplayName("should propagate correlationId in generic exception handler")
+    void should_propagateCorrelationId_when_genericExceptionHandled() {
+        when(request.getHeader("X-Correlation-Id")).thenReturn("trace-xyz-789");
+
+        Exception ex = new NullPointerException("unexpected");
+        ResponseEntity<ErrorResponse> response = handler.handleGenericException(ex, request);
+
+        assertThat(response.getBody().getCorrelationId()).isEqualTo("trace-xyz-789");
     }
 }

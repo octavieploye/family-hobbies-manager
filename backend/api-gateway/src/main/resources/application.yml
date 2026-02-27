@@ -35,6 +35,26 @@ spring:
 jwt:
   secret: ${JWT_SECRET:default-dev-secret-that-is-at-least-256-bits-long-for-hmac-sha256}
 
+cors:
+  allowed-origins:
+    - http://localhost:4200
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+    - OPTIONS
+  allowed-headers:
+    - Authorization
+    - Content-Type
+    - X-Requested-With
+  exposed-headers:
+    - X-Total-Count
+    - X-Correlation-Id
+  allow-credentials: true
+  max-age: 3600
+
 eureka:
   client:
     service-url:

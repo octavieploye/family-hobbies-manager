@@ -1,6 +1,5 @@
 package com.familyhobbies.apigateway.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -12,7 +11,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.server.WebFilter;
 
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,27 +23,17 @@ import reactor.core.publisher.Mono;
  * This avoids using DefaultCorsProcessor which calls CorsUtils.isSameOrigin()
  * and requires a non-null URI scheme — a condition that may not hold in all
  * test and proxy environments (e.g. WebTestClient with RANDOM_PORT).
+ * <p>
+ * CORS values are externalized via {@link CorsProperties} (application.yml).
  */
 @Configuration
 public class CorsConfig {
 
-    @Value("${cors.allowed-origins:http://localhost:4200}")
-    private String allowedOrigins;
+    private final CorsProperties corsProperties;
 
-    @Value("${cors.allowed-methods:GET,POST,PUT,PATCH,DELETE,OPTIONS}")
-    private String allowedMethods;
-
-    @Value("${cors.allowed-headers:Authorization,Content-Type,X-Requested-With}")
-    private String allowedHeaders;
-
-    @Value("${cors.exposed-headers:X-Total-Count,X-Correlation-Id}")
-    private String exposedHeaders;
-
-    @Value("${cors.allow-credentials:true}")
-    private boolean allowCredentials;
-
-    @Value("${cors.max-age:3600}")
-    private long maxAge;
+    public CorsConfig(CorsProperties corsProperties) {
+        this.corsProperties = corsProperties;
+    }
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -57,9 +46,9 @@ public class CorsConfig {
                 return chain.filter(exchange);
             }
 
-            Set<String> origins = Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .collect(Collectors.toSet());
+            Set<String> origins = corsProperties.getAllowedOrigins() != null
+                ? new HashSet<>(corsProperties.getAllowedOrigins())
+                : Set.of();
 
             if (!origins.contains(origin) && !origins.contains("*")) {
                 return chain.filter(exchange);
@@ -68,18 +57,30 @@ public class CorsConfig {
             ServerHttpResponse response = exchange.getResponse();
             HttpHeaders headers = response.getHeaders();
             headers.set(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
-            headers.set(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, String.valueOf(allowCredentials));
-            headers.set(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, exposedHeaders);
+            headers.set(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS,
+                    String.valueOf(corsProperties.isAllowCredentials()));
+            headers.set(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS,
+                    joinList(corsProperties.getExposedHeaders()));
 
             if (HttpMethod.OPTIONS.equals(request.getMethod())) {
-                headers.set(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, allowedMethods);
-                headers.set(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, allowedHeaders);
-                headers.set(HttpHeaders.ACCESS_CONTROL_MAX_AGE, String.valueOf(maxAge));
+                headers.set(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS,
+                        joinList(corsProperties.getAllowedMethods()));
+                headers.set(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS,
+                        joinList(corsProperties.getAllowedHeaders()));
+                headers.set(HttpHeaders.ACCESS_CONTROL_MAX_AGE,
+                        String.valueOf(corsProperties.getMaxAge()));
                 response.setStatusCode(HttpStatus.OK);
                 return Mono.empty();
             }
 
             return chain.filter(exchange);
         };
+    }
+
+    private String joinList(java.util.List<String> items) {
+        if (items == null || items.isEmpty()) {
+            return "";
+        }
+        return String.join(",", items);
     }
 }

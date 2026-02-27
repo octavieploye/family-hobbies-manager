@@ -129,6 +129,12 @@ public class GlobalExceptionHandler {
         return buildResponse(ex, request);
     }
 
+    @ExceptionHandler(ServiceDiscoveryException.class)
+    public ResponseEntity<ErrorResponse> handleServiceDiscovery(ServiceDiscoveryException ex,
+                                                                HttpServletRequest request) {
+        return buildResponse(ex, request);
+    }
+
     @ExceptionHandler(ExternalApiException.class)
     public ResponseEntity<ErrorResponse> handleExternalApi(ExternalApiException ex,
                                                            HttpServletRequest request) {
@@ -155,6 +161,7 @@ public class GlobalExceptionHandler {
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .message("Request validation failed")
                 .path(request.getRequestURI())
+                .correlationId(request.getHeader(CORRELATION_ID_HEADER))
                 .errorCode(ErrorCode.VALIDATION_FAILED)
                 .details(fieldErrors)
                 .build();
@@ -175,6 +182,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 "An unexpected error occurred",
                 request.getRequestURI(),
+                request.getHeader(CORRELATION_ID_HEADER),
                 ErrorCode.INTERNAL_SERVER_ERROR
         );
 
@@ -182,6 +190,8 @@ public class GlobalExceptionHandler {
     }
 
     // ── Private helper ───────────────────────────────────────────────────────
+
+    private static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
 
     private ResponseEntity<ErrorResponse> buildResponse(BaseException ex,
                                                         HttpServletRequest request) {
@@ -200,11 +210,14 @@ public class GlobalExceptionHandler {
                 ? httpStatus.getReasonPhrase()
                 : "Unknown Status";
 
+        String correlationId = request.getHeader(CORRELATION_ID_HEADER);
+
         ErrorResponse body = ErrorResponse.of(
                 status,
                 reasonPhrase,
                 ex.getMessage(),
                 request.getRequestURI(),
+                correlationId,
                 ex.getErrorCode()
         );
 

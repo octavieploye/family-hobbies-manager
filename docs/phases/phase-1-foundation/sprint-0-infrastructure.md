@@ -1,3 +1,22 @@
+> **IMPLEMENTATION STATUS: COMPLETE** (committed: 24232b4, 16e1293, 2811323, aeca79b)
+>
+> **KNOWN DEVIATIONS FROM THIS BLUEPRINT** -- Future agents MUST follow the implementation, not this document, where they conflict:
+>
+> | # | Category | Blueprint Says | Implementation Does | Verdict |
+> |---|----------|---------------|--------------------| --------|
+> | D-01 | ErrorCode enum | Simple enum with 16 bare names (e.g. `BAD_REQUEST`) | Rich enum with `(code, httpStatus, description)` constructor; `BAD_REQUEST` renamed to `VALIDATION_FAILED` | Follow implementation |
+> | D-02 | BaseException | Uses `HttpStatus` type, has `Map<String, Object> details` field + 3rd constructor | Uses `int httpStatus`, no `details` field, only 2 constructors | Follow implementation |
+> | D-03 | ErrorResponse | Has `correlationId` field; `errorCode` is `String`; `details` is `Object` | No `correlationId`; `errorCode` is `ErrorCode` enum; `details` is `List<FieldError>` with inner class | Follow implementation |
+> | D-04 | GlobalExceptionHandler | 3 handler methods (1 catch-all for BaseException) | 18 individual handlers (one per exception type). Missing: `ServiceDiscoveryException` handler | Follow implementation; add ServiceDiscoveryException handler if needed |
+> | D-05 | Exception classes | Simple 3-constructor pattern using `HttpStatus`; no extra fields | Enhanced with static factories (`ResourceNotFoundException.of()`, `ExternalApiException.forApi()`, etc.) and extra metadata fields (`apiName`, `upstreamStatus`, `serviceName`, `topic`) | Follow implementation |
+> | D-06 | error-handling POM | Lists `spring-boot-autoconfigure` | Not present (transitively available via starter-web) | Follow implementation |
+> | D-07 | MapStruct property | `<mapstruct.version>` | `<org.mapstruct.version>` | Follow implementation |
+> | D-08 | Parent POM extras | No enforcer plugin, no Lombok/JJWT/MapStruct in dependencyManagement | Adds `maven-enforcer-plugin` (Java 17 required), Lombok 1.18.42 `provided`, JJWT 0.13.0, MapStruct in dependencyManagement | Follow implementation |
+> | D-09 | Test count | 44 tests | 46 tests (slight additions) | Follow implementation |
+> | D-10 | Test assertions | JUnit 5 `assertEquals`/`assertTrue` | AssertJ `assertThat().isEqualTo()` | Follow implementation (AssertJ) |
+>
+> **Sprint 1 code was committed alongside Sprint 0** -- api-gateway, user-service, and common contain Sprint 1 auth files (JWT filter, SecurityConfig, entities, DTOs, AuthService, etc.). These are NOT part of Sprint 0 scope but exist in the same commits.
+
 # Phase 1 / Sprint 0: Infrastructure & Shared Libraries
 
 > **Sprint Duration**: Weeks 1-2

@@ -25,6 +25,7 @@ public class ErrorResponse {
     private String error;
     private String message;
     private String path;
+    private String correlationId;
     private ErrorCode errorCode;
     private List<FieldError> details;
 
@@ -33,12 +34,22 @@ public class ErrorResponse {
      */
     public static ErrorResponse of(int status, String error, String message,
                                     String path, ErrorCode errorCode) {
+        return of(status, error, message, path, null, errorCode);
+    }
+
+    /**
+     * Static factory that builds an {@link ErrorResponse} with the current timestamp
+     * and an optional correlation ID for distributed tracing.
+     */
+    public static ErrorResponse of(int status, String error, String message,
+                                    String path, String correlationId, ErrorCode errorCode) {
         return ErrorResponse.builder()
                 .timestamp(Instant.now())
                 .status(status)
                 .error(error)
                 .message(message)
                 .path(path)
+                .correlationId(correlationId)
                 .errorCode(errorCode)
                 .build();
     }

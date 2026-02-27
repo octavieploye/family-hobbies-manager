@@ -1,3 +1,56 @@
+> **IMPLEMENTATION STATUS: COMPLETE** (committed: 16e1293, 2811323, aeca79b)
+>
+> **CRITICAL: THIS BLUEPRINT CONTAINS DEPRECATED JJWT CODE** -- All code samples in this file use the **deprecated 0.11.x API**. The implementation was upgraded to **JJWT 0.13.0 fluent API**. Future agents MUST use the implementation as source of truth, not the code in this document.
+>
+> **KNOWN DEVIATIONS FROM THIS BLUEPRINT** -- Future agents MUST follow the implementation, not this document, where they conflict:
+>
+> ### CRITICAL DEVIATIONS
+>
+> | # | Category | Blueprint Says | Implementation Does | Verdict |
+> |---|----------|---------------|--------------------| --------|
+> | D-01 | JJWT API | `.setSubject()`, `.setIssuedAt()`, `.setExpiration()`, `.signWith(key, SignatureAlgorithm.HS256)`, `Jwts.parserBuilder().setSigningKey().build().parseClaimsJws().getBody()` | `.subject()`, `.issuedAt()`, `.expiration()`, `.signWith(signingKey, Jwts.SIG.HS256)`, `Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token).getPayload()` | **Follow implementation (0.13.0 fluent API)** |
+> | D-02 | JJWT imports | `import io.jsonwebtoken.SignatureAlgorithm` | Not imported (deprecated enum removed) | **Follow implementation** |
+> | D-03 | JJWT test Claims | `new DefaultClaims(); claims.setSubject("42")` | `Jwts.claims().subject("42").build()` | **Follow implementation** |
+> | D-04 | Liquibase migrations | Specifies `001-create-user-table.xml` and `002-create-refresh-token-table.xml` | **FILES NOT CREATED** -- `db.changelog-master.xml` only includes `000-init.xml` | **MUST BE CREATED before running against PostgreSQL** (tests pass because H2 with `ddl-auto: create-drop` and Liquibase disabled) |
+>
+> ### SIGNIFICANT DEVIATIONS
+>
+> | # | Category | Blueprint Says | Implementation Does | Verdict |
+> |---|----------|---------------|--------------------| --------|
+> | D-05 | SecurityHeadersConfig | Specifies `SecurityHeadersConfig.java` adding HSTS, CSP, X-Frame-Options, etc. | **FILE NOT CREATED** -- no HTTP security headers on gateway responses | Should be created in a future sprint |
+> | D-06 | Gateway CORS | CORS via `CorsConfigurationSource` in SecurityConfig (S1-004), externalized to `CorsProperties` (S1-008) | CORS disabled in SecurityConfig; custom `CorsConfig.java` WebFilter with `@Value` annotations | Follow implementation (works but differs architecturally) |
+> | D-07 | Gateway authorization rules | Detailed path matchers for admin-only, association-manager endpoints | Simplified -- only auth/actuator paths defined | Future sprints should add path matchers as needed |
+> | D-08 | CorsProperties | `@ConfigurationProperties(prefix = "cors")` | Not created; `@Value` used in CorsConfig | Follow implementation |
+> | D-09 | CORS in gateway YAML | `cors:` section with allowed-origins/methods/headers | **MISSING from application.yml** (tests pass via inline properties) | Should be added to `application.yml` for runtime |
+>
+> ### ENHANCEMENTS (implementation adds beyond blueprint)
+>
+> | # | What | Details |
+> |---|------|---------|
+> | E-01 | JTI claim | `JwtTokenProvider` adds `.id(UUID.randomUUID().toString())` for token uniqueness |
+> | E-02 | CORS preflight bypass | `JwtAuthenticationFilter` skips OPTIONS requests |
+> | E-03 | Password pattern validation | `RegisterRequest` adds `@Pattern` for complexity (uppercase, lowercase, digit, special char) + 3 extra tests |
+> | E-04 | `@JsonIgnoreProperties` | Added to `DomainEvent`, `UserRegisteredEvent`, `UserDeletedEvent` for forward compat |
+> | E-05 | `@DisplayName` on tests | All test methods have `@DisplayName` annotations |
+> | E-06 | Extra filter test | `JwtAuthenticationFilterTest` adds `nonBearerAuthScheme_shouldReturn401` (6 tests instead of 5) |
+>
+> ### TEST COUNT COMPARISON
+>
+> | Module | Blueprint | Implementation | Notes |
+> |--------|-----------|----------------|-------|
+> | JwtTokenProviderTest | 8 | 8 | Match |
+> | UserRegistrationTest | 7 | 10 | +3 password complexity tests (E-03) |
+> | AuthFlowTest | 9 | 9 | Match |
+> | JwtAuthenticationFilterTest | 5 | 6 | +1 non-Bearer test (E-06) |
+> | CorsConfigTest | 2 | 2 | Match |
+> | UserContextFilterTest | 5 | 5 | Match |
+> | UserContextTest | 5 | 5 | Match |
+> | DomainEventTest | 5 | 5 | Match |
+>
+> ### OTHER SPRINT-1 FILES THAT ALSO CONTAIN SPRINT-1 CONTENT
+>
+> There are 6 overlapping Sprint-1 files (`_sprint1-part1.md`, `_sprint1-part2.md`, `_sprint1-part3.md`, `_sprint1-partA.md`, `_sprint1-partB.md`, `_sprint-1-review.md`). **Only `_sprint1-partA.md`** has correct JJWT 0.13.0 API but it uses **YAML Liquibase in `changes/`** (wrong). No single file is fully correct. Use the implementation code as source of truth.
+
 # Phase 1 / Sprint 1: Security & Authentication
 
 > **Sprint Duration**: Weeks 3-4

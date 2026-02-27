@@ -27,13 +27,27 @@ public class SecurityConfig {
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .authorizeExchange(exchanges -> exchanges
+                // Public endpoints -- no authentication required
                 .pathMatchers("/api/v1/auth/**").permitAll()
                 .pathMatchers(HttpMethod.GET, "/api/v1/associations/**").permitAll()
                 .pathMatchers(HttpMethod.GET, "/api/v1/activities/**").permitAll()
                 .pathMatchers(HttpMethod.POST, "/api/v1/associations/search").permitAll()
                 .pathMatchers("/api/v1/payments/webhook/**").permitAll()
                 .pathMatchers("/actuator/health", "/actuator/info").permitAll()
+
+                // Admin-only endpoints
                 .pathMatchers("/api/v1/users/**").hasRole("ADMIN")
+                .pathMatchers(HttpMethod.POST, "/api/v1/associations/sync").hasRole("ADMIN")
+                .pathMatchers("/api/v1/notifications/templates/**").hasRole("ADMIN")
+                .pathMatchers("/actuator/metrics", "/actuator/prometheus").hasRole("ADMIN")
+                .pathMatchers("/api/v1/rgpd/audit-log").hasRole("ADMIN")
+
+                // Association manager endpoints
+                .pathMatchers("/api/v1/associations/*/subscribers").hasAnyRole("ASSOCIATION", "ADMIN")
+                .pathMatchers("/api/v1/attendance/report").hasAnyRole("ASSOCIATION", "ADMIN")
+                .pathMatchers("/api/v1/payments/association/**").hasAnyRole("ASSOCIATION", "ADMIN")
+
+                // All other endpoints require authentication (any role)
                 .anyExchange().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)

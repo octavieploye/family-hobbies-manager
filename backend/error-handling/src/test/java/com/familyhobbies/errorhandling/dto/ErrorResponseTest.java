@@ -57,5 +57,43 @@ class ErrorResponseTest {
             assertThat(response.getTimestamp()).isNotNull();
             assertThat(response.getStatus()).isEqualTo(404);
         }
+
+        @Test
+        @DisplayName("should include correlationId when provided via of() factory")
+        void should_includeCorrelationId_when_providedViaOfFactory() {
+            String correlationId = "abc-123-def";
+            ErrorResponse response = ErrorResponse.of(
+                    500, "Internal Server Error", "Something went wrong",
+                    "/api/v1/test", correlationId, ErrorCode.INTERNAL_SERVER_ERROR);
+
+            assertThat(response.getCorrelationId()).isEqualTo(correlationId);
+            assertThat(response.getTimestamp()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("should omit correlationId when null via of() factory")
+        void should_omitCorrelationId_when_nullViaOfFactory() {
+            ErrorResponse response = ErrorResponse.of(
+                    404, "Not Found", "User not found",
+                    "/api/v1/users/99", ErrorCode.RESOURCE_NOT_FOUND);
+
+            assertThat(response.getCorrelationId()).isNull();
+        }
+
+        @Test
+        @DisplayName("should include correlationId when provided via builder")
+        void should_includeCorrelationId_when_providedViaBuilder() {
+            ErrorResponse response = ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(400)
+                .error("Bad Request")
+                .message("Validation failed")
+                .path("/api/v1/families")
+                .correlationId("trace-456")
+                .errorCode(ErrorCode.VALIDATION_FAILED)
+                .build();
+
+            assertThat(response.getCorrelationId()).isEqualTo("trace-456");
+        }
     }
 }

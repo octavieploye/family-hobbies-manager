@@ -32,10 +32,18 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
-        "cors.allowed-origins=http://localhost:4200",
-        "cors.allowed-methods=GET,POST,PUT,PATCH,DELETE,OPTIONS",
-        "cors.allowed-headers=Authorization,Content-Type,X-Requested-With",
-        "cors.exposed-headers=X-Total-Count,X-Correlation-Id",
+        "cors.allowed-origins[0]=http://localhost:4200",
+        "cors.allowed-methods[0]=GET",
+        "cors.allowed-methods[1]=POST",
+        "cors.allowed-methods[2]=PUT",
+        "cors.allowed-methods[3]=PATCH",
+        "cors.allowed-methods[4]=DELETE",
+        "cors.allowed-methods[5]=OPTIONS",
+        "cors.allowed-headers[0]=Authorization",
+        "cors.allowed-headers[1]=Content-Type",
+        "cors.allowed-headers[2]=X-Requested-With",
+        "cors.exposed-headers[0]=X-Total-Count",
+        "cors.exposed-headers[1]=X-Correlation-Id",
         "cors.allow-credentials=true",
         "cors.max-age=3600",
         "eureka.client.enabled=false"
