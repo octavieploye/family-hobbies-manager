@@ -6,8 +6,8 @@ spring:
     name: user-service
   datasource:
     url: jdbc:postgresql://localhost:5432/familyhobbies_users
-    username: fhm_admin
-    password: fhm_secret
+    username: ${DB_USERNAME:fhm_admin}
+    password: ${DB_PASSWORD:fhm_secret}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

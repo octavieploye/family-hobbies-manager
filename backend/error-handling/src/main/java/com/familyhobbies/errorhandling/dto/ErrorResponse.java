@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
  * Null fields (e.g. {@code details}) are omitted from the JSON output.
  */
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -58,10 +60,12 @@ public class ErrorResponse {
      * Represents a single field-level validation error.
      */
     @Getter
+    @Setter
+    @NoArgsConstructor
     @AllArgsConstructor
     public static class FieldError {
 
-        private final String field;
-        private final String message;
+        private String field;
+        private String message;
     }
 }

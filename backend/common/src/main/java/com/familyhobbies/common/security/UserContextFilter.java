@@ -20,17 +20,14 @@ import java.util.List;
  */
 public class UserContextFilter extends OncePerRequestFilter {
 
-    private static final String HEADER_USER_ID = "X-User-Id";
-    private static final String HEADER_USER_ROLES = "X-User-Roles";
-
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        String userId = request.getHeader(HEADER_USER_ID);
-        String roles = request.getHeader(HEADER_USER_ROLES);
+        String userId = request.getHeader(SecurityHeaders.X_USER_ID);
+        String roles = request.getHeader(SecurityHeaders.X_USER_ROLES);
 
         if (userId != null && roles != null) {
             // Step 1: Parse roles into Spring Security authorities

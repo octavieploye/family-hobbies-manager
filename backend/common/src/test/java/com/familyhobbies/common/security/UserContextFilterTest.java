@@ -197,4 +197,35 @@ class UserContextFilterTest {
         assertTrue(hasFamilyRole, "Should have ROLE_FAMILY authority");
         assertTrue(hasAdminRole, "Should have ROLE_ADMIN authority");
     }
+
+    @Test
+    @DisplayName("should cleanup ThreadLocal when filter chain throws exception")
+    void should_cleanupThreadLocal_when_filterChainThrows() throws ServletException, IOException {
+        // given
+        request.addHeader("X-User-Id", "1");
+        request.addHeader("X-User-Roles", "FAMILY");
+
+        RuntimeException expectedException = new RuntimeException("Simulated filter chain failure");
+
+        FilterChain chain = (req, res) -> {
+            // Verify context IS set during the request (before the exception)
+            assertNotNull(UserContext.get());
+            assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+            throw expectedException;
+        };
+
+        // when / then — exception should propagate
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+            () -> filter.doFilter(request, response, chain));
+
+        // Verify the original exception propagated
+        assertSame(expectedException, thrown,
+            "The original RuntimeException should propagate unchanged");
+
+        // Verify ThreadLocal cleanup happened despite the exception
+        assertThrows(IllegalStateException.class, UserContext::get,
+            "UserContext should be cleared after exception in filter chain");
+        assertNull(SecurityContextHolder.getContext().getAuthentication(),
+            "SecurityContext should be cleared after exception in filter chain");
+    }
 }

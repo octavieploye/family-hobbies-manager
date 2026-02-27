@@ -12,7 +12,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -168,6 +172,41 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = handler.handleExternalApi(ex, request);
         assertThat(response.getStatusCode().value()).isEqualTo(502);
         assertThat(response.getBody().getErrorCode()).isEqualTo(ErrorCode.EXTERNAL_API_FAILURE);
+    }
+
+    // --- Validation (MethodArgumentNotValidException) ---
+
+    @Test
+    @DisplayName("should return 400 with field errors when MethodArgumentNotValidException thrown")
+    void should_returnFieldErrors_when_methodArgumentNotValid() {
+        // given
+        FieldError fieldError1 = new FieldError("userDto", "email", "must not be blank");
+        FieldError fieldError2 = new FieldError("userDto", "password", "size must be between 8 and 100");
+
+        BindingResult bindingResult = mock(BindingResult.class);
+        when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError1, fieldError2));
+
+        MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
+        when(ex.getBindingResult()).thenReturn(bindingResult);
+        when(ex.getMessage()).thenReturn("Validation failed");
+
+        // when
+        ResponseEntity<ErrorResponse> response = handler.handleValidation(ex, request);
+
+        // then
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getErrorCode()).isEqualTo(ErrorCode.VALIDATION_FAILED);
+        assertThat(response.getBody().getMessage()).isEqualTo("Request validation failed");
+        assertThat(response.getBody().getPath()).isEqualTo("/api/v1/test");
+        assertThat(response.getBody().getTimestamp()).isNotNull();
+
+        // Verify field error details
+        assertThat(response.getBody().getDetails()).hasSize(2);
+        assertThat(response.getBody().getDetails().get(0).getField()).isEqualTo("email");
+        assertThat(response.getBody().getDetails().get(0).getMessage()).isEqualTo("must not be blank");
+        assertThat(response.getBody().getDetails().get(1).getField()).isEqualTo("password");
+        assertThat(response.getBody().getDetails().get(1).getMessage()).isEqualTo("size must be between 8 and 100");
     }
 
     // --- Fallback ---

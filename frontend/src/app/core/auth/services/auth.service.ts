@@ -8,16 +8,17 @@ import {
   RegisterRequest,
   AuthResponse,
 } from '../models/auth.models';
+import { TokenStorageService } from './token-storage.service';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API_BASE = '/api/v1/auth';
-  private readonly ACCESS_TOKEN_KEY = 'access_token';
-  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
+  private readonly API_BASE = `${environment.apiBaseUrl}/auth`;
 
   constructor(
     private readonly http: HttpClient,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly tokenStorage: TokenStorageService
   ) {}
 
   /**
@@ -50,44 +51,42 @@ export class AuthService {
   }
 
   /**
-   * Clear tokens from localStorage and redirect to login.
+   * Clear tokens and redirect to login.
    */
   logout(): void {
-    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    this.tokenStorage.clearTokens();
     this.router.navigate(['/auth/login']);
   }
 
   /**
-   * Persist both tokens in localStorage.
+   * Persist both tokens.
    * Called by NgRx effects after successful login/register.
    */
   storeTokens(accessToken: string, refreshToken: string): void {
-    localStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+    this.tokenStorage.storeTokens(accessToken, refreshToken);
   }
 
   /**
-   * Read the current access token from localStorage.
+   * Read the current access token.
    * Returns null if no token is stored.
    */
   getAccessToken(): string | null {
-    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+    return this.tokenStorage.getAccessToken();
   }
 
   /**
-   * Read the current refresh token from localStorage.
+   * Read the current refresh token.
    * Returns null if no token is stored.
    */
   getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    return this.tokenStorage.getRefreshToken();
   }
 
   /**
-   * Quick check whether a token exists in localStorage.
+   * Quick check whether a token exists.
    * Does NOT validate the token signature or expiry -- that is the backend's job.
    */
   isAuthenticated(): boolean {
-    return this.getAccessToken() !== null;
+    return this.tokenStorage.hasAccessToken();
   }
 }

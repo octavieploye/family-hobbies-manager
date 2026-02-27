@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -12,9 +11,9 @@ import java.util.UUID;
 /**
  * Abstract base class for all Kafka domain events.
  * Every event carries a unique ID, an event type, a timestamp, and a version.
+ * Events are immutable after creation — no setters exposed.
  */
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)

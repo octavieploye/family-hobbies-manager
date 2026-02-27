@@ -19,6 +19,10 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    // Note: Routes for association-service, payment-service, and notification-service
+    // are added to application.yml in their respective sprints (Sprint 2, 5, 6).
+    // SecurityConfig rules are defined ahead of time so they are enforced immediately
+    // when the routes are activated.
     @Bean
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
         return http

@@ -33,10 +33,21 @@ public class JwtTokenProvider {
 
     /**
      * Extract roles from a validated token.
+     * @deprecated Use {@link #getRolesFromClaims(Claims)} to avoid re-parsing the token.
      */
+    @Deprecated(since = "0.1.0")
     @SuppressWarnings("unchecked")
     public List<String> getRolesFromToken(String token) {
         Claims claims = validateToken(token);
+        return claims.get("roles", List.class);
+    }
+
+    /**
+     * Extract roles from already-parsed Claims, avoiding a second token parse.
+     * Prefer this over {@link #getRolesFromToken(String)} when claims are already available.
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> getRolesFromClaims(Claims claims) {
         return claims.get("roles", List.class);
     }
 }

@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
  * Tests: 6 test methods (5 from sprint spec + 1 from review finding F-08)
  *
  * These tests verify the six critical behaviors:
- * 1. Valid token -> calls validateToken and getRolesFromToken (renamed per F-01)
+ * 1. Valid token -> calls validateToken and getRolesFromClaims (renamed per F-01, H-006)
  * 2. Expired token -> 401 with "Token expired"
  * 3. Invalid token -> 401 with "Invalid token"
  * 4. Missing Authorization header on protected path -> 401
@@ -91,16 +91,16 @@ class JwtAuthenticationFilterTest {
         // Mock JwtTokenProvider to return valid claims
         Claims claims = Jwts.claims().subject("42").build();
         when(jwtTokenProvider.validateToken("valid-token")).thenReturn(claims);
-        when(jwtTokenProvider.getRolesFromToken("valid-token")).thenReturn(List.of("FAMILY"));
+        when(jwtTokenProvider.getRolesFromClaims(claims)).thenReturn(List.of("FAMILY"));
 
         WebFilterChain chain = filterExchange -> Mono.empty();
 
         // when
         filter.filter(exchange, chain).block();
 
-        // then — verify that validateToken and getRolesFromToken were called
+        // then — verify that validateToken and getRolesFromClaims were called (H-006: single parse)
         verify(jwtTokenProvider).validateToken("valid-token");
-        verify(jwtTokenProvider).getRolesFromToken("valid-token");
+        verify(jwtTokenProvider).getRolesFromClaims(claims);
 
         // The filter should NOT have set a 401 status
         assertNotEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
@@ -283,7 +283,7 @@ class JwtAuthenticationFilterTest {
 
             Claims claims = Jwts.claims().subject("42").build();
             when(jwtTokenProvider.validateToken("valid-token")).thenReturn(claims);
-            when(jwtTokenProvider.getRolesFromToken("valid-token")).thenReturn(List.of("FAMILY"));
+            when(jwtTokenProvider.getRolesFromClaims(claims)).thenReturn(List.of("FAMILY"));
 
             // Capture the SecurityContext from within the reactive chain
             AtomicReference<SecurityContext> capturedContext = new AtomicReference<>();
@@ -329,7 +329,7 @@ class JwtAuthenticationFilterTest {
 
             Claims claims = Jwts.claims().subject("99").build();
             when(jwtTokenProvider.validateToken("multi-role-token")).thenReturn(claims);
-            when(jwtTokenProvider.getRolesFromToken("multi-role-token"))
+            when(jwtTokenProvider.getRolesFromClaims(claims))
                 .thenReturn(List.of("FAMILY", "ASSOCIATION", "ADMIN"));
 
             AtomicReference<SecurityContext> capturedContext = new AtomicReference<>();
@@ -375,7 +375,7 @@ class JwtAuthenticationFilterTest {
 
             Claims claims = Jwts.claims().subject("1").build();
             when(jwtTokenProvider.validateToken("admin-token")).thenReturn(claims);
-            when(jwtTokenProvider.getRolesFromToken("admin-token")).thenReturn(List.of("ADMIN"));
+            when(jwtTokenProvider.getRolesFromClaims(claims)).thenReturn(List.of("ADMIN"));
 
             AtomicReference<SecurityContext> capturedContext = new AtomicReference<>();
 

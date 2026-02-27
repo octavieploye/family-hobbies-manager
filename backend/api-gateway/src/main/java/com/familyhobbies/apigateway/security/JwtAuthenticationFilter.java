@@ -27,11 +27,19 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
 
+    // H-007: Public paths must mirror SecurityConfig's permitAll() rules.
+    // Note: Some SecurityConfig rules are HTTP-method-specific (e.g., GET-only for
+    // associations/activities), but this filter does not have method awareness.
+    // SecurityConfig's authorizeExchange rules still enforce role requirements for
+    // non-public endpoints. When method-specific filtering is needed, this list
+    // should be refactored to include HTTP method checks.
     private final List<String> publicPaths = List.of(
         "/api/v1/auth/",
+        "/api/v1/associations/",
+        "/api/v1/activities/",
+        "/api/v1/payments/webhook/",
         "/actuator/health",
-        "/actuator/info",
-        "/api/v1/payments/webhook/"
+        "/actuator/info"
     );
 
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
@@ -64,10 +72,10 @@ public class JwtAuthenticationFilter implements WebFilter {
         String token = authHeader.substring(BEARER_PREFIX.length());
 
         try {
-            // Step 4: Validate token and extract claims
+            // Step 4: Validate token and extract claims (single parse — H-006 fix)
             var claims = jwtTokenProvider.validateToken(token);
             String userId = claims.getSubject();
-            List<String> rolesList = jwtTokenProvider.getRolesFromToken(token);
+            List<String> rolesList = jwtTokenProvider.getRolesFromClaims(claims);
             String roles = String.join(",", rolesList);
 
             // Step 5: Create Spring Security Authentication with ROLE_-prefixed authorities

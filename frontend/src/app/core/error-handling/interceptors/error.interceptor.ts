@@ -19,6 +19,11 @@ import { ErrorCode } from '../models';
  * 2. Attempt token refresh via AuthService.
  * 3. On success: retry the original request with the new token.
  * 4. On failure: force logout (clears tokens + redirects to /auth/login).
+ *
+ * IMPORTANT: This interceptor re-throws the original HttpErrorResponse
+ * to preserve the type contract for downstream subscribers. The ParsedError
+ * is used internally for display (snackbar, logging) but is NOT what gets
+ * thrown. Subscribers can rely on receiving HttpErrorResponse instances.
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
@@ -43,15 +48,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           catchError((refreshError) => {
             // Refresh failed — force logout and redirect to login
             authService.logout();
-            return throwError(() => parseHttpError(
+            const originalError =
               refreshError instanceof HttpErrorResponse
                 ? refreshError
-                : error
-            ));
+                : error;
+            return throwError(() => originalError);
           })
         );
       }
 
+      // Parse the error for display and logging purposes only
       const parsed = parseHttpError(error);
 
       // Handle 403 — redirect to forbidden page
@@ -81,7 +87,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         retryable: parsed.isRetryable,
       });
 
-      return throwError(() => parsed);
+      // Re-throw the ORIGINAL HttpErrorResponse to preserve the type contract
+      // for downstream subscribers. ParsedError is only used internally above.
+      return throwError(() => error);
     })
   );
 };

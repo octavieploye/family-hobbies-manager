@@ -82,6 +82,13 @@ public class JwtTokenProvider {
     }
 
     /**
+     * Return the access token validity expressed in seconds.
+     */
+    public long getAccessTokenValiditySeconds() {
+        return ACCESS_TOKEN_VALIDITY_MS / 1_000;
+    }
+
+    /**
      * Calculate the refresh token expiry date from now.
      */
     public Date getRefreshTokenExpiry() {

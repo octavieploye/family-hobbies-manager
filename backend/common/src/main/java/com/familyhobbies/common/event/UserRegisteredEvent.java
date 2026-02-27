@@ -3,14 +3,12 @@ package com.familyhobbies.common.event;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * Event published when a new user registers.
  * Consumed by notification-service to send a welcome email.
  */
 @Getter
-@Setter
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserRegisteredEvent extends DomainEvent {

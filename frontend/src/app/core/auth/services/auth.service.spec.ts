@@ -6,33 +6,30 @@ import {
 } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
+import { TokenStorageService } from './token-storage.service';
 import { AuthResponse } from '../models/auth.models';
 
 /**
  * Unit tests for AuthService.
  *
  * Story: S1-006 — Implement Angular Auth Scaffolding
+ * Updated for: H-015 — TokenStorageService extraction
  * Tests: 5 test methods
  *
  * These tests verify:
- * 1. login() calls POST /api/v1/auth/login and returns AuthResponse
- * 2. register() calls POST /api/v1/auth/register and returns AuthResponse
- * 3. getAccessToken() reads from localStorage
+ * 1. login() calls POST /auth/login via environment.apiBaseUrl and returns AuthResponse
+ * 2. register() calls POST /auth/register via environment.apiBaseUrl and returns AuthResponse
+ * 3. getAccessToken() delegates to TokenStorageService
  * 4. isAuthenticated() returns true when token exists
- * 5. logout() clears localStorage and navigates to /auth/login
+ * 5. logout() clears tokens via TokenStorageService and navigates to /auth/login
  *
  * Uses HttpClientTestingModule to intercept HTTP requests without a real server.
- *
- * Review findings incorporated:
- * - F-12 (NOTE): logout test does not verify a backend POST /api/v1/auth/logout
- *   call. Current design is client-side only (clear localStorage). If the frontend
- *   should also call the backend to revoke refresh tokens, add an httpMock.expectOne
- *   assertion. This is a design decision to be confirmed during implementation.
  */
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
   let routerSpy: jest.Mocked<Router>;
+  let tokenStorageSpy: jest.Mocked<TokenStorageService>;
 
   const mockAuthResponse: AuthResponse = {
     accessToken: 'test-access-token',
@@ -46,21 +43,29 @@ describe('AuthService', () => {
       navigate: jest.fn(),
     } as unknown as jest.Mocked<Router>;
 
+    tokenStorageSpy = {
+      storeTokens: jest.fn(),
+      getAccessToken: jest.fn(),
+      getRefreshToken: jest.fn(),
+      clearTokens: jest.fn(),
+      hasAccessToken: jest.fn(),
+    } as unknown as jest.Mocked<TokenStorageService>;
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [AuthService, { provide: Router, useValue: routerSpy }],
+      providers: [
+        AuthService,
+        { provide: Router, useValue: routerSpy },
+        { provide: TokenStorageService, useValue: tokenStorageSpy },
+      ],
     });
 
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
-
-    // Clear localStorage before each test
-    localStorage.clear();
   });
 
   afterEach(() => {
     httpMock.verify();
-    localStorage.clear();
   });
 
   it('login_shouldCallApiAndReturnResponse', () => {
@@ -70,7 +75,7 @@ describe('AuthService', () => {
         expect(response).toEqual(mockAuthResponse);
       });
 
-    const req = httpMock.expectOne('/api/v1/auth/login');
+    const req = httpMock.expectOne((r) => r.url.endsWith('/auth/login'));
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({
       email: 'test@example.com',
@@ -91,34 +96,32 @@ describe('AuthService', () => {
       expect(response).toEqual(mockAuthResponse);
     });
 
-    const req = httpMock.expectOne('/api/v1/auth/register');
+    const req = httpMock.expectOne((r) => r.url.endsWith('/auth/register'));
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(registerPayload);
     req.flush(mockAuthResponse);
   });
 
-  it('getAccessToken_shouldReturnFromLocalStorage', () => {
+  it('getAccessToken_shouldDelegateToTokenStorageService', () => {
+    tokenStorageSpy.getAccessToken.mockReturnValue(null);
     expect(service.getAccessToken()).toBeNull();
 
-    localStorage.setItem('access_token', 'stored-token');
+    tokenStorageSpy.getAccessToken.mockReturnValue('stored-token');
     expect(service.getAccessToken()).toBe('stored-token');
   });
 
-  it('isAuthenticated_shouldReturnTrueWhenTokenExists', () => {
+  it('isAuthenticated_shouldDelegateToTokenStorageService', () => {
+    tokenStorageSpy.hasAccessToken.mockReturnValue(false);
     expect(service.isAuthenticated()).toBe(false);
 
-    localStorage.setItem('access_token', 'some-token');
+    tokenStorageSpy.hasAccessToken.mockReturnValue(true);
     expect(service.isAuthenticated()).toBe(true);
   });
 
-  it('logout_shouldClearLocalStorage', () => {
-    localStorage.setItem('access_token', 'token-a');
-    localStorage.setItem('refresh_token', 'token-r');
-
+  it('logout_shouldClearTokensAndNavigateToLogin', () => {
     service.logout();
 
-    expect(localStorage.getItem('access_token')).toBeNull();
-    expect(localStorage.getItem('refresh_token')).toBeNull();
+    expect(tokenStorageSpy.clearTokens).toHaveBeenCalled();
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/auth/login']);
   });
 });

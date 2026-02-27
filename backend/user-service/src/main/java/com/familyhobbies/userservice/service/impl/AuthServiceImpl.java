@@ -66,7 +66,8 @@ public class AuthServiceImpl implements AuthService {
         String refreshTokenValue = createAndSaveRefreshToken(user);
 
         // Step 4: Return auth response
-        return new AuthResponse(accessToken, refreshTokenValue, "Bearer", 3600);
+        return new AuthResponse(accessToken, refreshTokenValue, "Bearer",
+            jwtTokenProvider.getAccessTokenValiditySeconds());
     }
 
     @Override
@@ -95,7 +96,8 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtTokenProvider.generateAccessToken(user);
         String refreshTokenValue = createAndSaveRefreshToken(user);
 
-        return new AuthResponse(accessToken, refreshTokenValue, "Bearer", 3600);
+        return new AuthResponse(accessToken, refreshTokenValue, "Bearer",
+            jwtTokenProvider.getAccessTokenValiditySeconds());
     }
 
     @Override
@@ -124,7 +126,8 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtTokenProvider.generateAccessToken(user);
         String newRefreshTokenValue = createAndSaveRefreshToken(user);
 
-        return new AuthResponse(accessToken, newRefreshTokenValue, "Bearer", 3600);
+        return new AuthResponse(accessToken, newRefreshTokenValue, "Bearer",
+            jwtTokenProvider.getAccessTokenValiditySeconds());
     }
 
     @Override
