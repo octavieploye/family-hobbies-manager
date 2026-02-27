@@ -1,0 +1,60 @@
+<!-- family-member-form.component.html -->
+<form [formGroup]="memberForm" (ngSubmit)="onSubmit()" class="family-member-form">
+
+  <mat-form-field appearance="outline" class="family-member-form__field">
+    <mat-label>Prenom</mat-label>
+    <input matInput formControlName="firstName" placeholder="Ex: Jean" />
+    @if (memberForm.get('firstName')?.hasError('required') && memberForm.get('firstName')?.touched) {
+      <mat-error>Le prenom est obligatoire</mat-error>
+    }
+    @if (memberForm.get('firstName')?.hasError('minlength')) {
+      <mat-error>Le prenom doit contenir au moins 2 caracteres</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="family-member-form__field">
+    <mat-label>Nom</mat-label>
+    <input matInput formControlName="lastName" placeholder="Ex: Dupont" />
+    @if (memberForm.get('lastName')?.hasError('required') && memberForm.get('lastName')?.touched) {
+      <mat-error>Le nom est obligatoire</mat-error>
+    }
+    @if (memberForm.get('lastName')?.hasError('minlength')) {
+      <mat-error>Le nom doit contenir au moins 2 caracteres</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="family-member-form__field">
+    <mat-label>Date de naissance</mat-label>
+    <input matInput formControlName="dateOfBirth" type="date" />
+    @if (memberForm.get('dateOfBirth')?.hasError('required') && memberForm.get('dateOfBirth')?.touched) {
+      <mat-error>La date de naissance est obligatoire</mat-error>
+    }
+    @if (memberForm.get('dateOfBirth')?.hasError('futureDate')) {
+      <mat-error>La date de naissance doit etre dans le passe</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="family-member-form__field">
+    <mat-label>Lien de parente</mat-label>
+    <mat-select formControlName="relationship">
+      @for (option of relationshipOptions; track option.value) {
+        <mat-option [value]="option.value">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+    @if (memberForm.get('relationship')?.hasError('required') && memberForm.get('relationship')?.touched) {
+      <mat-error>Le lien de parente est obligatoire</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="family-member-form__field family-member-form__field--full">
+    <mat-label>Note medicale (optionnel)</mat-label>
+    <textarea matInput formControlName="medicalNote" rows="3" placeholder="Allergies, traitements..."></textarea>
+  </mat-form-field>
+
+  <div class="family-member-form__actions">
+    <button mat-button type="button" (click)="onCancel()">Annuler</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="memberForm.invalid">
+      {{ member ? 'Modifier' : 'Ajouter' }}
+    </button>
+  </div>
+</form>

@@ -1,5 +1,6 @@
 package com.familyhobbies.userservice.service.impl;
 
+import com.familyhobbies.common.event.UserRegisteredEvent;
 import com.familyhobbies.errorhandling.exception.web.ConflictException;
 import com.familyhobbies.errorhandling.exception.web.UnauthorizedException;
 import com.familyhobbies.userservice.dto.request.LoginRequest;
@@ -10,6 +11,7 @@ import com.familyhobbies.userservice.entity.RefreshToken;
 import com.familyhobbies.userservice.entity.User;
 import com.familyhobbies.userservice.entity.UserRole;
 import com.familyhobbies.userservice.entity.UserStatus;
+import com.familyhobbies.userservice.event.UserEventPublisher;
 import com.familyhobbies.userservice.repository.RefreshTokenRepository;
 import com.familyhobbies.userservice.repository.UserRepository;
 import com.familyhobbies.userservice.security.JwtTokenProvider;
@@ -38,11 +40,11 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for AuthServiceImpl.
  *
- * Story: S1-002, S1-003 -- Implement User Registration, Login, Refresh, and Logout
- * Tests: 10 test methods
+ * Story: S1-002, S1-003, S2-006 -- Implement User Registration, Login, Refresh, Logout, and Kafka Publishing
+ * Tests: 11 test methods
  *
  * These tests verify:
- * - register: success (saves user, generates tokens), duplicate email throws ConflictException
+ * - register: success (saves user, generates tokens, publishes UserRegisteredEvent), duplicate email throws ConflictException
  * - login: success (validates password, generates tokens, updates lastLoginAt), wrong password throws
  *   UnauthorizedException, inactive user throws UnauthorizedException
  * - refreshToken: success (rotates token), expired token throws UnauthorizedException, revoked token
@@ -66,6 +68,9 @@ class AuthServiceImplTest {
 
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
+    private UserEventPublisher userEventPublisher;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -130,6 +135,60 @@ class AuthServiceImplTest {
 
             // Verify refresh token was saved
             verify(refreshTokenRepository).save(any(RefreshToken.class));
+
+            // Verify UserRegisteredEvent was published (S2-006)
+            ArgumentCaptor<UserRegisteredEvent> eventCaptor = ArgumentCaptor.forClass(UserRegisteredEvent.class);
+            verify(userEventPublisher).publishUserRegistered(eventCaptor.capture());
+            UserRegisteredEvent publishedEvent = eventCaptor.getValue();
+            assertThat(publishedEvent.getUserId()).isEqualTo(1L);
+            assertThat(publishedEvent.getEmail()).isEqualTo("dupont@email.com");
+            assertThat(publishedEvent.getFirstName()).isEqualTo("Jean");
+            assertThat(publishedEvent.getLastName()).isEqualTo("Dupont");
+        }
+
+        @Test
+        @DisplayName("should publish UserRegisteredEvent after successful registration")
+        void should_publishUserRegisteredEvent_when_registrationIsSuccessful() {
+            // given
+            RegisterRequest request = new RegisterRequest(
+                "marie@email.com", "SecureP@ss1", "Marie", "Martin", "+33698765432");
+
+            User savedUser = User.builder()
+                .id(2L)
+                .email("marie@email.com")
+                .passwordHash("$2a$12$hashedpassword2")
+                .firstName("Marie")
+                .lastName("Martin")
+                .phone("+33698765432")
+                .role(UserRole.FAMILY)
+                .status(UserStatus.ACTIVE)
+                .emailVerified(false)
+                .build();
+
+            when(userRepository.existsByEmail("marie@email.com")).thenReturn(false);
+            when(passwordEncoder.encode("SecureP@ss1")).thenReturn("$2a$12$hashedpassword2");
+            when(userRepository.save(any(User.class))).thenReturn(savedUser);
+            when(jwtTokenProvider.generateAccessToken(savedUser)).thenReturn("access-token-jwt");
+            when(jwtTokenProvider.generateRefreshToken()).thenReturn("refresh-token-uuid");
+            when(jwtTokenProvider.getRefreshTokenExpiry()).thenReturn(
+                new Date(System.currentTimeMillis() + 604_800_000));
+            when(jwtTokenProvider.getAccessTokenValiditySeconds()).thenReturn(3600L);
+
+            // when
+            authService.register(request);
+
+            // then -- verify event was published with correct data
+            ArgumentCaptor<UserRegisteredEvent> eventCaptor = ArgumentCaptor.forClass(UserRegisteredEvent.class);
+            verify(userEventPublisher).publishUserRegistered(eventCaptor.capture());
+            UserRegisteredEvent event = eventCaptor.getValue();
+            assertThat(event.getUserId()).isEqualTo(2L);
+            assertThat(event.getEmail()).isEqualTo("marie@email.com");
+            assertThat(event.getFirstName()).isEqualTo("Marie");
+            assertThat(event.getLastName()).isEqualTo("Martin");
+            assertThat(event.getEventType()).isEqualTo("USER_REGISTERED");
+            assertThat(event.getEventId()).isNotNull();
+            assertThat(event.getOccurredAt()).isNotNull();
+            assertThat(event.getVersion()).isEqualTo(1);
         }
 
         @Test
@@ -149,6 +208,9 @@ class AuthServiceImplTest {
 
             // Verify no user was saved
             verify(userRepository, never()).save(any(User.class));
+
+            // Verify no event was published
+            verify(userEventPublisher, never()).publishUserRegistered(any());
         }
     }
 

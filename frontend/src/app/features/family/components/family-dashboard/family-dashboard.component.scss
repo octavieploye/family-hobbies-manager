@@ -1,0 +1,75 @@
+// family-dashboard.component.scss — BEM methodology
+
+.family-dashboard {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.family-dashboard__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  gap: 16px;
+
+  p {
+    color: rgba(0, 0, 0, 0.54);
+    font-size: 14px;
+  }
+}
+
+.family-dashboard__error {
+  border-left: 4px solid #f44336;
+}
+
+.family-dashboard__error-text {
+  color: #f44336;
+  margin: 0;
+}
+
+.family-dashboard__overview {
+  mat-card-actions {
+    padding: 16px;
+  }
+}
+
+.family-dashboard__form-card {
+  mat-card-content {
+    padding-top: 16px;
+  }
+}
+
+.family-dashboard__empty {
+  text-align: center;
+  padding: 32px 16px;
+}
+
+.family-dashboard__empty-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: rgba(0, 0, 0, 0.26);
+}
+
+.family-dashboard__create {
+  mat-card-content {
+    padding-top: 16px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+}
+
+.family-dashboard__name-field {
+  width: 100%;
+  max-width: 400px;
+}

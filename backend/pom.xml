@@ -25,6 +25,7 @@
         <module>discovery-service</module>
         <module>api-gateway</module>
         <module>user-service</module>
+        <module>association-service</module>
     </modules>
 
     <properties>

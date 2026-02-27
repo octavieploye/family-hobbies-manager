@@ -1,5 +1,6 @@
 package com.familyhobbies.userservice.service.impl;
 
+import com.familyhobbies.common.event.UserRegisteredEvent;
 import com.familyhobbies.errorhandling.exception.web.ConflictException;
 import com.familyhobbies.errorhandling.exception.web.UnauthorizedException;
 import com.familyhobbies.userservice.dto.request.LoginRequest;
@@ -10,6 +11,7 @@ import com.familyhobbies.userservice.entity.RefreshToken;
 import com.familyhobbies.userservice.entity.User;
 import com.familyhobbies.userservice.entity.UserRole;
 import com.familyhobbies.userservice.entity.UserStatus;
+import com.familyhobbies.userservice.event.UserEventPublisher;
 import com.familyhobbies.userservice.repository.RefreshTokenRepository;
 import com.familyhobbies.userservice.repository.UserRepository;
 import com.familyhobbies.userservice.security.JwtTokenProvider;
@@ -27,16 +29,19 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserEventPublisher userEventPublisher;
 
     public AuthServiceImpl(
             UserRepository userRepository,
             RefreshTokenRepository refreshTokenRepository,
             PasswordEncoder passwordEncoder,
-            JwtTokenProvider jwtTokenProvider) {
+            JwtTokenProvider jwtTokenProvider,
+            UserEventPublisher userEventPublisher) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.userEventPublisher = userEventPublisher;
     }
 
     @Override
@@ -65,11 +70,16 @@ public class AuthServiceImpl implements AuthService {
 
         user = userRepository.save(user);
 
-        // Step 3: Generate token pair
+        // Step 3: Publish UserRegisteredEvent (fire-and-forget — S2-006)
+        UserRegisteredEvent event = new UserRegisteredEvent(
+                user.getId(), user.getEmail(), user.getFirstName(), user.getLastName());
+        userEventPublisher.publishUserRegistered(event);
+
+        // Step 4: Generate token pair
         String accessToken = jwtTokenProvider.generateAccessToken(user);
         String refreshTokenValue = createAndSaveRefreshToken(user);
 
-        // Step 4: Return auth response
+        // Step 5: Return auth response
         return new AuthResponse(accessToken, refreshTokenValue, "Bearer",
             jwtTokenProvider.getAccessTokenValiditySeconds());
     }

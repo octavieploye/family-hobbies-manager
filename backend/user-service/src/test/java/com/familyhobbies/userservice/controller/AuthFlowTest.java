@@ -8,6 +8,8 @@ import com.familyhobbies.userservice.entity.RefreshToken;
 import com.familyhobbies.userservice.entity.User;
 import com.familyhobbies.userservice.entity.UserRole;
 import com.familyhobbies.userservice.entity.UserStatus;
+import com.familyhobbies.userservice.repository.FamilyMemberRepository;
+import com.familyhobbies.userservice.repository.FamilyRepository;
 import com.familyhobbies.userservice.repository.RefreshTokenRepository;
 import com.familyhobbies.userservice.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,12 +69,21 @@ class AuthFlowTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
+    private FamilyMemberRepository familyMemberRepository;
+
+    @Autowired
+    private FamilyRepository familyRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private User existingUser;
 
     @BeforeEach
     void setUp() {
+        // Clean up in FK-safe order: members -> families -> refresh tokens -> users
+        familyMemberRepository.deleteAll();
+        familyRepository.deleteAll();
         refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
 

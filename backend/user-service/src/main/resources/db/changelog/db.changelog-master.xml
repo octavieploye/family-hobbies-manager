@@ -8,5 +8,7 @@
     <include file="db/changelog/changesets/000-init.xml"/>
     <include file="db/changelog/changesets/001-create-user-table.xml"/>
     <include file="db/changelog/changesets/002-create-refresh-token-table.xml"/>
+    <include file="db/changelog/changesets/003-create-family-table.xml"/>
+    <include file="db/changelog/changesets/004-create-family-member-table.xml"/>
 
 </databaseChangeLog>

@@ -3,6 +3,8 @@ package com.familyhobbies.userservice.controller;
 import com.familyhobbies.userservice.dto.request.RegisterRequest;
 import com.familyhobbies.userservice.dto.response.AuthResponse;
 import com.familyhobbies.userservice.entity.User;
+import com.familyhobbies.userservice.repository.FamilyMemberRepository;
+import com.familyhobbies.userservice.repository.FamilyRepository;
 import com.familyhobbies.userservice.repository.RefreshTokenRepository;
 import com.familyhobbies.userservice.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,10 +55,19 @@ class UserRegistrationTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
+    private FamilyMemberRepository familyMemberRepository;
+
+    @Autowired
+    private FamilyRepository familyRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
+        // Clean up in FK-safe order: members -> families -> refresh tokens -> users
+        familyMemberRepository.deleteAll();
+        familyRepository.deleteAll();
         refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
     }

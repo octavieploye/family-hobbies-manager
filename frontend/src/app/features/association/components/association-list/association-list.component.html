@@ -1,0 +1,88 @@
+<!-- association-list.component.html -->
+<div class="association-list">
+  <h1 class="association-list__title">Rechercher des associations</h1>
+
+  <!-- Search Form -->
+  <form
+    class="association-list__search-form"
+    [formGroup]="searchForm"
+    (ngSubmit)="onSearch()"
+  >
+    <mat-form-field class="association-list__field" appearance="outline">
+      <mat-label>Ville</mat-label>
+      <input matInput formControlName="city" placeholder="Ex: Paris, Lyon..." />
+    </mat-form-field>
+
+    <mat-form-field class="association-list__field" appearance="outline">
+      <mat-label>Categorie</mat-label>
+      <mat-select formControlName="category">
+        <mat-option value="">Toutes</mat-option>
+        @for (category of categories; track category) {
+          <mat-option [value]="category">{{ category }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="association-list__field" appearance="outline">
+      <mat-label>Mot-cle</mat-label>
+      <input matInput formControlName="keyword" placeholder="Ex: football, piano..." />
+    </mat-form-field>
+
+    <div class="association-list__actions">
+      <button mat-raised-button color="primary" type="submit">
+        <mat-icon>search</mat-icon>
+        Rechercher
+      </button>
+      <button mat-stroked-button type="button" (click)="onClear()">
+        <mat-icon>clear</mat-icon>
+        Effacer
+      </button>
+    </div>
+  </form>
+
+  <!-- Loading -->
+  @if (loading$ | async) {
+    <div class="association-list__loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement des associations...</p>
+    </div>
+  } @else {
+    <!-- Error -->
+    @if (error$ | async; as error) {
+      <div class="association-list__error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+    }
+
+    <!-- Results -->
+    @if ((associations$ | async); as associations) {
+      @if (associations.length === 0) {
+        <div class="association-list__empty">
+          <mat-icon>search_off</mat-icon>
+          <p>Aucune association trouvee. Essayez d'elargir vos criteres de recherche.</p>
+        </div>
+      } @else {
+        <div class="association-list__grid">
+          @for (association of associations; track association.id) {
+            <app-association-card [association]="association"></app-association-card>
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (pagination$ | async; as pagination) {
+          <mat-paginator
+            class="association-list__paginator"
+            [length]="pagination.totalElements"
+            [pageIndex]="pagination.currentPage"
+            [pageSize]="pagination.pageSize"
+            [pageSizeOptions]="[10, 20, 50]"
+            (page)="onPageChange($event)"
+            aria-label="Naviguer entre les pages de resultats"
+          >
+          </mat-paginator>
+        }
+      }
+    }
+  }
+</div>

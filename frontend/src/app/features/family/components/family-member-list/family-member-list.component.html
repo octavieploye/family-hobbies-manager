@@ -1,0 +1,54 @@
+<!-- family-member-list.component.html -->
+<div class="family-member-list">
+  <table mat-table [dataSource]="members" class="family-member-list__table">
+
+    <!-- Name column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Nom</th>
+      <td mat-cell *matCellDef="let member">
+        {{ member.firstName }} {{ member.lastName }}
+      </td>
+    </ng-container>
+
+    <!-- Age column -->
+    <ng-container matColumnDef="age">
+      <th mat-header-cell *matHeaderCellDef>Age</th>
+      <td mat-cell *matCellDef="let member">
+        {{ member.age }} ans
+      </td>
+    </ng-container>
+
+    <!-- Relationship column -->
+    <ng-container matColumnDef="relationship">
+      <th mat-header-cell *matHeaderCellDef>Lien de parente</th>
+      <td mat-cell *matCellDef="let member">
+        {{ getRelationshipLabel(member.relationship) }}
+      </td>
+    </ng-container>
+
+    <!-- Actions column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let member">
+        <button
+          mat-icon-button
+          matTooltip="Modifier"
+          (click)="onEdit(member)"
+          aria-label="Modifier le membre">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          color="warn"
+          matTooltip="Supprimer"
+          (click)="onDelete(member)"
+          aria-label="Supprimer le membre">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="004-create-family-member-table" author="family-hobbies-team">
+        <comment>Creates t_family_member table for family member management</comment>
+
+        <createTable tableName="t_family_member">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_family_member" nullable="false"/>
+            </column>
+            <column name="family_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT"/>
+            <column name="first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_of_birth" type="DATE"/>
+            <column name="relationship" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="medical_note" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="t_family_member" baseColumnNames="family_id"
+                                 referencedTableName="t_family" referencedColumnNames="id"
+                                 constraintName="fk_family_member_family" onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint baseTableName="t_family_member" baseColumnNames="user_id"
+                                 referencedTableName="t_user" referencedColumnNames="id"
+                                 constraintName="fk_family_member_user" onDelete="SET NULL"/>
+
+        <createIndex tableName="t_family_member" indexName="idx_family_member_family_id">
+            <column name="family_id"/>
+        </createIndex>
+
+        <createIndex tableName="t_family_member" indexName="idx_family_member_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

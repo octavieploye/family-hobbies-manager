@@ -1,0 +1,107 @@
+<!-- family-dashboard.component.html -->
+<div class="family-dashboard">
+  <!-- Loading spinner -->
+  @if (loading$ | async) {
+    <div class="family-dashboard__loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement de votre famille...</p>
+    </div>
+  } @else {
+    <!-- Error message -->
+    @if (error$ | async; as error) {
+      <mat-card class="family-dashboard__error">
+        <mat-card-content>
+          <p class="family-dashboard__error-text">{{ error }}</p>
+          <button mat-button color="primary" (click)="onClearError()">
+            Fermer
+          </button>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    @if (family$ | async; as family) {
+      <!-- Family overview card -->
+      <mat-card class="family-dashboard__overview">
+        <mat-card-header>
+          <mat-card-title>{{ family.name }}</mat-card-title>
+          <mat-card-subtitle>
+            {{ family.members.length }} membre{{ family.members.length !== 1 ? 's' : '' }}
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="onAddMember()">
+            <mat-icon>person_add</mat-icon>
+            Ajouter un membre
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <!-- Member form (add or edit) -->
+      @if (showMemberForm) {
+        <mat-card class="family-dashboard__form-card">
+          <mat-card-header>
+            <mat-card-title>
+              {{ editingMember ? 'Modifier le membre' : 'Ajouter un membre' }}
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <app-family-member-form
+              [member]="editingMember"
+              (save)="onSaveMember($event, family)"
+              (cancel)="onCancelMemberForm()">
+            </app-family-member-form>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Member list -->
+      @if (family.members.length > 0) {
+        <app-family-member-list
+          [members]="family.members"
+          (edit)="onEditMember($event)"
+          (delete)="onDeleteMember($event)">
+        </app-family-member-list>
+      } @else {
+        <mat-card class="family-dashboard__empty">
+          <mat-card-content>
+            <mat-icon class="family-dashboard__empty-icon">group</mat-icon>
+            <p>Aucun membre dans votre famille.</p>
+            <p>Commencez par ajouter un membre.</p>
+          </mat-card-content>
+        </mat-card>
+      }
+    } @else {
+      <!-- No family exists — show creation form -->
+      <mat-card class="family-dashboard__create">
+        <mat-card-header>
+          <mat-card-title>Creer votre famille</mat-card-title>
+          <mat-card-subtitle>
+            Donnez un nom a votre famille pour commencer.
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="familyNameForm" (ngSubmit)="onCreateFamily()">
+            <mat-form-field appearance="outline" class="family-dashboard__name-field">
+              <mat-label>Nom de la famille</mat-label>
+              <input matInput formControlName="name" placeholder="Ex: Famille Dupont" />
+              @if (familyNameForm.get('name')?.hasError('required')) {
+                <mat-error>Le nom est obligatoire</mat-error>
+              }
+              @if (familyNameForm.get('name')?.hasError('minlength')) {
+                <mat-error>Le nom doit contenir au moins 2 caracteres</mat-error>
+              }
+            </mat-form-field>
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="familyNameForm.invalid">
+              <mat-icon>add</mat-icon>
+              Creer la famille
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</div>

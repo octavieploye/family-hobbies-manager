@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="010-seed-associations" author="family-hobbies-team" context="!test">
+        <comment>Seed 20 realistic French associations for demo (Lyon, Paris, Marseille, Toulouse, Nantes)</comment>
+
+        <!-- ===== LYON (5) ===== -->
+        <insert tableName="t_association">
+            <column name="name" value="Lyon Natation Metropole"/>
+            <column name="slug" value="lyon-natation-metropole"/>
+            <column name="description" value="Club de natation proposant des cours pour tous niveaux, de l'initiation a la competition. Piscine couverte et bassin olympique."/>
+            <column name="address" value="12 Rue des Bains"/>
+            <column name="city" value="Lyon"/>
+            <column name="postal_code" value="69003"/>
+            <column name="department" value="Rhone"/>
+            <column name="region" value="Auvergne-Rhone-Alpes"/>
+            <column name="phone" value="+33 4 72 33 45 67"/>
+            <column name="email" value="contact@lyon-natation.fr"/>
+            <column name="website" value="https://www.lyon-natation-metropole.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/lyon-natation.png"/>
+            <column name="helloasso_slug" value="lyon-natation-metropole"/>
+            <column name="category" value="SPORT"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Ecole de Danse Presqu'ile"/>
+            <column name="slug" value="ecole-danse-presquile"/>
+            <column name="description" value="Ecole de danse classique, moderne et contemporaine au coeur de Lyon. Cours enfants et adultes, spectacles annuels."/>
+            <column name="address" value="45 Rue de la Republique"/>
+            <column name="city" value="Lyon"/>
+            <column name="postal_code" value="69002"/>
+            <column name="department" value="Rhone"/>
+            <column name="region" value="Auvergne-Rhone-Alpes"/>
+            <column name="phone" value="+33 4 78 42 15 89"/>
+            <column name="email" value="info@danse-presquile.fr"/>
+            <column name="website" value="https://www.danse-presquile-lyon.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/danse-presquile.png"/>
+            <column name="helloasso_slug" value="ecole-danse-presquile"/>
+            <column name="category" value="DANCE"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Conservatoire Populaire de Musique de Lyon"/>
+            <column name="slug" value="conservatoire-populaire-musique-lyon"/>
+            <column name="description" value="Enseignement musical ouvert a tous : piano, guitare, violon, chant, eveil musical des 3 ans. Concerts et auditions reguliers."/>
+            <column name="address" value="8 Place des Terreaux"/>
+            <column name="city" value="Lyon"/>
+            <column name="postal_code" value="69001"/>
+            <column name="department" value="Rhone"/>
+            <column name="region" value="Auvergne-Rhone-Alpes"/>
+            <column name="phone" value="+33 4 78 28 56 12"/>
+            <column name="email" value="secretariat@conservatoire-lyon.fr"/>
+            <column name="website" value="https://www.conservatoire-populaire-lyon.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/conservatoire-lyon.png"/>
+            <column name="helloasso_slug" value="conservatoire-populaire-musique-lyon"/>
+            <column name="category" value="MUSIC"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Theatre des Celestins Ateliers"/>
+            <column name="slug" value="theatre-celestins-ateliers"/>
+            <column name="description" value="Ateliers theatre pour enfants, adolescents et adultes. Improvisation, mise en scene, expression corporelle."/>
+            <column name="address" value="4 Rue Charles Dullin"/>
+            <column name="city" value="Lyon"/>
+            <column name="postal_code" value="69002"/>
+            <column name="department" value="Rhone"/>
+            <column name="region" value="Auvergne-Rhone-Alpes"/>
+            <column name="phone" value="+33 4 72 77 40 00"/>
+            <column name="email" value="ateliers@celestins-lyon.org"/>
+            <column name="website" value="https://www.celestins-lyon.org/ateliers"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/celestins-ateliers.png"/>
+            <column name="helloasso_slug" value="theatre-celestins-ateliers"/>
+            <column name="category" value="THEATER"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Judo Club Lyonnais"/>
+            <column name="slug" value="judo-club-lyonnais"/>
+            <column name="description" value="Club de judo et jujitsu, cours des 4 ans. Preparation aux competitions regionales et nationales. Section loisir et competition."/>
+            <column name="address" value="22 Avenue Marechal Foch"/>
+            <column name="city" value="Lyon"/>
+            <column name="postal_code" value="69006"/>
+            <column name="department" value="Rhone"/>
+            <column name="region" value="Auvergne-Rhone-Alpes"/>
+            <column name="phone" value="+33 4 78 52 33 44"/>
+            <column name="email" value="contact@judo-lyon.fr"/>
+            <column name="website" value="https://www.judo-club-lyonnais.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/judo-lyon.png"/>
+            <column name="helloasso_slug" value="judo-club-lyonnais"/>
+            <column name="category" value="MARTIAL_ARTS"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- ===== PARIS (5) ===== -->
+        <insert tableName="t_association">
+            <column name="name" value="Paris Athletisme Club"/>
+            <column name="slug" value="paris-athletisme-club"/>
+            <column name="description" value="Club d'athletisme en plein coeur de Paris. Course, saut, lancer pour tous ages. Preparation marathon et trail."/>
+            <column name="address" value="15 Avenue de Breteuil"/>
+            <column name="city" value="Paris"/>
+            <column name="postal_code" value="75007"/>
+            <column name="department" value="Paris"/>
+            <column name="region" value="Ile-de-France"/>
+            <column name="phone" value="+33 1 45 67 23 89"/>
+            <column name="email" value="info@paris-athletisme.fr"/>
+            <column name="website" value="https://www.paris-athletisme-club.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/paris-athletisme.png"/>
+            <column name="helloasso_slug" value="paris-athletisme-club"/>
+            <column name="category" value="SPORT"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Atelier Danse Marais"/>
+            <column name="slug" value="atelier-danse-marais"/>
+            <column name="description" value="Studio de danse au coeur du Marais. Salsa, tango, hip-hop, danse orientale. Cours collectifs et particuliers."/>
+            <column name="address" value="30 Rue des Francs-Bourgeois"/>
+            <column name="city" value="Paris"/>
+            <column name="postal_code" value="75003"/>
+            <column name="department" value="Paris"/>
+            <column name="region" value="Ile-de-France"/>
+            <column name="phone" value="+33 1 42 78 56 34"/>
+            <column name="email" value="bonjour@danse-marais.fr"/>
+            <column name="website" value="https://www.atelier-danse-marais.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/danse-marais.png"/>
+            <column name="helloasso_slug" value="atelier-danse-marais"/>
+            <column name="category" value="DANCE"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Harmonie Musicale de Montmartre"/>
+            <column name="slug" value="harmonie-musicale-montmartre"/>
+            <column name="description" value="Orchestre d'harmonie et ecole de musique. Cuivres, bois, percussions. Concerts dans les rues de Montmartre."/>
+            <column name="address" value="5 Place du Tertre"/>
+            <column name="city" value="Paris"/>
+            <column name="postal_code" value="75018"/>
+            <column name="department" value="Paris"/>
+            <column name="region" value="Ile-de-France"/>
+            <column name="phone" value="+33 1 46 06 72 18"/>
+            <column name="email" value="contact@harmonie-montmartre.fr"/>
+            <column name="website" value="https://www.harmonie-montmartre.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/harmonie-montmartre.png"/>
+            <column name="helloasso_slug" value="harmonie-musicale-montmartre"/>
+            <column name="category" value="MUSIC"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Atelier Peinture Belleville"/>
+            <column name="slug" value="atelier-peinture-belleville"/>
+            <column name="description" value="Ateliers de peinture, dessin et arts plastiques. Stages week-end, cours hebdomadaires, expositions collectives."/>
+            <column name="address" value="18 Rue Denoyez"/>
+            <column name="city" value="Paris"/>
+            <column name="postal_code" value="75020"/>
+            <column name="department" value="Paris"/>
+            <column name="region" value="Ile-de-France"/>
+            <column name="phone" value="+33 1 43 58 22 67"/>
+            <column name="email" value="atelier@peinture-belleville.fr"/>
+            <column name="website" value="https://www.atelier-peinture-belleville.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/peinture-belleville.png"/>
+            <column name="helloasso_slug" value="atelier-peinture-belleville"/>
+            <column name="category" value="ART"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Yoga Zen Paris"/>
+            <column name="slug" value="yoga-zen-paris"/>
+            <column name="description" value="Centre de yoga et bien-etre. Hatha, vinyasa, yin yoga, meditation. Cours en salle et en plein air au Jardin du Luxembourg."/>
+            <column name="address" value="7 Rue Vavin"/>
+            <column name="city" value="Paris"/>
+            <column name="postal_code" value="75006"/>
+            <column name="department" value="Paris"/>
+            <column name="region" value="Ile-de-France"/>
+            <column name="phone" value="+33 1 43 26 89 45"/>
+            <column name="email" value="namaste@yoga-zen-paris.fr"/>
+            <column name="website" value="https://www.yoga-zen-paris.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/yoga-zen-paris.png"/>
+            <column name="helloasso_slug" value="yoga-zen-paris"/>
+            <column name="category" value="WELLNESS"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- ===== MARSEILLE (5) ===== -->
+        <insert tableName="t_association">
+            <column name="name" value="Marseille Voile Club"/>
+            <column name="slug" value="marseille-voile-club"/>
+            <column name="description" value="Club de voile et sports nautiques. Optimist, catamaran, planche a voile. Stages vacances et ecole de voile annuelle."/>
+            <column name="address" value="Plage du Prado, Corniche Kennedy"/>
+            <column name="city" value="Marseille"/>
+            <column name="postal_code" value="13008"/>
+            <column name="department" value="Bouches-du-Rhone"/>
+            <column name="region" value="Provence-Alpes-Cote d'Azur"/>
+            <column name="phone" value="+33 4 91 76 33 22"/>
+            <column name="email" value="contact@marseille-voile.fr"/>
+            <column name="website" value="https://www.marseille-voile-club.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/marseille-voile.png"/>
+            <column name="helloasso_slug" value="marseille-voile-club"/>
+            <column name="category" value="SPORT"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Compagnie Theatre du Lacydon"/>
+            <column name="slug" value="compagnie-theatre-lacydon"/>
+            <column name="description" value="Compagnie de theatre et ateliers dramatiques. Creation contemporaine, theatre de rue, stages intensifs ete."/>
+            <column name="address" value="10 Quai du Port"/>
+            <column name="city" value="Marseille"/>
+            <column name="postal_code" value="13002"/>
+            <column name="department" value="Bouches-du-Rhone"/>
+            <column name="region" value="Provence-Alpes-Cote d'Azur"/>
+            <column name="phone" value="+33 4 91 54 70 12"/>
+            <column name="email" value="compagnie@theatre-lacydon.fr"/>
+            <column name="website" value="https://www.theatre-lacydon.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/theatre-lacydon.png"/>
+            <column name="helloasso_slug" value="compagnie-theatre-lacydon"/>
+            <column name="category" value="THEATER"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Capoeira Marseille Axe"/>
+            <column name="slug" value="capoeira-marseille-axe"/>
+            <column name="description" value="Association de capoeira Angola et Regional. Cours de capoeira, maculele, samba de roda. Batizado annuel."/>
+            <column name="address" value="55 Boulevard Longchamp"/>
+            <column name="city" value="Marseille"/>
+            <column name="postal_code" value="13001"/>
+            <column name="department" value="Bouches-du-Rhone"/>
+            <column name="region" value="Provence-Alpes-Cote d'Azur"/>
+            <column name="phone" value="+33 4 91 62 45 88"/>
+            <column name="email" value="axe@capoeira-marseille.fr"/>
+            <column name="website" value="https://www.capoeira-marseille-axe.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/capoeira-marseille.png"/>
+            <column name="helloasso_slug" value="capoeira-marseille-axe"/>
+            <column name="category" value="MARTIAL_ARTS"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Les Ateliers Creatifs du Panier"/>
+            <column name="slug" value="ateliers-creatifs-panier"/>
+            <column name="description" value="Ateliers d'arts plastiques dans le quartier du Panier. Ceramique, sculpture, aquarelle, gravure. Expositions mensuelles."/>
+            <column name="address" value="22 Rue du Panier"/>
+            <column name="city" value="Marseille"/>
+            <column name="postal_code" value="13002"/>
+            <column name="department" value="Bouches-du-Rhone"/>
+            <column name="region" value="Provence-Alpes-Cote d'Azur"/>
+            <column name="phone" value="+33 4 91 91 03 56"/>
+            <column name="email" value="ateliers@creatifs-panier.fr"/>
+            <column name="website" value="https://www.ateliers-creatifs-panier.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/ateliers-panier.png"/>
+            <column name="helloasso_slug" value="ateliers-creatifs-panier"/>
+            <column name="category" value="ART"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Danse Orientale Soleil Marseille"/>
+            <column name="slug" value="danse-orientale-soleil-marseille"/>
+            <column name="description" value="Cours de danse orientale, bollywood et flamenco. Spectacles et stages decouverte. Ambiance conviviale et chaleureuse."/>
+            <column name="address" value="38 Cours Julien"/>
+            <column name="city" value="Marseille"/>
+            <column name="postal_code" value="13006"/>
+            <column name="department" value="Bouches-du-Rhone"/>
+            <column name="region" value="Provence-Alpes-Cote d'Azur"/>
+            <column name="phone" value="+33 4 91 48 22 77"/>
+            <column name="email" value="info@danse-soleil-marseille.fr"/>
+            <column name="website" value="https://www.danse-orientale-soleil.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/danse-soleil.png"/>
+            <column name="helloasso_slug" value="danse-orientale-soleil-marseille"/>
+            <column name="category" value="DANCE"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- ===== TOULOUSE (3) ===== -->
+        <insert tableName="t_association">
+            <column name="name" value="Toulouse Rugby Loisir"/>
+            <column name="slug" value="toulouse-rugby-loisir"/>
+            <column name="description" value="Club de rugby loisir et touch rugby. Pas de competition, juste le plaisir du jeu. Mixte, tous niveaux, des 6 ans."/>
+            <column name="address" value="Stadium de Toulouse, 1 Allee Gabriel Bienes"/>
+            <column name="city" value="Toulouse"/>
+            <column name="postal_code" value="31000"/>
+            <column name="department" value="Haute-Garonne"/>
+            <column name="region" value="Occitanie"/>
+            <column name="phone" value="+33 5 61 21 44 56"/>
+            <column name="email" value="contact@toulouse-rugby-loisir.fr"/>
+            <column name="website" value="https://www.toulouse-rugby-loisir.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/toulouse-rugby.png"/>
+            <column name="helloasso_slug" value="toulouse-rugby-loisir"/>
+            <column name="category" value="SPORT"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Ecole de Musique Occitane"/>
+            <column name="slug" value="ecole-musique-occitane"/>
+            <column name="description" value="Ecole de musique traditionnelle et moderne. Accordeon, violon, guitare occitane, chant polyphonique. Bals folk mensuels."/>
+            <column name="address" value="14 Rue du Taur"/>
+            <column name="city" value="Toulouse"/>
+            <column name="postal_code" value="31000"/>
+            <column name="department" value="Haute-Garonne"/>
+            <column name="region" value="Occitanie"/>
+            <column name="phone" value="+33 5 61 23 78 90"/>
+            <column name="email" value="contact@musique-occitane.fr"/>
+            <column name="website" value="https://www.ecole-musique-occitane.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/musique-occitane.png"/>
+            <column name="helloasso_slug" value="ecole-musique-occitane"/>
+            <column name="category" value="MUSIC"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Tai Chi Chuan Toulouse"/>
+            <column name="slug" value="tai-chi-chuan-toulouse"/>
+            <column name="description" value="Pratique du Tai Chi Chuan style Yang et Qi Gong. Cours en salle et au Jardin des Plantes. Stages de perfectionnement."/>
+            <column name="address" value="3 Allee Jules Guesde"/>
+            <column name="city" value="Toulouse"/>
+            <column name="postal_code" value="31400"/>
+            <column name="department" value="Haute-Garonne"/>
+            <column name="region" value="Occitanie"/>
+            <column name="phone" value="+33 5 61 52 33 11"/>
+            <column name="email" value="info@taichi-toulouse.fr"/>
+            <column name="website" value="https://www.tai-chi-toulouse.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/taichi-toulouse.png"/>
+            <column name="helloasso_slug" value="tai-chi-chuan-toulouse"/>
+            <column name="category" value="WELLNESS"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- ===== NANTES (2) ===== -->
+        <insert tableName="t_association">
+            <column name="name" value="Nantes Basket Atlantique"/>
+            <column name="slug" value="nantes-basket-atlantique"/>
+            <column name="description" value="Club de basket-ball pour jeunes et adultes. Ecole de mini-basket des 5 ans, equipes seniors en championnat departemental."/>
+            <column name="address" value="88 Boulevard de la Prairie au Duc"/>
+            <column name="city" value="Nantes"/>
+            <column name="postal_code" value="44200"/>
+            <column name="department" value="Loire-Atlantique"/>
+            <column name="region" value="Pays de la Loire"/>
+            <column name="phone" value="+33 2 40 48 65 23"/>
+            <column name="email" value="contact@nantes-basket.fr"/>
+            <column name="website" value="https://www.nantes-basket-atlantique.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/nantes-basket.png"/>
+            <column name="helloasso_slug" value="nantes-basket-atlantique"/>
+            <column name="category" value="SPORT"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_association">
+            <column name="name" value="Compagnie Theatre de l'Erdre"/>
+            <column name="slug" value="compagnie-theatre-erdre"/>
+            <column name="description" value="Compagnie de theatre amateur. Ateliers d'improvisation, cours de theatre enfants et adultes, creation de spectacles."/>
+            <column name="address" value="6 Rue de l'Erdre"/>
+            <column name="city" value="Nantes"/>
+            <column name="postal_code" value="44000"/>
+            <column name="department" value="Loire-Atlantique"/>
+            <column name="region" value="Pays de la Loire"/>
+            <column name="phone" value="+33 2 40 35 12 78"/>
+            <column name="email" value="contact@theatre-erdre.fr"/>
+            <column name="website" value="https://www.theatre-erdre-nantes.fr"/>
+            <column name="logo_url" value="https://cdn.familyhobbies.fr/logos/theatre-erdre.png"/>
+            <column name="helloasso_slug" value="compagnie-theatre-erdre"/>
+            <column name="category" value="THEATER"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

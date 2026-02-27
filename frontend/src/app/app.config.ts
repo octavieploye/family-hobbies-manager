@@ -2,6 +2,7 @@
 import { ApplicationConfig, ErrorHandler } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
@@ -23,7 +24,7 @@ import * as authEffects from './core/auth/store/auth.effects';
  */
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter([]),
+    provideRouter(routes),
     provideHttpClient(
       withInterceptors([jwtInterceptor, errorInterceptor])
     ),

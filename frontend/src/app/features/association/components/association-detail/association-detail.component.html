@@ -1,0 +1,128 @@
+<!-- association-detail.component.html -->
+<div class="association-detail">
+  <!-- Back button -->
+  <a mat-button routerLink="/associations" class="association-detail__back">
+    <mat-icon>arrow_back</mat-icon>
+    Retour aux associations
+  </a>
+
+  <!-- Loading -->
+  @if (loading$ | async) {
+    <div class="association-detail__loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement des details...</p>
+    </div>
+  } @else {
+    <!-- Error -->
+    @if (error$ | async; as error) {
+      <div class="association-detail__error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+    }
+
+    <!-- Detail Card -->
+    @if (association$ | async; as association) {
+      <mat-card class="association-detail__card">
+        <mat-card-header class="association-detail__header">
+          @if (association.logoUrl) {
+            <img
+              mat-card-avatar
+              [src]="association.logoUrl"
+              [alt]="association.name + ' logo'"
+              class="association-detail__logo"
+            />
+          } @else {
+            <div mat-card-avatar class="association-detail__logo-placeholder">
+              {{ association.name.charAt(0).toUpperCase() }}
+            </div>
+          }
+          <mat-card-title>{{ association.name }}</mat-card-title>
+          <mat-card-subtitle>{{ association.city }} ({{ association.postalCode }})</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content class="association-detail__content">
+          <!-- Status & Category -->
+          <div class="association-detail__badges">
+            <mat-chip-set>
+              <mat-chip highlighted>{{ association.category }}</mat-chip>
+              <mat-chip>{{ association.status }}</mat-chip>
+            </mat-chip-set>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Description -->
+          @if (association.description) {
+            <section class="association-detail__section">
+              <h3>Description</h3>
+              <p>{{ association.description }}</p>
+            </section>
+          }
+
+          <!-- Address -->
+          @if (association.address || association.department || association.region) {
+            <section class="association-detail__section">
+              <h3>Adresse</h3>
+              @if (association.address) {
+                <p>{{ association.address }}</p>
+              }
+              <p>
+                {{ association.city }} {{ association.postalCode }}
+                @if (association.department) {
+                  — {{ association.department }}
+                }
+                @if (association.region) {
+                  , {{ association.region }}
+                }
+              </p>
+            </section>
+          }
+
+          <!-- Contact -->
+          @if (association.phone || association.email) {
+            <section class="association-detail__section">
+              <h3>Contact</h3>
+              @if (association.phone) {
+                <p>
+                  <mat-icon class="association-detail__inline-icon">phone</mat-icon>
+                  {{ association.phone }}
+                </p>
+              }
+              @if (association.email) {
+                <p>
+                  <mat-icon class="association-detail__inline-icon">email</mat-icon>
+                  <a [href]="'mailto:' + association.email">{{ association.email }}</a>
+                </p>
+              }
+            </section>
+          }
+
+          <!-- Website -->
+          @if (association.website) {
+            <section class="association-detail__section">
+              <h3>Site web</h3>
+              <p>
+                <mat-icon class="association-detail__inline-icon">language</mat-icon>
+                <a [href]="association.website" target="_blank" rel="noopener noreferrer">
+                  {{ association.website }}
+                </a>
+              </p>
+            </section>
+          }
+
+          <mat-divider></mat-divider>
+
+          <!-- Meta info -->
+          <section class="association-detail__meta">
+            @if (association.lastSyncedAt) {
+              <p class="association-detail__meta-item">
+                Derniere synchronisation : {{ association.lastSyncedAt }}
+              </p>
+            }
+          </section>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</div>

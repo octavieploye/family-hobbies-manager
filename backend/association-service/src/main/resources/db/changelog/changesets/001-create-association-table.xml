@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="001-create-association-table" author="family-hobbies-team">
+        <comment>Creates t_association table for association directory and HelloAsso integration</comment>
+
+        <createTable tableName="t_association">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slug" type="VARCHAR(200)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_association_slug"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="address" type="VARCHAR(500)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="postal_code" type="VARCHAR(10)"/>
+            <column name="department" type="VARCHAR(100)"/>
+            <column name="region" type="VARCHAR(100)"/>
+            <column name="phone" type="VARCHAR(20)"/>
+            <column name="email" type="VARCHAR(200)"/>
+            <column name="website" type="VARCHAR(500)"/>
+            <column name="logo_url" type="VARCHAR(500)"/>
+            <column name="helloasso_slug" type="VARCHAR(200)"/>
+            <column name="helloasso_org_id" type="VARCHAR(100)"/>
+            <column name="category" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_synced_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Indexes for search performance -->
+        <createIndex tableName="t_association" indexName="idx_association_city">
+            <column name="city"/>
+        </createIndex>
+
+        <createIndex tableName="t_association" indexName="idx_association_category">
+            <column name="category"/>
+        </createIndex>
+
+        <createIndex tableName="t_association" indexName="idx_association_city_category">
+            <column name="city"/>
+            <column name="category"/>
+        </createIndex>
+
+        <createIndex tableName="t_association" indexName="idx_association_postal_code">
+            <column name="postal_code"/>
+        </createIndex>
+
+        <createIndex tableName="t_association" indexName="idx_association_helloasso_slug">
+            <column name="helloasso_slug"/>
+        </createIndex>
+
+        <!-- Check constraints for enum values -->
+        <addCheckConstraint tableName="t_association" constraintName="chk_association_category"
+                            condition="category IN ('SPORT', 'DANCE', 'MUSIC', 'THEATER', 'ART', 'MARTIAL_ARTS', 'WELLNESS', 'OTHER')"/>
+
+        <addCheckConstraint tableName="t_association" constraintName="chk_association_status"
+                            condition="status IN ('ACTIVE', 'INACTIVE', 'ARCHIVED')"/>
+
+    </changeSet>
+
+</databaseChangeLog>
