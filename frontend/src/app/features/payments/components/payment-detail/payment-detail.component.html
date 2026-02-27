@@ -1,0 +1,141 @@
+<!-- frontend/src/app/features/payments/components/payment-detail/payment-detail.component.html -->
+<div class="payment-detail">
+  <!-- Back button -->
+  <button mat-button (click)="goBack()" class="payment-detail__back">
+    <mat-icon>arrow_back</mat-icon>
+    Retour aux paiements
+  </button>
+
+  <!-- Loading spinner -->
+  @if (loading$ | async) {
+    <div class="payment-detail__loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement du paiement...</p>
+    </div>
+  }
+
+  <!-- Error message -->
+  @if (error$ | async; as error) {
+    <mat-card class="payment-detail__error">
+      <mat-card-content>
+        <mat-icon color="warn">error</mat-icon>
+        <span>{{ error }}</span>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Payment detail card -->
+  @if (payment$ | async; as payment) {
+    <mat-card class="payment-detail__card">
+      <mat-card-header>
+        <mat-card-title>Paiement #{{ payment.id }}</mat-card-title>
+        <mat-card-subtitle>
+          <mat-chip [color]="getStatusColor(payment.status)" selected>
+            {{ getStatusLabel(payment.status) }}
+          </mat-chip>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Information grid -->
+        <div class="payment-detail__grid">
+          <div class="payment-detail__field">
+            <span class="payment-detail__label">Membre</span>
+            <span class="payment-detail__value">{{ payment.familyMemberName }}</span>
+          </div>
+
+          <div class="payment-detail__field">
+            <span class="payment-detail__label">Association</span>
+            <span class="payment-detail__value">{{ payment.associationName }}</span>
+          </div>
+
+          <div class="payment-detail__field">
+            <span class="payment-detail__label">Activite</span>
+            <span class="payment-detail__value">{{ payment.activityName }}</span>
+          </div>
+
+          <div class="payment-detail__field">
+            <span class="payment-detail__label">Montant</span>
+            <span class="payment-detail__value payment-detail__value--amount">
+              {{ formatAmount(payment.amount) }}
+            </span>
+          </div>
+
+          <div class="payment-detail__field">
+            <span class="payment-detail__label">Type</span>
+            <span class="payment-detail__value">{{ payment.paymentType }}</span>
+          </div>
+
+          <div class="payment-detail__field">
+            <span class="payment-detail__label">Devise</span>
+            <span class="payment-detail__value">{{ payment.currency }}</span>
+          </div>
+
+          @if (payment.paymentMethod) {
+            <div class="payment-detail__field">
+              <span class="payment-detail__label">Moyen de paiement</span>
+              <span class="payment-detail__value">{{ payment.paymentMethod }}</span>
+            </div>
+          }
+
+          <div class="payment-detail__field">
+            <span class="payment-detail__label">Date de creation</span>
+            <span class="payment-detail__value">{{ payment.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+
+          @if (payment.paidAt) {
+            <div class="payment-detail__field">
+              <span class="payment-detail__label">Date de paiement</span>
+              <span class="payment-detail__value">{{ payment.paidAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          }
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Status timeline -->
+        <h3 class="payment-detail__section-title">Progression du paiement</h3>
+        <div class="payment-detail__timeline">
+          @for (step of timelineSteps; track step.status) {
+            <div
+              class="payment-detail__timeline-step"
+              [class.payment-detail__timeline-step--reached]="isStepReached(step.status, payment.status)">
+              <mat-icon>{{ step.icon }}</mat-icon>
+              <span>{{ step.label }}</span>
+            </div>
+          }
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Reference section -->
+        <h3 class="payment-detail__section-title">References</h3>
+        <div class="payment-detail__references">
+          <div class="payment-detail__field">
+            <span class="payment-detail__label">ID Paiement</span>
+            <span class="payment-detail__value">{{ payment.id }}</span>
+          </div>
+
+          <div class="payment-detail__field">
+            <span class="payment-detail__label">ID Abonnement</span>
+            <span class="payment-detail__value">{{ payment.subscriptionId }}</span>
+          </div>
+
+          @if (payment.helloassoPaymentId) {
+            <div class="payment-detail__field">
+              <span class="payment-detail__label">ID HelloAsso</span>
+              <span class="payment-detail__value">{{ payment.helloassoPaymentId }}</span>
+            </div>
+          }
+
+          @if (payment.invoiceId) {
+            <div class="payment-detail__field">
+              <span class="payment-detail__label">ID Facture</span>
+              <span class="payment-detail__value">{{ payment.invoiceId }}</span>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

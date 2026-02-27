@@ -1,0 +1,104 @@
+<!-- frontend/src/app/features/invoices/components/invoice-list/invoice-list.component.html -->
+<div class="invoice-list">
+  <h1 class="invoice-list__title">Mes factures</h1>
+
+  <!-- Loading spinner -->
+  @if (loading()) {
+    <div class="invoice-list__loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement des factures...</p>
+    </div>
+  }
+
+  <!-- Error message -->
+  @if (error(); as errorMsg) {
+    <mat-card class="invoice-list__error">
+      <mat-card-content>
+        <mat-icon color="warn">error</mat-icon>
+        <span>{{ errorMsg }}</span>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Invoice table -->
+  @if (!loading()) {
+    @if (invoices().length > 0) {
+      <div class="invoice-list__table-container">
+        <table mat-table [dataSource]="invoices()" class="invoice-list__table">
+          <!-- Invoice number column -->
+          <ng-container matColumnDef="invoiceNumber">
+            <th mat-header-cell *matHeaderCellDef>Numero</th>
+            <td mat-cell *matCellDef="let invoice">{{ invoice.invoiceNumber }}</td>
+          </ng-container>
+
+          <!-- Status column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Statut</th>
+            <td mat-cell *matCellDef="let invoice">
+              <mat-chip [color]="getStatusColor(invoice.status)" selected>
+                {{ getStatusLabel(invoice.status) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Buyer name column -->
+          <ng-container matColumnDef="buyerName">
+            <th mat-header-cell *matHeaderCellDef>Client</th>
+            <td mat-cell *matCellDef="let invoice">{{ invoice.buyerName }}</td>
+          </ng-container>
+
+          <!-- Amount column -->
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Montant</th>
+            <td mat-cell *matCellDef="let invoice" class="invoice-list__amount">
+              {{ formatAmount(invoice.totalAmount) }}
+            </td>
+          </ng-container>
+
+          <!-- Issued date column -->
+          <ng-container matColumnDef="issuedAt">
+            <th mat-header-cell *matHeaderCellDef>Date d'emission</th>
+            <td mat-cell *matCellDef="let invoice">
+              {{ invoice.issuedAt | date:'dd/MM/yyyy' }}
+            </td>
+          </ng-container>
+
+          <!-- Actions column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let invoice">
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="downloadInvoice(invoice)"
+                aria-label="Telecharger la facture">
+                <mat-icon>download</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <!-- Paginator -->
+      <mat-paginator
+        [length]="totalElements()"
+        [pageIndex]="currentPage()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="[5, 10, 20]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons>
+      </mat-paginator>
+    } @else {
+      <!-- Empty state -->
+      <mat-card class="invoice-list__empty">
+        <mat-card-content>
+          <mat-icon>receipt_long</mat-icon>
+          <p>Aucune facture trouvee</p>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</div>

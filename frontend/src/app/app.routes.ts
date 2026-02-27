@@ -25,6 +25,30 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'payments',
+    loadChildren: () =>
+      import('./features/payments/payments.routes').then(
+        (m) => m.PAYMENT_ROUTES
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'invoices',
+    loadChildren: () =>
+      import('./features/invoices/invoices.routes').then(
+        (m) => m.INVOICE_ROUTES
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'notifications',
+    loadChildren: () =>
+      import('./features/notifications/notifications.routes').then(
+        (m) => m.NOTIFICATION_ROUTES
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: '',
     redirectTo: 'associations',
     pathMatch: 'full',

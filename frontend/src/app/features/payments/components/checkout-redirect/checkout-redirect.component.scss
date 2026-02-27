@@ -1,0 +1,81 @@
+// frontend/src/app/features/payments/components/checkout-redirect/checkout-redirect.component.scss
+
+.checkout-redirect {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 24px;
+
+  &__card {
+    max-width: 500px;
+    width: 100%;
+
+    &--success {
+      border-top: 4px solid #4caf50;
+    }
+
+    &--error {
+      border-top: 4px solid #f44336;
+    }
+
+    &--cancelled {
+      border-top: 4px solid #ff9800;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 32px 16px;
+  }
+
+  &__icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+
+    &--success {
+      color: #4caf50;
+    }
+
+    &--error {
+      color: #f44336;
+    }
+
+    &--cancelled {
+      color: #ff9800;
+    }
+  }
+
+  &__title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &__message {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.54);
+    margin-bottom: 24px;
+    max-width: 400px;
+    line-height: 1.5;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    button {
+      mat-icon {
+        margin-right: 4px;
+      }
+    }
+  }
+}

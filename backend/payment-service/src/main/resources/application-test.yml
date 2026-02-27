@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  liquibase:
+    enabled: true
+  kafka:
+    bootstrap-servers: localhost:9092
+
+eureka:
+  client:
+    enabled: false
+
+helloasso:
+  base-url: http://localhost:9999
+  client-id: test-client-id
+  client-secret: test-client-secret
+  token-url: http://localhost:9999/oauth2/token
+  webhook-secret: test-webhook-secret
+  connect-timeout: 5000
+  read-timeout: 10000

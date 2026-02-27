@@ -1,0 +1,68 @@
+// frontend/src/app/features/invoices/components/invoice-list/invoice-list.component.scss
+
+.invoice-list {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  &__title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 24px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0;
+    gap: 16px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  &__error {
+    margin-bottom: 16px;
+
+    mat-card-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #f44336;
+    }
+  }
+
+  &__table-container {
+    overflow-x: auto;
+    margin-bottom: 8px;
+  }
+
+  &__table {
+    width: 100%;
+  }
+
+  &__amount {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__empty {
+    text-align: center;
+    padding: 48px 0;
+
+    mat-card-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: rgba(0, 0, 0, 0.54);
+
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+      }
+    }
+  }
+}

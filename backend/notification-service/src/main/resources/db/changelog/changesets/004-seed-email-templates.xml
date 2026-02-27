@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="004-seed-email-templates" author="family-hobbies-team" context="seed">
+        <comment>Seeds default email templates for notification service</comment>
+
+        <insert tableName="t_email_template">
+            <column name="code" value="WELCOME"/>
+            <column name="subject" value="Bienvenue sur Family Hobbies Manager !"/>
+            <column name="body_template" value="Bonjour {{firstName}}, bienvenue sur Family Hobbies Manager ! Votre compte a ete cree avec succes. Decouvrez les associations pres de chez vous."/>
+            <column name="category" value="WELCOME"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_email_template">
+            <column name="code" value="PAYMENT_COMPLETED"/>
+            <column name="subject" value="Paiement confirme"/>
+            <column name="body_template" value="Bonjour, votre paiement de {{amount}} {{currency}} a ete confirme avec succes. Reference : {{paymentId}}."/>
+            <column name="category" value="PAYMENT"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_email_template">
+            <column name="code" value="PAYMENT_FAILED"/>
+            <column name="subject" value="Echec de paiement"/>
+            <column name="body_template" value="Bonjour, votre paiement n'a pas pu etre traite. Raison : {{errorReason}}. Veuillez reessayer ou contacter le support."/>
+            <column name="category" value="PAYMENT"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_email_template">
+            <column name="code" value="SUBSCRIPTION_CREATED"/>
+            <column name="subject" value="Inscription confirmee"/>
+            <column name="body_template" value="Bonjour, votre inscription a ete confirmee avec succes. Type d'inscription : {{subscriptionType}}."/>
+            <column name="category" value="SUBSCRIPTION"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_email_template">
+            <column name="code" value="SUBSCRIPTION_CANCELLED"/>
+            <column name="subject" value="Inscription annulee"/>
+            <column name="body_template" value="Bonjour, votre inscription a ete annulee. Raison : {{cancellationReason}}. N'hesitez pas a nous contacter pour plus d'informations."/>
+            <column name="category" value="SUBSCRIPTION"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

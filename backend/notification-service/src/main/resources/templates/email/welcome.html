@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Bienvenue sur Family Hobbies Manager</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #4CAF50; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0;">Family Hobbies Manager</h1>
+    </div>
+    <div style="background-color: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #4CAF50;">Bienvenue, <span th:text="${firstName}">Prenom</span> !</h2>
+        <p>Votre compte a ete cree avec succes sur Family Hobbies Manager.</p>
+        <p>Vous pouvez desormais :</p>
+        <ul>
+            <li>Decouvrir des associations pres de chez vous</li>
+            <li>Gerer votre famille et vos inscriptions</li>
+            <li>Suivre les cours et la presence</li>
+        </ul>
+        <p>N'hesitez pas a explorer notre plateforme et a nous contacter si vous avez des questions.</p>
+        <p style="margin-top: 30px; font-size: 12px; color: #999;">
+            Cet email a ete envoye automatiquement. Merci de ne pas y repondre.
+        </p>
+    </div>
+</body>
+</html>

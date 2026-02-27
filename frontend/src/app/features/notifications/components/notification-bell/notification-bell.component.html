@@ -1,0 +1,19 @@
+<!-- frontend/src/app/features/notifications/components/notification-bell/notification-bell.component.html -->
+<button
+  mat-icon-button
+  class="notification-bell"
+  (click)="toggleDropdown()"
+  aria-label="Notifications"
+>
+  @if (unreadCount()) {
+    <mat-icon
+      [matBadge]="unreadCount()"
+      matBadgeColor="warn"
+      matBadgeSize="small"
+    >
+      notifications
+    </mat-icon>
+  } @else {
+    <mat-icon>notifications_none</mat-icon>
+  }
+</button>

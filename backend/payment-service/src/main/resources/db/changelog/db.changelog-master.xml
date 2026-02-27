@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="db/changelog/changesets/001-create-payment-table.xml"/>
+    <include file="db/changelog/changesets/002-create-invoice-table.xml"/>
+    <include file="db/changelog/changesets/003-create-payment-webhook-log-table.xml"/>
+    <include file="db/changelog/changesets/004-alter-invoice-add-columns.xml"/>
+    <include file="db/changelog/changesets/005-create-invoice-number-sequence.xml"/>
+
+</databaseChangeLog>

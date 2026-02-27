@@ -1,0 +1,24 @@
+// frontend/src/app/features/notifications/components/notification-preferences/notification-preferences.component.scss
+
+.notification-preferences {
+  max-width: 720px;
+  margin: 24px auto;
+
+  &__loading {
+    display: flex;
+    justify-content: center;
+    padding: 48px 0;
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    color: #f44336;
+  }
+
+  &__table {
+    width: 100%;
+  }
+}

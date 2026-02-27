@@ -1,0 +1,123 @@
+<!-- frontend/src/app/features/payments/components/payment-list/payment-list.component.html -->
+<div class="payment-list">
+  <h1 class="payment-list__title">Mes paiements</h1>
+
+  <!-- Status filter -->
+  <div class="payment-list__filters">
+    <mat-form-field appearance="outline" class="payment-list__filter-field">
+      <mat-label>Filtrer par statut</mat-label>
+      <mat-select
+        [value]="(statusFilter$ | async)"
+        (selectionChange)="onStatusFilterChange($event.value)">
+        <mat-option [value]="null">Tous</mat-option>
+        @for (status of paymentStatuses; track status) {
+          <mat-option [value]="status">{{ getStatusLabel(status) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Loading spinner -->
+  @if (loading$ | async) {
+    <div class="payment-list__loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement des paiements...</p>
+    </div>
+  }
+
+  <!-- Error message -->
+  @if (error$ | async; as error) {
+    <mat-card class="payment-list__error">
+      <mat-card-content>
+        <mat-icon color="warn">error</mat-icon>
+        <span>{{ error }}</span>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Payment table -->
+  @if (!(loading$ | async)) {
+    @if ((payments$ | async); as payments) {
+      @if (payments.length > 0) {
+        <div class="payment-list__table-container">
+          <table mat-table [dataSource]="payments" class="payment-list__table">
+            <!-- Date column -->
+            <ng-container matColumnDef="createdAt">
+              <th mat-header-cell *matHeaderCellDef>Date</th>
+              <td mat-cell *matCellDef="let payment">
+                {{ payment.createdAt | date:'dd/MM/yyyy' }}
+              </td>
+            </ng-container>
+
+            <!-- Family member column -->
+            <ng-container matColumnDef="familyMemberName">
+              <th mat-header-cell *matHeaderCellDef>Membre</th>
+              <td mat-cell *matCellDef="let payment">{{ payment.familyMemberName }}</td>
+            </ng-container>
+
+            <!-- Association column -->
+            <ng-container matColumnDef="associationName">
+              <th mat-header-cell *matHeaderCellDef>Association</th>
+              <td mat-cell *matCellDef="let payment">{{ payment.associationName }}</td>
+            </ng-container>
+
+            <!-- Amount column -->
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Montant</th>
+              <td mat-cell *matCellDef="let payment" class="payment-list__amount">
+                {{ formatAmount(payment.amount) }}
+              </td>
+            </ng-container>
+
+            <!-- Status column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Statut</th>
+              <td mat-cell *matCellDef="let payment">
+                <mat-chip [color]="getStatusColor(payment.status)" selected>
+                  {{ getStatusLabel(payment.status) }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Actions column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let payment">
+                <button
+                  mat-icon-button
+                  color="primary"
+                  (click)="viewPayment(payment)"
+                  aria-label="Voir le detail du paiement">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+
+        <!-- Paginator -->
+        @if ((pagination$ | async); as pagination) {
+          <mat-paginator
+            [length]="pagination.totalElements"
+            [pageIndex]="pagination.currentPage"
+            [pageSize]="pagination.pageSize"
+            [pageSizeOptions]="[5, 10, 20]"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        }
+      } @else {
+        <!-- Empty state -->
+        <mat-card class="payment-list__empty">
+          <mat-card-content>
+            <mat-icon>payment</mat-icon>
+            <p>Aucun paiement trouve</p>
+          </mat-card-content>
+        </mat-card>
+      }
+    }
+  }
+</div>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="001-create-payment-table" author="family-hobbies-team">
+        <comment>Creates t_payment table for payment tracking and HelloAsso checkout integration</comment>
+
+        <createTable tableName="t_payment">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="family_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subscription_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="EUR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="payment_type" type="VARCHAR(50)"/>
+            <column name="helloasso_checkout_id" type="VARCHAR(255)"/>
+            <column name="helloasso_payment_id" type="VARCHAR(255)"/>
+            <column name="payment_method" type="VARCHAR(30)"/>
+            <column name="paid_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="failed_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="refunded_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="t_payment" indexName="idx_payment_family_id">
+            <column name="family_id"/>
+        </createIndex>
+
+        <createIndex tableName="t_payment" indexName="idx_payment_status">
+            <column name="status"/>
+        </createIndex>
+
+        <createIndex tableName="t_payment" indexName="idx_payment_helloasso_checkout_id" unique="true">
+            <column name="helloasso_checkout_id"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

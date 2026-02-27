@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="004-alter-invoice-add-columns" author="family-hobbies-team">
+        <comment>Adds buyer, seller, amount, tax, and PDF columns to t_invoice for full invoice data</comment>
+
+        <addColumn tableName="t_invoice">
+            <column name="buyer_name" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="buyer_email" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="buyer_address" type="TEXT"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="seller_name" type="VARCHAR(255)" defaultValue="Family Hobbies Manager"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="seller_address" type="TEXT"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="description" type="TEXT"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="amount" type="DECIMAL(10,2)"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="tax_rate" type="DECIMAL(5,2)" defaultValueNumeric="0.00"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="tax_amount" type="DECIMAL(10,2)" defaultValueNumeric="0.00"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="total_amount" type="DECIMAL(10,2)"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="currency" type="VARCHAR(3)" defaultValue="EUR"/>
+        </addColumn>
+
+        <addColumn tableName="t_invoice">
+            <column name="pdf_path" type="VARCHAR(500)"/>
+        </addColumn>
+
+    </changeSet>
+
+</databaseChangeLog>

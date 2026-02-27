@@ -18,6 +18,29 @@ spring:
     open-in-view: false
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+helloasso:
+  base-url: ${HELLOASSO_BASE_URL:https://api.helloasso-sandbox.com/v5}
+  client-id: ${HELLOASSO_CLIENT_ID:sandbox-client-id}
+  client-secret: ${HELLOASSO_CLIENT_SECRET:sandbox-client-secret}
+  token-url: ${HELLOASSO_TOKEN_URL:https://api.helloasso-sandbox.com/oauth2/token}
+  webhook-secret: ${HELLOASSO_WEBHOOK_SECRET:}
+  connect-timeout: 5000
+  read-timeout: 10000
+  sync:
+    cities:
+      - Paris
+      - Lyon
+      - Marseille
+      - Toulouse
+      - Bordeaux
+      - Nantes
+    page-size: 20
 
 eureka:
   client:
@@ -31,3 +54,28 @@ management:
     web:
       exposure:
         include: health,info
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      helloasso:
+        register-health-indicator: false
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-type: COUNT_BASED
+  retry:
+    instances:
+      helloasso:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+  timelimiter:
+    instances:
+      helloasso:
+        timeout-duration: 10s

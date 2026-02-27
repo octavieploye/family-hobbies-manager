@@ -33,8 +33,33 @@ spring:
           uri: lb://association-service
           predicates:
             - Path=/api/v1/associations/**
-        # --- payment-service routes added in Sprint 5 ---
-        # --- notification-service routes added in Sprint 6 ---
+        # --- payment-service routes (Sprint 5) ---
+        - id: payment-routes
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/payments/**
+
+        - id: webhook-routes
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/payments/webhook
+
+        - id: invoice-routes
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/invoices/**
+
+        # --- notification-service routes (Sprint 6) ---
+        - id: notification-routes
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notifications/**
+
+        # --- admin routes (Sprint 5) ---
+        - id: admin-sync-routes
+          uri: lb://association-service
+          predicates:
+            - Path=/api/v1/admin/associations/**
 
 helloasso:
   base-url: ${HELLOASSO_BASE_URL:https://api.helloasso-sandbox.com}

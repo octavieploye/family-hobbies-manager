@@ -1,0 +1,64 @@
+<!-- frontend/src/app/features/notifications/components/notification-dropdown/notification-dropdown.component.html -->
+@if (dropdownOpen()) {
+  <div class="notification-dropdown">
+    <div class="notification-dropdown__header">
+      <h3 class="notification-dropdown__title">Notifications</h3>
+      <button
+        mat-button
+        color="primary"
+        class="notification-dropdown__mark-all"
+        (click)="markAllAsRead()"
+      >
+        Marquer tout comme lu
+      </button>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <mat-nav-list class="notification-dropdown__list">
+      @if (recentNotifications().length === 0) {
+        <div class="notification-dropdown__empty">
+          <mat-icon>notifications_none</mat-icon>
+          <p>Aucune notification</p>
+        </div>
+      } @else {
+        @for (notification of recentNotifications(); track notification.id) {
+          <a
+            mat-list-item
+            class="notification-dropdown__item"
+            [class.notification-dropdown__item--unread]="!notification.read"
+            (click)="markAsRead(notification.id)"
+          >
+            <div class="notification-dropdown__item-content">
+              <span class="notification-dropdown__item-title">
+                {{ notification.title }}
+              </span>
+              <span class="notification-dropdown__item-message">
+                {{ truncateMessage(notification.message) }}
+              </span>
+              <span class="notification-dropdown__item-time">
+                {{ notification.createdAt | date:'short' }}
+              </span>
+            </div>
+            @if (!notification.read) {
+              <span class="notification-dropdown__unread-dot"></span>
+            }
+          </a>
+        }
+      }
+    </mat-nav-list>
+
+    <mat-divider></mat-divider>
+
+    <div class="notification-dropdown__footer">
+      <a
+        mat-button
+        color="primary"
+        routerLink="/notifications"
+        class="notification-dropdown__view-all"
+      >
+        Voir toutes les notifications
+      </a>
+    </div>
+  </div>
+}

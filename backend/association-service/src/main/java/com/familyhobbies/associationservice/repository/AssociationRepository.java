@@ -12,12 +12,16 @@ import java.util.Optional;
 /**
  * Repository for {@link Association} entities.
  * Extends {@link JpaSpecificationExecutor} for dynamic search criteria.
- * No @Repository annotation — Spring Data auto-detects JpaRepository interfaces.
+ * No @Repository annotation -- Spring Data auto-detects JpaRepository interfaces.
  */
 public interface AssociationRepository extends JpaRepository<Association, Long>,
         JpaSpecificationExecutor<Association> {
 
     Optional<Association> findBySlug(String slug);
+
+    Optional<Association> findByHelloassoSlug(String helloassoSlug);
+
+    long countByHelloassoSlugIsNotNull();
 
     Page<Association> findByCityIgnoreCase(String city, Pageable pageable);
 

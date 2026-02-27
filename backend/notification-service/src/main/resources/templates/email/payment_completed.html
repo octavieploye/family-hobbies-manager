@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Paiement confirme</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #4CAF50; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0;">Paiement confirme</h1>
+    </div>
+    <div style="background-color: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px;">
+        <p>Bonjour,</p>
+        <p>Votre paiement a ete confirme avec succes.</p>
+        <div style="background-color: white; padding: 15px; border-radius: 4px; margin: 20px 0;">
+            <p><strong>Montant :</strong> <span th:text="${amount}">0.00</span> <span th:text="${currency}">EUR</span></p>
+            <p><strong>Methode :</strong> <span th:text="${paymentMethod}">CB</span></p>
+            <p><strong>Reference :</strong> <span th:text="${paymentId}">12345</span></p>
+        </div>
+        <p>Merci pour votre confiance.</p>
+        <p style="margin-top: 30px; font-size: 12px; color: #999;">
+            Cet email a ete envoye automatiquement. Merci de ne pas y repondre.
+        </p>
+    </div>
+</body>
+</html>

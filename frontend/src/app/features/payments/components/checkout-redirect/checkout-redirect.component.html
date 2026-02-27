@@ -1,0 +1,72 @@
+<!-- frontend/src/app/features/payments/components/checkout-redirect/checkout-redirect.component.html -->
+<div class="checkout-redirect">
+  <!-- Loading state -->
+  @if (result() === 'loading') {
+    <mat-card class="checkout-redirect__card">
+      <mat-card-content class="checkout-redirect__content">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p class="checkout-redirect__message">Traitement de votre paiement en cours...</p>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Success state -->
+  @if (result() === 'success') {
+    <mat-card class="checkout-redirect__card checkout-redirect__card--success">
+      <mat-card-content class="checkout-redirect__content">
+        <mat-icon class="checkout-redirect__icon checkout-redirect__icon--success">check_circle</mat-icon>
+        <h2 class="checkout-redirect__title">Paiement reussi</h2>
+        <p class="checkout-redirect__message">
+          Votre paiement a ete traite avec succes. Un email de confirmation vous sera envoye prochainement.
+        </p>
+        <div class="checkout-redirect__actions">
+          @if (paymentId()) {
+            <button mat-raised-button color="primary" (click)="viewPayment()">
+              <mat-icon>receipt</mat-icon>
+              Voir le paiement
+            </button>
+          }
+          <button mat-button (click)="goToPayments()">
+            Retour aux paiements
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Error state -->
+  @if (result() === 'error') {
+    <mat-card class="checkout-redirect__card checkout-redirect__card--error">
+      <mat-card-content class="checkout-redirect__content">
+        <mat-icon class="checkout-redirect__icon checkout-redirect__icon--error">error</mat-icon>
+        <h2 class="checkout-redirect__title">Erreur de paiement</h2>
+        <p class="checkout-redirect__message">
+          Une erreur est survenue lors du traitement de votre paiement. Veuillez reessayer ou contacter le support.
+        </p>
+        <div class="checkout-redirect__actions">
+          <button mat-raised-button color="primary" (click)="goToPayments()">
+            Retour aux paiements
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Cancelled state -->
+  @if (result() === 'cancelled') {
+    <mat-card class="checkout-redirect__card checkout-redirect__card--cancelled">
+      <mat-card-content class="checkout-redirect__content">
+        <mat-icon class="checkout-redirect__icon checkout-redirect__icon--cancelled">cancel</mat-icon>
+        <h2 class="checkout-redirect__title">Paiement annule</h2>
+        <p class="checkout-redirect__message">
+          Vous avez annule le processus de paiement. Aucun montant n'a ete preleve.
+        </p>
+        <div class="checkout-redirect__actions">
+          <button mat-raised-button color="primary" (click)="goToPayments()">
+            Retour aux paiements
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

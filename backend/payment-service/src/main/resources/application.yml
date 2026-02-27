@@ -1,0 +1,54 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/familyhobbies_payments
+    username: ${DB_USERNAME:fhm_admin}
+    password: ${DB_PASSWORD:fhm_secret}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.familyhobbies.common.event
+      group-id: payment-service-invoice-group
+      auto-offset-reset: earliest
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+helloasso:
+  base-url: ${HELLOASSO_BASE_URL:https://api.helloasso-sandbox.com/v5}
+  client-id: ${HELLOASSO_CLIENT_ID:sandbox-client-id}
+  client-secret: ${HELLOASSO_CLIENT_SECRET:sandbox-client-secret}
+  token-url: ${HELLOASSO_TOKEN_URL:https://api.helloasso-sandbox.com/oauth2/token}
+  webhook-secret: ${HELLOASSO_WEBHOOK_SECRET:}
+  connect-timeout: 5000
+  read-timeout: 10000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

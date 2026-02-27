@@ -1,0 +1,55 @@
+<!-- frontend/src/app/features/invoices/components/invoice-section/invoice-section.component.html -->
+<div class="invoice-section">
+  <h3 class="invoice-section__title">Factures associees</h3>
+
+  <!-- Loading spinner -->
+  @if (loading()) {
+    <div class="invoice-section__loading">
+      <mat-spinner diameter="32"></mat-spinner>
+      <span>Chargement...</span>
+    </div>
+  }
+
+  <!-- Error message -->
+  @if (error(); as errorMsg) {
+    <div class="invoice-section__error">
+      <mat-icon color="warn">error</mat-icon>
+      <span>{{ errorMsg }}</span>
+    </div>
+  }
+
+  <!-- Invoice cards -->
+  @if (!loading()) {
+    @if (invoices().length > 0) {
+      @for (invoice of invoices(); track invoice.id) {
+        <mat-card class="invoice-section__card">
+          <mat-card-content>
+            <div class="invoice-section__card-header">
+              <span class="invoice-section__card-number">{{ invoice.invoiceNumber }}</span>
+              <mat-chip [color]="getStatusColor(invoice.status)" selected>
+                {{ getStatusLabel(invoice.status) }}
+              </mat-chip>
+            </div>
+            <div class="invoice-section__card-details">
+              <span>{{ invoice.buyerName }}</span>
+              <span class="invoice-section__card-amount">{{ formatAmount(invoice.totalAmount) }}</span>
+              <span>{{ invoice.issuedAt | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="invoice-section__card-actions">
+              <button
+                mat-stroked-button
+                color="primary"
+                (click)="downloadInvoice(invoice)"
+                aria-label="Telecharger la facture">
+                <mat-icon>download</mat-icon>
+                Telecharger
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    } @else {
+      <p class="invoice-section__empty">Aucune facture pour ce paiement</p>
+    }
+  }
+</div>

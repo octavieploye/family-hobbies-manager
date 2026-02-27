@@ -12,7 +12,25 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
   liquibase:
     enabled: false
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
 
 eureka:
   client:
     enabled: false
+
+helloasso:
+  base-url: http://localhost:18080/v5
+  client-id: test-client-id
+  client-secret: test-client-secret
+  token-url: http://localhost:18080/oauth2/token
+  webhook-secret: test-webhook-secret
+  connect-timeout: 5000
+  read-timeout: 10000
+  sync:
+    cities:
+      - Paris
+      - Lyon
+    page-size: 20
