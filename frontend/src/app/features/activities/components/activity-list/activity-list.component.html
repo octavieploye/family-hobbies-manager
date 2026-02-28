@@ -1,0 +1,97 @@
+<!-- activity-list.component.html -->
+<div class="activity-list">
+  <!-- Back button -->
+  <a mat-button [routerLink]="['/associations', associationId]" class="activity-list__back">
+    <mat-icon>arrow_back</mat-icon>
+    Retour a l'association
+  </a>
+
+  <h1 class="activity-list__title">Activit&eacute;s</h1>
+
+  <!-- Filter Form -->
+  <form
+    class="activity-list__filter-form"
+    [formGroup]="filterForm"
+    (ngSubmit)="loadActivities()"
+  >
+    <mat-form-field class="activity-list__field" appearance="outline">
+      <mat-label>Cat&eacute;gorie</mat-label>
+      <mat-select formControlName="category">
+        <mat-option value="">Toutes</mat-option>
+        @for (category of categories; track category) {
+          <mat-option [value]="category">{{ category }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="activity-list__field" appearance="outline">
+      <mat-label>Niveau</mat-label>
+      <mat-select formControlName="level">
+        <mat-option value="">Tous</mat-option>
+        @for (level of levels; track level) {
+          <mat-option [value]="level">{{ levelLabels[level] }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="activity-list__actions">
+      <button mat-raised-button color="primary" type="submit">
+        <mat-icon>filter_list</mat-icon>
+        Filtrer
+      </button>
+      <button mat-stroked-button type="button" (click)="onClearFilters()">
+        <mat-icon>clear</mat-icon>
+        Effacer
+      </button>
+    </div>
+  </form>
+
+  <!-- Loading -->
+  @if (loading$ | async) {
+    <div class="activity-list__loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement des activit&eacute;s...</p>
+    </div>
+  } @else {
+    <!-- Error -->
+    @if (error$ | async; as error) {
+      <div class="activity-list__error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+    }
+
+    <!-- Results -->
+    @if ((activities$ | async); as activities) {
+      @if (activities.length === 0) {
+        <div class="activity-list__empty">
+          <mat-icon>search_off</mat-icon>
+          <p>Aucune activit&eacute; trouv&eacute;e pour cette association.</p>
+        </div>
+      } @else {
+        <div class="activity-list__grid">
+          @for (activity of activities; track activity.id) {
+            <app-activity-card
+              [activity]="activity"
+              [associationId]="associationId"
+            ></app-activity-card>
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (pagination$ | async; as pagination) {
+          <mat-paginator
+            class="activity-list__paginator"
+            [length]="pagination.totalElements"
+            [pageIndex]="pagination.currentPage"
+            [pageSize]="pagination.pageSize"
+            [pageSizeOptions]="[10, 20, 50]"
+            (page)="onPageChange($event)"
+            aria-label="Naviguer entre les pages d'activit&eacute;s"
+          >
+          </mat-paginator>
+        }
+      }
+    }
+  }
+</div>

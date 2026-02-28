@@ -1,0 +1,54 @@
+<!-- consent-management.component.html -->
+<div class="consent-management">
+  @if (loading()) {
+    <div class="consent-management__loading">
+      <mat-spinner diameter="36"></mat-spinner>
+      <p>Chargement des consentements...</p>
+    </div>
+  } @else {
+    @if (error(); as errorMsg) {
+      <div class="consent-management__error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ errorMsg }}</p>
+      </div>
+    }
+
+    <div class="consent-management__list">
+      @for (type of consentTypes; track type) {
+        <mat-card class="consent-management__card">
+          <mat-card-content>
+            <div class="consent-management__header">
+              <div class="consent-management__label-row">
+                <h3 class="consent-management__label">{{ consentLabels[type].label }}</h3>
+                @if (consentLabels[type].required) {
+                  <mat-chip-set>
+                    <mat-chip color="warn" highlighted>Obligatoire</mat-chip>
+                  </mat-chip-set>
+                }
+              </div>
+              <mat-slide-toggle
+                [checked]="isGranted(type)"
+                [disabled]="consentLabels[type].required && isGranted(type)"
+                (change)="onToggleConsent(type, $event.checked)"
+                [aria-label]="consentLabels[type].label"
+              >
+              </mat-slide-toggle>
+            </div>
+
+            <p class="consent-management__description">
+              {{ consentLabels[type].description }}
+            </p>
+
+            @if (getConsentDate(type); as date) {
+              <div class="consent-management__meta">
+                <span>Version : {{ getConsentVersion(type) }}</span>
+                <span>&bull;</span>
+                <span>Consenti le : {{ date }}</span>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

@@ -29,6 +29,13 @@ export const ASSOCIATION_ROUTES: Routes = [
         title: 'Rechercher des associations',
       },
       {
+        path: ':associationId/activities',
+        loadChildren: () =>
+          import('../activities/activities.routes').then(
+            (m) => m.ACTIVITY_ROUTES
+          ),
+      },
+      {
         path: ':id',
         loadComponent: () =>
           import('./components/association-detail/association-detail.component').then(

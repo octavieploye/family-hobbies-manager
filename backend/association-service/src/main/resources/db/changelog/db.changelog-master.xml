@@ -6,6 +6,11 @@
         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <include file="db/changelog/changesets/001-create-association-table.xml"/>
+    <include file="db/changelog/changesets/002-create-activity-table.xml"/>
+    <include file="db/changelog/changesets/003-create-session-table.xml"/>
+    <include file="db/changelog/changesets/004-create-subscription-table.xml"/>
+    <include file="db/changelog/changesets/005-create-attendance-table.xml"/>
     <include file="db/changelog/changesets/010-seed-associations.xml"/>
+    <include file="db/changelog/changesets/011-seed-activities.xml"/>
 
 </databaseChangeLog>

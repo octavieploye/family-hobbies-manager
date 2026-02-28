@@ -10,5 +10,6 @@
     <include file="db/changelog/changesets/002-create-refresh-token-table.xml"/>
     <include file="db/changelog/changesets/003-create-family-table.xml"/>
     <include file="db/changelog/changesets/004-create-family-member-table.xml"/>
+    <include file="db/changelog/changesets/005-create-consent-record-table.xml"/>
 
 </databaseChangeLog>

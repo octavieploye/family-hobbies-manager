@@ -1,0 +1,72 @@
+// dashboard.component.scss
+.dashboard {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  &__title {
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 24px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 48px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: #fdecea;
+    border-radius: 4px;
+    color: #611a15;
+    margin-bottom: 16px;
+  }
+
+  &__header {
+    margin-bottom: 24px;
+  }
+
+  &__family-card {
+    max-width: 400px;
+  }
+
+  &__family-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__family-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  &__family-name {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  &__member-count {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.54);
+    margin: 4px 0 0;
+  }
+
+  &__widgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+  }
+}

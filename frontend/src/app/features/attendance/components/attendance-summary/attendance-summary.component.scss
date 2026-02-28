@@ -1,0 +1,118 @@
+// attendance-summary.component.scss
+.attendance-summary {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+
+  &__title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &__member-name {
+    font-size: 18px;
+    font-weight: 400;
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 24px;
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 48px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: #fdecea;
+    border-radius: 4px;
+    color: #611a15;
+    margin-bottom: 16px;
+  }
+
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  &__card {
+    text-align: center;
+
+    mat-card-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px;
+    }
+
+    mat-icon {
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  &__card-value {
+    font-size: 32px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &__card-label {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  &__rate {
+    padding: 16px 0;
+  }
+
+  &__rate-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 8px 0;
+
+    mat-progress-bar {
+      flex: 1;
+    }
+  }
+
+  &__rate-value {
+    font-size: 18px;
+    font-weight: 500;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  &__rate-detail {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 48px;
+    color: rgba(0, 0, 0, 0.38);
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+    }
+  }
+}

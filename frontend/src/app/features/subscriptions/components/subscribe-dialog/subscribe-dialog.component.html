@@ -1,0 +1,58 @@
+<!-- subscribe-dialog.component.html -->
+<h2 mat-dialog-title>S'inscrire &agrave; {{ data.activityName }}</h2>
+
+<mat-dialog-content class="subscribe-dialog__content">
+  <p class="subscribe-dialog__association">{{ data.associationName }}</p>
+
+  <form [formGroup]="subscribeForm" class="subscribe-dialog__form">
+    <!-- Family Member Selector -->
+    <mat-form-field appearance="outline" class="subscribe-dialog__field">
+      <mat-label>Membre de la famille</mat-label>
+      <mat-select formControlName="familyMemberId">
+        @if (data.familyMembers && data.familyMembers.length > 0) {
+          @for (member of data.familyMembers; track member.id) {
+            <mat-option [value]="member.id">
+              {{ member.firstName }} {{ member.lastName }}
+            </mat-option>
+          }
+        } @else {
+          <mat-option disabled>Aucun membre disponible</mat-option>
+        }
+      </mat-select>
+      @if (subscribeForm.get('familyMemberId')?.hasError('required') && subscribeForm.get('familyMemberId')?.touched) {
+        <mat-error>Veuillez s&eacute;lectionner un membre</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Subscription Type -->
+    <mat-form-field appearance="outline" class="subscribe-dialog__field">
+      <mat-label>Type d'inscription</mat-label>
+      <mat-select formControlName="subscriptionType">
+        @for (type of subscriptionTypes; track type.value) {
+          <mat-option [value]="type.value">{{ type.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Start Date -->
+    <mat-form-field appearance="outline" class="subscribe-dialog__field">
+      <mat-label>Date de d&eacute;but</mat-label>
+      <input matInput type="date" formControlName="startDate" />
+      @if (subscribeForm.get('startDate')?.hasError('required') && subscribeForm.get('startDate')?.touched) {
+        <mat-error>Veuillez saisir une date de d&eacute;but</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="subscribe-dialog__actions">
+  <button mat-stroked-button (click)="onCancel()">Annuler</button>
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="subscribeForm.invalid"
+    (click)="onSubmit()"
+  >
+    S'inscrire
+  </button>
+</mat-dialog-actions>

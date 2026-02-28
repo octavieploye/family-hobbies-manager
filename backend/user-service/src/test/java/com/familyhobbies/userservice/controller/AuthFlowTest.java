@@ -8,6 +8,7 @@ import com.familyhobbies.userservice.entity.RefreshToken;
 import com.familyhobbies.userservice.entity.User;
 import com.familyhobbies.userservice.entity.UserRole;
 import com.familyhobbies.userservice.entity.UserStatus;
+import com.familyhobbies.userservice.repository.ConsentRecordRepository;
 import com.familyhobbies.userservice.repository.FamilyMemberRepository;
 import com.familyhobbies.userservice.repository.FamilyRepository;
 import com.familyhobbies.userservice.repository.RefreshTokenRepository;
@@ -75,13 +76,17 @@ class AuthFlowTest {
     private FamilyRepository familyRepository;
 
     @Autowired
+    private ConsentRecordRepository consentRecordRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private User existingUser;
 
     @BeforeEach
     void setUp() {
-        // Clean up in FK-safe order: members -> families -> refresh tokens -> users
+        // Clean up in FK-safe order: consent -> members -> families -> refresh tokens -> users
+        consentRecordRepository.deleteAll();
         familyMemberRepository.deleteAll();
         familyRepository.deleteAll();
         refreshTokenRepository.deleteAll();

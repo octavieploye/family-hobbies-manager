@@ -28,11 +28,22 @@ spring:
           predicates:
             - Path=/api/v1/rgpd/**
 
-        # --- association-service routes (Sprint 2) ---
+        # --- association-service routes (Sprint 2 + Sprint 3) ---
         - id: association-route
           uri: lb://association-service
           predicates:
             - Path=/api/v1/associations/**
+
+        - id: subscription-routes
+          uri: lb://association-service
+          predicates:
+            - Path=/api/v1/subscriptions/**
+
+        - id: attendance-routes
+          uri: lb://association-service
+          predicates:
+            - Path=/api/v1/attendance/**
+
         # --- payment-service routes (Sprint 5) ---
         - id: payment-routes
           uri: lb://payment-service

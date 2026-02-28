@@ -1,0 +1,72 @@
+// attendance-history.component.scss
+.attendance-history {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+
+  &__title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 24px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 48px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: #fdecea;
+    border-radius: 4px;
+    color: #611a15;
+    margin-bottom: 16px;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 48px;
+    color: rgba(0, 0, 0, 0.38);
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+    }
+  }
+
+  &__actions {
+    margin-bottom: 16px;
+  }
+
+  &__list {
+    background: white;
+    border-radius: 4px;
+  }
+
+  &__item {
+    min-height: 56px;
+  }
+
+  &__note {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.6);
+    font-style: italic;
+  }
+
+  &__no-note {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.38);
+  }
+}

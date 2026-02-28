@@ -1,0 +1,143 @@
+<!-- activity-detail.component.html -->
+<div class="activity-detail">
+  <!-- Back button -->
+  <a mat-button [routerLink]="['/associations', associationId, 'activities']" class="activity-detail__back">
+    <mat-icon>arrow_back</mat-icon>
+    Retour aux activit&eacute;s
+  </a>
+
+  <!-- Loading -->
+  @if (loading$ | async) {
+    <div class="activity-detail__loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement des d&eacute;tails...</p>
+    </div>
+  } @else {
+    <!-- Error -->
+    @if (error$ | async; as error) {
+      <div class="activity-detail__error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+    }
+
+    <!-- Detail Card -->
+    @if (activity$ | async; as activity) {
+      <mat-card class="activity-detail__card">
+        <mat-card-header class="activity-detail__header">
+          <mat-card-title>{{ activity.name }}</mat-card-title>
+          <mat-card-subtitle>{{ activity.associationName }}</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content class="activity-detail__content">
+          <!-- Status & Category -->
+          <div class="activity-detail__badges">
+            <mat-chip-set>
+              <mat-chip highlighted>{{ activity.category }}</mat-chip>
+              <mat-chip>{{ activity.level }}</mat-chip>
+              <mat-chip>{{ activity.status }}</mat-chip>
+            </mat-chip-set>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Description -->
+          @if (activity.description) {
+            <section class="activity-detail__section">
+              <h3>Description</h3>
+              <p>{{ activity.description }}</p>
+            </section>
+          }
+
+          <!-- Info -->
+          <section class="activity-detail__section">
+            <h3>Informations</h3>
+            <div class="activity-detail__info-grid">
+              <p>
+                <mat-icon class="activity-detail__inline-icon">euro</mat-icon>
+                <strong>Prix :</strong> {{ priceInEuros(activity.priceCents) | currency:'EUR':'symbol':'1.2-2' }}
+              </p>
+
+              @if (ageRange(activity)) {
+                <p>
+                  <mat-icon class="activity-detail__inline-icon">person</mat-icon>
+                  <strong>Tranche d'&acirc;ge :</strong> {{ ageRange(activity) }}
+                </p>
+              }
+
+              @if (activity.maxCapacity) {
+                <p>
+                  <mat-icon class="activity-detail__inline-icon">groups</mat-icon>
+                  <strong>Capacit&eacute; max :</strong> {{ activity.maxCapacity }} places
+                </p>
+              }
+
+              @if (activity.seasonStart) {
+                <p>
+                  <mat-icon class="activity-detail__inline-icon">date_range</mat-icon>
+                  <strong>Saison :</strong> {{ activity.seasonStart }}
+                  @if (activity.seasonEnd) {
+                    au {{ activity.seasonEnd }}
+                  }
+                </p>
+              }
+            </div>
+          </section>
+
+          <mat-divider></mat-divider>
+
+          <!-- Sessions Schedule -->
+          @if (activity.sessions && activity.sessions.length > 0) {
+            <section class="activity-detail__section">
+              <h3>Emploi du temps</h3>
+              <table mat-table [dataSource]="activity.sessions" class="activity-detail__sessions-table">
+                <ng-container matColumnDef="dayOfWeek">
+                  <th mat-header-cell *matHeaderCellDef>Jour</th>
+                  <td mat-cell *matCellDef="let session">{{ dayLabels[session.dayOfWeek] || session.dayOfWeek }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="startTime">
+                  <th mat-header-cell *matHeaderCellDef>D&eacute;but</th>
+                  <td mat-cell *matCellDef="let session">{{ session.startTime }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="endTime">
+                  <th mat-header-cell *matHeaderCellDef>Fin</th>
+                  <td mat-cell *matCellDef="let session">{{ session.endTime }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="location">
+                  <th mat-header-cell *matHeaderCellDef>Lieu</th>
+                  <td mat-cell *matCellDef="let session">{{ session.location || '-' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="instructorName">
+                  <th mat-header-cell *matHeaderCellDef>Instructeur</th>
+                  <td mat-cell *matCellDef="let session">{{ session.instructorName || '-' }}</td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="sessionColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: sessionColumns;"></tr>
+              </table>
+            </section>
+          }
+
+          <mat-divider></mat-divider>
+
+          <!-- Subscribe Button -->
+          <div class="activity-detail__subscribe-section">
+            <button
+              mat-raised-button
+              color="primary"
+              class="activity-detail__subscribe-btn"
+              (click)="openSubscribeDialog(activity)"
+            >
+              <mat-icon>how_to_reg</mat-icon>
+              S'inscrire
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</div>

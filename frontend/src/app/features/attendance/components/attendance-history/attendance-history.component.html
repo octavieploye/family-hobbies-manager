@@ -1,0 +1,62 @@
+<!-- attendance-history.component.html -->
+<div class="attendance-history">
+  <h1 class="attendance-history__title">Historique de pr&eacute;sence</h1>
+
+  <!-- Loading -->
+  @if (loading$ | async) {
+    <div class="attendance-history__loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement de l'historique...</p>
+    </div>
+  } @else {
+    <!-- Error -->
+    @if (error$ | async; as error) {
+      <div class="attendance-history__error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+    }
+
+    @if ((records$ | async); as records) {
+      @if (records.length === 0) {
+        <div class="attendance-history__empty">
+          <mat-icon>history</mat-icon>
+          <p>Aucun historique de pr&eacute;sence disponible.</p>
+        </div>
+      } @else {
+        <!-- Summary Link -->
+        <div class="attendance-history__actions">
+          <a mat-stroked-button [routerLink]="['/attendance/member', memberId, 'summary']">
+            <mat-icon>bar_chart</mat-icon>
+            Voir le r&eacute;sum&eacute;
+          </a>
+        </div>
+
+        <!-- Timeline List -->
+        <mat-list class="attendance-history__list">
+          @for (record of records; track record.id) {
+            <mat-list-item class="attendance-history__item">
+              <mat-icon
+                matListItemIcon
+                [style.color]="getStatusColor(record.status)"
+              >
+                {{ getStatusIcon(record.status) }}
+              </mat-icon>
+              <div matListItemTitle>
+                {{ record.sessionDate }} &mdash; {{ getStatusLabel(record.status) }}
+              </div>
+              <div matListItemLine>
+                @if (record.note) {
+                  <span class="attendance-history__note">{{ record.note }}</span>
+                } @else {
+                  <span class="attendance-history__no-note">Aucune note</span>
+                }
+              </div>
+            </mat-list-item>
+            <mat-divider></mat-divider>
+          }
+        </mat-list>
+      }
+    }
+  }
+</div>

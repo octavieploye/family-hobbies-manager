@@ -1,0 +1,79 @@
+// attendance-sheet.component.scss
+.attendance-sheet {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  &__title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 24px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &__controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+
+    mat-form-field {
+      flex: 0 0 auto;
+    }
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 48px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: #fdecea;
+    border-radius: 4px;
+    color: #611a15;
+    margin-bottom: 16px;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 48px;
+    color: rgba(0, 0, 0, 0.38);
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+    }
+  }
+
+  &__table {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  &__status-field {
+    width: 160px;
+  }
+
+  &__note-field {
+    width: 200px;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 0;
+  }
+}

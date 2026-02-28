@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="004-create-subscription-table" author="family-hobbies-team">
+        <comment>Creates t_subscription table for activity subscriptions (Sprint 3 - S3-003)</comment>
+
+        <createTable tableName="t_subscription">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="activity_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="family_member_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="family_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subscription_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="DATE"/>
+            <column name="cancellation_reason" type="TEXT"/>
+            <column name="cancelled_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Foreign key to t_activity -->
+        <addForeignKeyConstraint baseTableName="t_subscription"
+                                 baseColumnNames="activity_id"
+                                 referencedTableName="t_activity"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_subscription_activity"/>
+
+        <!-- Indexes -->
+        <createIndex tableName="t_subscription" indexName="idx_subscription_activity">
+            <column name="activity_id"/>
+        </createIndex>
+
+        <createIndex tableName="t_subscription" indexName="idx_subscription_member">
+            <column name="family_member_id"/>
+        </createIndex>
+
+        <createIndex tableName="t_subscription" indexName="idx_subscription_family">
+            <column name="family_id"/>
+        </createIndex>
+
+        <createIndex tableName="t_subscription" indexName="idx_subscription_status">
+            <column name="status"/>
+        </createIndex>
+
+        <!-- Check constraints for enum values -->
+        <addCheckConstraint tableName="t_subscription" constraintName="chk_subscription_type"
+                            condition="subscription_type IN ('ADHESION', 'COTISATION')"/>
+
+        <addCheckConstraint tableName="t_subscription" constraintName="chk_subscription_status"
+                            condition="status IN ('PENDING', 'ACTIVE', 'EXPIRED', 'CANCELLED')"/>
+
+    </changeSet>
+
+</databaseChangeLog>

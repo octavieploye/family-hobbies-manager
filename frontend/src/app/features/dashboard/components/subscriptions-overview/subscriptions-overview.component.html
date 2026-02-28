@@ -1,0 +1,35 @@
+<!-- subscriptions-overview.component.html -->
+<mat-card class="subscriptions-overview">
+  <mat-card-header>
+    <mat-icon mat-card-avatar>card_membership</mat-icon>
+    <mat-card-title>Inscriptions actives</mat-card-title>
+    <mat-card-subtitle>{{ subscriptions.length }} inscription(s)</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (subscriptions.length === 0) {
+      <div class="subscriptions-overview__empty">
+        <mat-icon>inbox</mat-icon>
+        <p>Aucune inscription active</p>
+      </div>
+    } @else {
+      <mat-list>
+        @for (sub of subscriptions; track sub.subscriptionId) {
+          <mat-list-item class="subscriptions-overview__item">
+            <mat-icon matListItemIcon>sports</mat-icon>
+            <div matListItemTitle>{{ sub.activityName }}</div>
+            <div matListItemLine>
+              {{ sub.associationName }} &bull; {{ sub.memberName }}
+            </div>
+            <div matListItemMeta>
+              <mat-chip-set>
+                <mat-chip highlighted>{{ getStatusLabel(sub.status) }}</mat-chip>
+              </mat-chip-set>
+            </div>
+          </mat-list-item>
+          <mat-divider></mat-divider>
+        }
+      </mat-list>
+    }
+  </mat-card-content>
+</mat-card>

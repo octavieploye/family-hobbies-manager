@@ -1,0 +1,38 @@
+<!-- activity-card.component.html -->
+<mat-card
+  class="activity-card"
+  [routerLink]="['/associations', associationId, 'activities', activity.id]"
+>
+  <mat-card-header class="activity-card__header">
+    <mat-card-title class="activity-card__title">{{ activity.name }}</mat-card-title>
+    <mat-card-subtitle class="activity-card__level">{{ activity.level }}</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content class="activity-card__content">
+    <div class="activity-card__chips">
+      <mat-chip-set>
+        <mat-chip highlighted>{{ activity.category }}</mat-chip>
+        <mat-chip>{{ activity.status }}</mat-chip>
+      </mat-chip-set>
+    </div>
+
+    <div class="activity-card__info">
+      <p class="activity-card__price">
+        <mat-icon class="activity-card__inline-icon">euro</mat-icon>
+        {{ priceInEuros | currency:'EUR':'symbol':'1.2-2' }}
+      </p>
+
+      <p class="activity-card__sessions">
+        <mat-icon class="activity-card__inline-icon">event</mat-icon>
+        {{ activity.sessionCount }} seance(s)
+      </p>
+
+      @if (ageRange) {
+        <p class="activity-card__age">
+          <mat-icon class="activity-card__inline-icon">person</mat-icon>
+          {{ ageRange }}
+        </p>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>

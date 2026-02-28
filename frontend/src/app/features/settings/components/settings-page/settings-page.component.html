@@ -1,0 +1,36 @@
+<!-- settings-page.component.html -->
+<div class="settings-page">
+  <h1 class="settings-page__title">Param&egrave;tres</h1>
+
+  <mat-tab-group class="settings-page__tabs" animationDuration="200ms">
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>privacy_tip</mat-icon>
+        <span>Consentements</span>
+      </ng-template>
+      <div class="settings-page__tab-content">
+        <app-consent-management></app-consent-management>
+      </div>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>cloud_download</mat-icon>
+        <span>Mes donn&eacute;es</span>
+      </ng-template>
+      <div class="settings-page__tab-content">
+        <app-data-export></app-data-export>
+      </div>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon color="warn">delete_forever</mat-icon>
+        <span>Supprimer mon compte</span>
+      </ng-template>
+      <div class="settings-page__tab-content">
+        <app-account-deletion></app-account-deletion>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

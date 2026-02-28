@@ -10,6 +10,14 @@ import { authGuard } from './core/auth/guards/auth.guard';
  */
 export const routes: Routes = [
   {
+    path: 'dashboard',
+    loadChildren: () =>
+      import('./features/dashboard/dashboard.routes').then(
+        (m) => m.DASHBOARD_ROUTES
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'associations',
     loadChildren: () =>
       import('./features/association/association.routes').then(
@@ -21,6 +29,22 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/family/family.routes').then(
         (m) => m.FAMILY_ROUTES
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'subscriptions',
+    loadChildren: () =>
+      import('./features/subscriptions/subscriptions.routes').then(
+        (m) => m.SUBSCRIPTION_ROUTES
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'attendance',
+    loadChildren: () =>
+      import('./features/attendance/attendance.routes').then(
+        (m) => m.ATTENDANCE_ROUTES
       ),
     canActivate: [authGuard],
   },
@@ -45,6 +69,14 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/notifications/notifications.routes').then(
         (m) => m.NOTIFICATION_ROUTES
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'settings',
+    loadChildren: () =>
+      import('./features/settings/settings.routes').then(
+        (m) => m.SETTINGS_ROUTES
       ),
     canActivate: [authGuard],
   },

@@ -1,0 +1,59 @@
+// activity-card.component.scss
+// BEM naming convention
+
+.activity-card {
+  cursor: pointer;
+  transition: box-shadow 0.2s ease-in-out;
+  height: 100%;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &__header {
+    padding-bottom: 8px;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  &__level {
+    font-size: 0.875rem;
+    text-transform: capitalize;
+  }
+
+  &__content {
+    padding-top: 8px;
+  }
+
+  &__chips {
+    margin-bottom: 12px;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__price,
+  &__sessions,
+  &__age {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    font-size: 0.875rem;
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  &__inline-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+}

@@ -1,0 +1,25 @@
+// settings-page.component.scss
+.settings-page {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+
+  &__title {
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 24px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &__tabs {
+    mat-tab-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  &__tab-content {
+    padding: 24px 0;
+  }
+}

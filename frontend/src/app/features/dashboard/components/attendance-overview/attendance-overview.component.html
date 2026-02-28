@@ -1,0 +1,36 @@
+<!-- attendance-overview.component.html -->
+<mat-card class="attendance-overview">
+  <mat-card-header>
+    <mat-icon mat-card-avatar>how_to_reg</mat-icon>
+    <mat-card-title>Taux de pr&eacute;sence</mat-card-title>
+    <mat-card-subtitle>Par membre de la famille</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (members.length === 0) {
+      <div class="attendance-overview__empty">
+        <mat-icon>bar_chart</mat-icon>
+        <p>Aucune donn&eacute;e de pr&eacute;sence</p>
+      </div>
+    } @else {
+      <div class="attendance-overview__list">
+        @for (member of members; track member.memberId) {
+          <div class="attendance-overview__member">
+            <div class="attendance-overview__member-info">
+              <span class="attendance-overview__member-name">{{ member.memberName }}</span>
+              <span class="attendance-overview__member-sessions">{{ member.totalSessions }} s&eacute;ance(s)</span>
+            </div>
+            <div class="attendance-overview__bar">
+              <mat-progress-bar
+                mode="determinate"
+                [value]="member.attendanceRate"
+                [color]="getProgressColor(member.attendanceRate)"
+              ></mat-progress-bar>
+              <span class="attendance-overview__rate">{{ member.attendanceRate }}%</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

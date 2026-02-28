@@ -1,0 +1,62 @@
+<!-- data-export.component.html -->
+<div class="data-export">
+  <mat-card>
+    <mat-card-header>
+      <mat-icon mat-card-avatar>cloud_download</mat-icon>
+      <mat-card-title>Exporter mes donn&eacute;es</mat-card-title>
+      <mat-card-subtitle>
+        Conform&eacute;ment au RGPD, vous pouvez t&eacute;l&eacute;charger l'ensemble de vos donn&eacute;es personnelles.
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (error(); as errorMsg) {
+        <div class="data-export__error" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          <p>{{ errorMsg }}</p>
+        </div>
+      }
+
+      <div class="data-export__actions">
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="loading()"
+          (click)="onExport()"
+          aria-label="Exporter mes donn&eacute;es"
+        >
+          @if (loading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <mat-icon>download</mat-icon>
+          }
+          Exporter mes donn&eacute;es
+        </button>
+
+        @if (exportData()) {
+          <button
+            mat-stroked-button
+            color="primary"
+            (click)="onDownload()"
+            aria-label="T&eacute;l&eacute;charger le fichier JSON"
+          >
+            <mat-icon>save_alt</mat-icon>
+            T&eacute;l&eacute;charger en JSON
+          </button>
+        }
+      </div>
+
+      @if (exportData()) {
+        <mat-expansion-panel class="data-export__preview">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>code</mat-icon>
+              Aper&ccedil;u des donn&eacute;es
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <pre class="data-export__json">{{ getFormattedJson() }}</pre>
+        </mat-expansion-panel>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

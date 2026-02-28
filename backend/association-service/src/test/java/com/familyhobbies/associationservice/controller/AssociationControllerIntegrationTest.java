@@ -3,7 +3,10 @@ package com.familyhobbies.associationservice.controller;
 import com.familyhobbies.associationservice.entity.Association;
 import com.familyhobbies.associationservice.entity.enums.AssociationCategory;
 import com.familyhobbies.associationservice.entity.enums.AssociationStatus;
+import com.familyhobbies.associationservice.repository.ActivityRepository;
 import com.familyhobbies.associationservice.repository.AssociationRepository;
+import com.familyhobbies.associationservice.repository.SessionRepository;
+import com.familyhobbies.associationservice.repository.SubscriptionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,11 +46,23 @@ class AssociationControllerIntegrationTest {
     @Autowired
     private AssociationRepository associationRepository;
 
+    @Autowired
+    private ActivityRepository activityRepository;
+
+    @Autowired
+    private SessionRepository sessionRepository;
+
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
+
     private Association lyonAssociation;
     private Association parisAssociation;
 
     @BeforeEach
     void setUp() {
+        subscriptionRepository.deleteAll();
+        sessionRepository.deleteAll();
+        activityRepository.deleteAll();
         associationRepository.deleteAll();
 
         lyonAssociation = associationRepository.save(Association.builder()

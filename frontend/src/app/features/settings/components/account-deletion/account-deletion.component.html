@@ -1,0 +1,91 @@
+<!-- account-deletion.component.html -->
+<div class="account-deletion">
+  <mat-card class="account-deletion__card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar color="warn">delete_forever</mat-icon>
+      <mat-card-title>Supprimer mon compte</mat-card-title>
+      <mat-card-subtitle>
+        Cette action est irr&eacute;versible et entra&icirc;nera la suppression de toutes vos donn&eacute;es.
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (!showConfirmation()) {
+        <div class="account-deletion__warning">
+          <mat-icon color="warn">warning</mat-icon>
+          <div>
+            <p><strong>Attention :</strong> La suppression de votre compte est d&eacute;finitive.</p>
+            <ul>
+              <li>Toutes vos donn&eacute;es personnelles seront supprim&eacute;es</li>
+              <li>Vos inscriptions et historique de pr&eacute;sence seront effac&eacute;s</li>
+              <li>Cette action ne peut pas &ecirc;tre annul&eacute;e</li>
+            </ul>
+          </div>
+        </div>
+
+        <button
+          mat-raised-button
+          color="warn"
+          (click)="onRequestDeletion()"
+          aria-label="Demander la suppression du compte"
+        >
+          <mat-icon>delete</mat-icon>
+          Je souhaite supprimer mon compte
+        </button>
+      } @else {
+        @if (error(); as errorMsg) {
+          <div class="account-deletion__error" role="alert">
+            <mat-icon>error_outline</mat-icon>
+            <p>{{ errorMsg }}</p>
+          </div>
+        }
+
+        <form [formGroup]="deletionForm" class="account-deletion__form">
+          <p class="account-deletion__confirm-text">
+            Pour confirmer la suppression, veuillez saisir votre mot de passe.
+          </p>
+
+          <mat-form-field appearance="outline" class="account-deletion__field">
+            <mat-label>Mot de passe</mat-label>
+            <input matInput type="password" formControlName="password" />
+            @if (deletionForm.get('password')?.hasError('required')) {
+              <mat-error>Le mot de passe est requis</mat-error>
+            }
+            @if (deletionForm.get('password')?.hasError('minlength')) {
+              <mat-error>Le mot de passe doit contenir au moins 6 caract&egrave;res</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="account-deletion__field">
+            <mat-label>Raison (optionnelle)</mat-label>
+            <textarea matInput formControlName="reason" rows="3" placeholder="Pourquoi souhaitez-vous supprimer votre compte ?"></textarea>
+          </mat-form-field>
+
+          <div class="account-deletion__actions">
+            <button
+              mat-stroked-button
+              (click)="onCancelDeletion()"
+              [disabled]="loading()"
+            >
+              Annuler
+            </button>
+            <button
+              mat-raised-button
+              color="warn"
+              [disabled]="deletionForm.invalid || loading()"
+              (click)="onConfirmDeletion()"
+              aria-label="Confirmer la suppression du compte"
+            >
+              @if (loading()) {
+                <mat-spinner diameter="20"></mat-spinner>
+              } @else {
+                <mat-icon>delete_forever</mat-icon>
+              }
+              Confirmer la suppression
+            </button>
+          </div>
+        </form>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

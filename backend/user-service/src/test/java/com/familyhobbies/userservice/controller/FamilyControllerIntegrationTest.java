@@ -8,6 +8,7 @@ import com.familyhobbies.userservice.entity.User;
 import com.familyhobbies.userservice.entity.UserRole;
 import com.familyhobbies.userservice.entity.UserStatus;
 import com.familyhobbies.userservice.entity.enums.Relationship;
+import com.familyhobbies.userservice.repository.ConsentRecordRepository;
 import com.familyhobbies.userservice.repository.FamilyMemberRepository;
 import com.familyhobbies.userservice.repository.FamilyRepository;
 import com.familyhobbies.userservice.repository.RefreshTokenRepository;
@@ -67,10 +68,14 @@ class FamilyControllerIntegrationTest {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
+    @Autowired
+    private ConsentRecordRepository consentRecordRepository;
+
     private User testUser;
 
     @BeforeEach
     void setUp() {
+        consentRecordRepository.deleteAll();
         familyMemberRepository.deleteAll();
         familyRepository.deleteAll();
         refreshTokenRepository.deleteAll();

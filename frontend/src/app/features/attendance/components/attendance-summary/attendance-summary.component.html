@@ -1,0 +1,82 @@
+<!-- attendance-summary.component.html -->
+<div class="attendance-summary">
+  <h1 class="attendance-summary__title">R&eacute;sum&eacute; de pr&eacute;sence</h1>
+
+  <!-- Loading -->
+  @if (loading$ | async) {
+    <div class="attendance-summary__loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Chargement du r&eacute;sum&eacute;...</p>
+    </div>
+  } @else {
+    <!-- Error -->
+    @if (error$ | async; as error) {
+      <div class="attendance-summary__error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+    }
+
+    @if (summary$ | async; as summary) {
+      <h2 class="attendance-summary__member-name">
+        {{ summary.memberFirstName }} {{ summary.memberLastName }}
+      </h2>
+
+      <!-- Stats Cards -->
+      <div class="attendance-summary__cards">
+        <mat-card class="attendance-summary__card">
+          <mat-card-content>
+            <mat-icon [style.color]="statusConfig.PRESENT.color">{{ statusConfig.PRESENT.icon }}</mat-icon>
+            <span class="attendance-summary__card-value">{{ summary.presentCount }}</span>
+            <span class="attendance-summary__card-label">Pr&eacute;sent</span>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="attendance-summary__card">
+          <mat-card-content>
+            <mat-icon [style.color]="statusConfig.ABSENT.color">{{ statusConfig.ABSENT.icon }}</mat-icon>
+            <span class="attendance-summary__card-value">{{ summary.absentCount }}</span>
+            <span class="attendance-summary__card-label">Absent</span>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="attendance-summary__card">
+          <mat-card-content>
+            <mat-icon [style.color]="statusConfig.EXCUSED.color">{{ statusConfig.EXCUSED.icon }}</mat-icon>
+            <span class="attendance-summary__card-value">{{ summary.excusedCount }}</span>
+            <span class="attendance-summary__card-label">Excus&eacute;</span>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="attendance-summary__card">
+          <mat-card-content>
+            <mat-icon [style.color]="statusConfig.LATE.color">{{ statusConfig.LATE.icon }}</mat-icon>
+            <span class="attendance-summary__card-value">{{ summary.lateCount }}</span>
+            <span class="attendance-summary__card-label">En retard</span>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Attendance Rate -->
+      <div class="attendance-summary__rate">
+        <h3>Taux de pr&eacute;sence</h3>
+        <div class="attendance-summary__rate-bar">
+          <mat-progress-bar
+            mode="determinate"
+            [value]="summary.attendanceRate"
+            [color]="getProgressColor(summary.attendanceRate)"
+          ></mat-progress-bar>
+          <span class="attendance-summary__rate-value">{{ summary.attendanceRate }}%</span>
+        </div>
+        <p class="attendance-summary__rate-detail">
+          {{ summary.presentCount }} pr&eacute;sences sur {{ summary.totalSessions }} s&eacute;ances
+        </p>
+      </div>
+    } @else {
+      <div class="attendance-summary__empty">
+        <mat-icon>bar_chart</mat-icon>
+        <p>Aucune donn&eacute;e de pr&eacute;sence disponible.</p>
+      </div>
+    }
+  }
+</div>

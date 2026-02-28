@@ -3,6 +3,7 @@ package com.familyhobbies.userservice.controller;
 import com.familyhobbies.userservice.dto.request.RegisterRequest;
 import com.familyhobbies.userservice.dto.response.AuthResponse;
 import com.familyhobbies.userservice.entity.User;
+import com.familyhobbies.userservice.repository.ConsentRecordRepository;
 import com.familyhobbies.userservice.repository.FamilyMemberRepository;
 import com.familyhobbies.userservice.repository.FamilyRepository;
 import com.familyhobbies.userservice.repository.RefreshTokenRepository;
@@ -61,11 +62,15 @@ class UserRegistrationTest {
     private FamilyRepository familyRepository;
 
     @Autowired
+    private ConsentRecordRepository consentRecordRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
-        // Clean up in FK-safe order: members -> families -> refresh tokens -> users
+        // Clean up in FK-safe order: consent -> members -> families -> refresh tokens -> users
+        consentRecordRepository.deleteAll();
         familyMemberRepository.deleteAll();
         familyRepository.deleteAll();
         refreshTokenRepository.deleteAll();

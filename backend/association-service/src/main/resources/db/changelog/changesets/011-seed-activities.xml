@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="011-seed-activities" author="family-hobbies-team" context="!test">
+        <comment>Seed realistic activities and sessions for demo associations (Sprint 3)</comment>
+
+        <!-- ===== Lyon Natation Metropole (association_id=1) ===== -->
+        <insert tableName="t_activity">
+            <column name="association_id" valueNumeric="1"/>
+            <column name="name" value="Natation enfants 6-10 ans"/>
+            <column name="description" value="Cours de natation pour enfants de 6 a 10 ans. Apprentissage des 4 nages, jeux aquatiques et initiation au sauvetage."/>
+            <column name="category" value="SPORT"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="min_age" valueNumeric="6"/>
+            <column name="max_age" valueNumeric="10"/>
+            <column name="max_capacity" valueNumeric="15"/>
+            <column name="price_cents" valueNumeric="18000"/>
+            <column name="season_start" value="2025-09-01"/>
+            <column name="season_end" value="2026-06-30"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="1"/>
+            <column name="day_of_week" value="TUESDAY"/>
+            <column name="start_time" value="17:00:00"/>
+            <column name="end_time" value="18:00:00"/>
+            <column name="location" value="Piscine municipale, Bassin 2"/>
+            <column name="instructor_name" value="Marie Dupont"/>
+            <column name="max_capacity" valueNumeric="15"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="1"/>
+            <column name="day_of_week" value="THURSDAY"/>
+            <column name="start_time" value="17:00:00"/>
+            <column name="end_time" value="18:00:00"/>
+            <column name="location" value="Piscine municipale, Bassin 2"/>
+            <column name="instructor_name" value="Marie Dupont"/>
+            <column name="max_capacity" valueNumeric="15"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_activity">
+            <column name="association_id" valueNumeric="1"/>
+            <column name="name" value="Natation adultes"/>
+            <column name="description" value="Cours de natation pour adultes tous niveaux. Perfectionnement technique, endurance et preparation aux competitions."/>
+            <column name="category" value="SPORT"/>
+            <column name="level" value="ALL_LEVELS"/>
+            <column name="min_age" valueNumeric="16"/>
+            <column name="max_capacity" valueNumeric="20"/>
+            <column name="price_cents" valueNumeric="25000"/>
+            <column name="season_start" value="2025-09-01"/>
+            <column name="season_end" value="2026-06-30"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="2"/>
+            <column name="day_of_week" value="MONDAY"/>
+            <column name="start_time" value="19:00:00"/>
+            <column name="end_time" value="20:00:00"/>
+            <column name="location" value="Piscine municipale, Bassin olympique"/>
+            <column name="instructor_name" value="Thomas Bernard"/>
+            <column name="max_capacity" valueNumeric="20"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <!-- ===== Ecole de Danse Presqu'ile (association_id=2) ===== -->
+        <insert tableName="t_activity">
+            <column name="association_id" valueNumeric="2"/>
+            <column name="name" value="Danse classique debutant"/>
+            <column name="description" value="Initiation a la danse classique. Positions de base, barre, centre et petites variations. Spectacle de fin d'annee."/>
+            <column name="category" value="DANCE"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="min_age" valueNumeric="6"/>
+            <column name="max_age" valueNumeric="12"/>
+            <column name="max_capacity" valueNumeric="12"/>
+            <column name="price_cents" valueNumeric="22000"/>
+            <column name="season_start" value="2025-09-15"/>
+            <column name="season_end" value="2026-06-15"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="3"/>
+            <column name="day_of_week" value="WEDNESDAY"/>
+            <column name="start_time" value="14:00:00"/>
+            <column name="end_time" value="15:30:00"/>
+            <column name="location" value="Studio A"/>
+            <column name="instructor_name" value="Claire Martin"/>
+            <column name="max_capacity" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_activity">
+            <column name="association_id" valueNumeric="2"/>
+            <column name="name" value="Modern jazz ados"/>
+            <column name="description" value="Cours de modern jazz pour adolescents. Technique, expression corporelle et choregraphie contemporaine."/>
+            <column name="category" value="DANCE"/>
+            <column name="level" value="INTERMEDIATE"/>
+            <column name="min_age" valueNumeric="12"/>
+            <column name="max_age" valueNumeric="18"/>
+            <column name="max_capacity" valueNumeric="16"/>
+            <column name="price_cents" valueNumeric="24000"/>
+            <column name="season_start" value="2025-09-15"/>
+            <column name="season_end" value="2026-06-15"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="4"/>
+            <column name="day_of_week" value="SATURDAY"/>
+            <column name="start_time" value="10:00:00"/>
+            <column name="end_time" value="11:30:00"/>
+            <column name="location" value="Studio B"/>
+            <column name="instructor_name" value="Sophie Leroux"/>
+            <column name="max_capacity" valueNumeric="16"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <!-- ===== Conservatoire Populaire de Musique de Lyon (association_id=3) ===== -->
+        <insert tableName="t_activity">
+            <column name="association_id" valueNumeric="3"/>
+            <column name="name" value="Piano debutant enfants"/>
+            <column name="description" value="Cours de piano pour debutants. Solfege, lecture de partitions et interpretation. Auditions trimestrielles."/>
+            <column name="category" value="MUSIC"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="min_age" valueNumeric="7"/>
+            <column name="max_age" valueNumeric="14"/>
+            <column name="max_capacity" valueNumeric="8"/>
+            <column name="price_cents" valueNumeric="35000"/>
+            <column name="season_start" value="2025-09-01"/>
+            <column name="season_end" value="2026-06-30"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="5"/>
+            <column name="day_of_week" value="WEDNESDAY"/>
+            <column name="start_time" value="14:00:00"/>
+            <column name="end_time" value="15:00:00"/>
+            <column name="location" value="Salle de piano 1"/>
+            <column name="instructor_name" value="Philippe Moreau"/>
+            <column name="max_capacity" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_activity">
+            <column name="association_id" valueNumeric="3"/>
+            <column name="name" value="Eveil musical 3-6 ans"/>
+            <column name="description" value="Decouverte de la musique par le jeu. Rythme, chant, decouverte des instruments. Spectacle de Noel."/>
+            <column name="category" value="MUSIC"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="min_age" valueNumeric="3"/>
+            <column name="max_age" valueNumeric="6"/>
+            <column name="max_capacity" valueNumeric="10"/>
+            <column name="price_cents" valueNumeric="15000"/>
+            <column name="season_start" value="2025-09-01"/>
+            <column name="season_end" value="2026-06-30"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="6"/>
+            <column name="day_of_week" value="SATURDAY"/>
+            <column name="start_time" value="10:00:00"/>
+            <column name="end_time" value="11:00:00"/>
+            <column name="location" value="Salle polyvalente"/>
+            <column name="instructor_name" value="Anne Petit"/>
+            <column name="max_capacity" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <!-- ===== Theatre des Celestins Ateliers (association_id=4) ===== -->
+        <insert tableName="t_activity">
+            <column name="association_id" valueNumeric="4"/>
+            <column name="name" value="Theatre enfants 8-12 ans"/>
+            <column name="description" value="Ateliers theatre pour enfants. Improvisation, expression corporelle, mise en scene et spectacle de fin d'annee."/>
+            <column name="category" value="THEATER"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="min_age" valueNumeric="8"/>
+            <column name="max_age" valueNumeric="12"/>
+            <column name="max_capacity" valueNumeric="14"/>
+            <column name="price_cents" valueNumeric="20000"/>
+            <column name="season_start" value="2025-09-15"/>
+            <column name="season_end" value="2026-06-15"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="7"/>
+            <column name="day_of_week" value="WEDNESDAY"/>
+            <column name="start_time" value="14:00:00"/>
+            <column name="end_time" value="16:00:00"/>
+            <column name="location" value="Petite salle des Celestins"/>
+            <column name="instructor_name" value="Julien Roche"/>
+            <column name="max_capacity" valueNumeric="14"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_activity">
+            <column name="association_id" valueNumeric="4"/>
+            <column name="name" value="Improvisation adultes"/>
+            <column name="description" value="Atelier d'improvisation theatrale pour adultes. Lacher-prise, ecoute, spontaneite et matchs d'impro."/>
+            <column name="category" value="THEATER"/>
+            <column name="level" value="ALL_LEVELS"/>
+            <column name="min_age" valueNumeric="18"/>
+            <column name="max_capacity" valueNumeric="16"/>
+            <column name="price_cents" valueNumeric="28000"/>
+            <column name="season_start" value="2025-09-15"/>
+            <column name="season_end" value="2026-06-15"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="8"/>
+            <column name="day_of_week" value="THURSDAY"/>
+            <column name="start_time" value="19:30:00"/>
+            <column name="end_time" value="21:30:00"/>
+            <column name="location" value="Grande salle des Celestins"/>
+            <column name="instructor_name" value="Camille Blanc"/>
+            <column name="max_capacity" valueNumeric="16"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <!-- ===== Judo Club Lyonnais (association_id=5) ===== -->
+        <insert tableName="t_activity">
+            <column name="association_id" valueNumeric="5"/>
+            <column name="name" value="Judo enfants 4-7 ans"/>
+            <column name="description" value="Initiation au judo pour les plus petits. Chutes, prises de base, jeux de combat et valeurs du judo."/>
+            <column name="category" value="MARTIAL_ARTS"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="min_age" valueNumeric="4"/>
+            <column name="max_age" valueNumeric="7"/>
+            <column name="max_capacity" valueNumeric="20"/>
+            <column name="price_cents" valueNumeric="19000"/>
+            <column name="season_start" value="2025-09-01"/>
+            <column name="season_end" value="2026-06-30"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="9"/>
+            <column name="day_of_week" value="WEDNESDAY"/>
+            <column name="start_time" value="14:00:00"/>
+            <column name="end_time" value="15:00:00"/>
+            <column name="location" value="Dojo principal"/>
+            <column name="instructor_name" value="Kenji Tanaka"/>
+            <column name="max_capacity" valueNumeric="20"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="9"/>
+            <column name="day_of_week" value="SATURDAY"/>
+            <column name="start_time" value="10:00:00"/>
+            <column name="end_time" value="11:00:00"/>
+            <column name="location" value="Dojo principal"/>
+            <column name="instructor_name" value="Kenji Tanaka"/>
+            <column name="max_capacity" valueNumeric="20"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_activity">
+            <column name="association_id" valueNumeric="5"/>
+            <column name="name" value="Judo competition ados"/>
+            <column name="description" value="Preparation aux competitions regionales et nationales. Technique avancee, randori et strategie de combat."/>
+            <column name="category" value="MARTIAL_ARTS"/>
+            <column name="level" value="ADVANCED"/>
+            <column name="min_age" valueNumeric="12"/>
+            <column name="max_age" valueNumeric="18"/>
+            <column name="max_capacity" valueNumeric="15"/>
+            <column name="price_cents" valueNumeric="26000"/>
+            <column name="season_start" value="2025-09-01"/>
+            <column name="season_end" value="2026-06-30"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="10"/>
+            <column name="day_of_week" value="TUESDAY"/>
+            <column name="start_time" value="18:00:00"/>
+            <column name="end_time" value="19:30:00"/>
+            <column name="location" value="Dojo principal"/>
+            <column name="instructor_name" value="Kenji Tanaka"/>
+            <column name="max_capacity" valueNumeric="15"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="t_session">
+            <column name="activity_id" valueNumeric="10"/>
+            <column name="day_of_week" value="FRIDAY"/>
+            <column name="start_time" value="18:00:00"/>
+            <column name="end_time" value="19:30:00"/>
+            <column name="location" value="Dojo principal"/>
+            <column name="instructor_name" value="Kenji Tanaka"/>
+            <column name="max_capacity" valueNumeric="15"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

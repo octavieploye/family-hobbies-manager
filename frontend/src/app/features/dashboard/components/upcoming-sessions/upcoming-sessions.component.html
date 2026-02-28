@@ -1,0 +1,40 @@
+<!-- upcoming-sessions.component.html -->
+<mat-card class="upcoming-sessions">
+  <mat-card-header>
+    <mat-icon mat-card-avatar>event</mat-icon>
+    <mat-card-title>Prochaines s&eacute;ances</mat-card-title>
+    <mat-card-subtitle>Les 7 prochains jours</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (sessions.length === 0) {
+      <div class="upcoming-sessions__empty">
+        <mat-icon>event_busy</mat-icon>
+        <p>Aucune s&eacute;ance pr&eacute;vue</p>
+      </div>
+    } @else {
+      <mat-list>
+        @for (session of sessions; track session.sessionId) {
+          <mat-list-item class="upcoming-sessions__item">
+            <mat-icon matListItemIcon>schedule</mat-icon>
+            <div matListItemTitle>
+              {{ session.activityName }} &mdash; {{ session.associationName }}
+            </div>
+            <div matListItemLine>
+              {{ session.dayOfWeek }} {{ session.startTime }} - {{ session.endTime }}
+              @if (session.location) {
+                &bull; {{ session.location }}
+              }
+            </div>
+            <div matListItemLine>
+              @for (name of session.memberNames; track name) {
+                <span class="upcoming-sessions__member">{{ name }}</span>
+              }
+            </div>
+          </mat-list-item>
+          <mat-divider></mat-divider>
+        }
+      </mat-list>
+    }
+  </mat-card-content>
+</mat-card>
