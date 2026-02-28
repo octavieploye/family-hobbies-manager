@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManagerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -63,12 +64,13 @@ public class SubscriptionExpiryJobConfig {
      * JPA paging reader that selects ACTIVE subscriptions past their end date.
      *
      * <p>Uses a JPQL query with named parameters. The cutoff date is
-     * set at reader initialization time (job start), ensuring consistent
-     * behavior throughout the job execution.
+     * computed fresh per step execution via {@code @StepScope}, ensuring
+     * the date is always current and not stale from bean creation time.
      *
      * <p>Page size matches chunk size for optimal DB read efficiency.
      */
     @Bean
+    @StepScope
     public JpaPagingItemReader<Subscription> expiredSubscriptionReader() {
         return new JpaPagingItemReaderBuilder<Subscription>()
                 .name("expiredSubscriptionReader")

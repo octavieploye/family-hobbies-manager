@@ -61,19 +61,6 @@ test.describe('Axe-core Accessibility Audit (WCAG 2.1 AA)', () => {
         tags: ['wcag2a', 'wcag2aa', 'wcag21aa'],
       });
 
-      // Log full results for debugging
-      console.log(`Axe results for /auth/login:`);
-      console.log(`  Passes: ${results.passes}`);
-      console.log(`  Violations: ${results.violations.length}`);
-      console.log(`  Incomplete: ${results.incomplete}`);
-
-      // Log each violation
-      for (const violation of results.violations) {
-        console.log(
-          `  [${violation.impact}] ${violation.id}: ${violation.description}`
-        );
-      }
-
       // Assert no critical/serious
       const criticalOrSerious = results.violations.filter(
         (v) => v.impact === 'critical' || v.impact === 'serious'
@@ -95,17 +82,6 @@ test.describe('Axe-core Accessibility Audit (WCAG 2.1 AA)', () => {
       const results = await runAxeScan(page, {
         tags: ['wcag2a', 'wcag2aa', 'wcag21aa'],
       });
-
-      console.log(`Axe results for /dashboard:`);
-      console.log(`  Passes: ${results.passes}`);
-      console.log(`  Violations: ${results.violations.length}`);
-      console.log(`  Incomplete: ${results.incomplete}`);
-
-      for (const violation of results.violations) {
-        console.log(
-          `  [${violation.impact}] ${violation.id}: ${violation.description}`
-        );
-      }
 
       const criticalOrSerious = results.violations.filter(
         (v) => v.impact === 'critical' || v.impact === 'serious'
@@ -200,10 +176,6 @@ test.describe('Axe-core Accessibility Audit (WCAG 2.1 AA)', () => {
             .length,
         });
       }
-
-      // Log the aggregate report
-      console.log('\n=== Accessibility Audit Report ===');
-      console.table(results);
 
       // Assert all pages have zero critical + zero serious
       for (const result of results) {

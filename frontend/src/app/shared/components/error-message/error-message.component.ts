@@ -1,6 +1,6 @@
 // frontend/src/app/shared/components/error-message/error-message.component.ts
 
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,8 +19,8 @@ import { MatButtonModule } from '@angular/material/button';
         <p class="error-message__detail">{{ message }}</p>
       </div>
       @if (retryable) {
-        <button mat-button color="primary" (click)="onRetry()" aria-label="Reessayer le chargement">
-          Reessayer
+        <button mat-button color="primary" (click)="onRetry()" aria-label="Réessayer le chargement">
+          Réessayer
         </button>
       }
     </div>
@@ -54,11 +54,12 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class ErrorMessageComponent {
   @Input() title = 'Une erreur est survenue';
-  @Input() message = 'Veuillez reessayer ulterieurement.';
+  @Input() message = 'Veuillez réessayer ultérieurement.';
   @Input() retryable = false;
 
+  @Output() retry = new EventEmitter<void>();
+
   onRetry(): void {
-    // Emit retry event -- parent handles the logic
-    window.dispatchEvent(new CustomEvent('app:retry'));
+    this.retry.emit();
   }
 }

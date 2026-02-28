@@ -27,6 +27,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/v1/admin/batch")
+@PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Admin Batch (User)", description = "Admin-only batch job triggers for user-service")
 public class AdminBatchController {
 

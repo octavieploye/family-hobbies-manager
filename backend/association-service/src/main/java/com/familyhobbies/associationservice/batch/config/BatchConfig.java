@@ -3,11 +3,9 @@ package com.familyhobbies.associationservice.batch.config;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
@@ -24,7 +22,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  * </ul>
  */
 @Configuration
-@EnableScheduling
 public class BatchConfig {
 
     /**

@@ -13,7 +13,7 @@ for SERVICE in $SERVICES; do
   echo ""
   echo "--- Building $SERVICE ---"
   docker build \
-    -t "familyhobbies/$SERVICE:latest" \
+    -t "family-hobbies/$SERVICE:latest" \
     -f "backend/$SERVICE/Dockerfile" \
     backend/
   echo "$SERVICE built successfully."
@@ -21,24 +21,24 @@ done
 
 echo ""
 echo "=== Building frontend image ==="
-docker build -t familyhobbies/frontend:latest frontend/
+docker build -t family-hobbies/frontend:latest frontend/
 echo "Frontend built successfully."
 
 echo ""
 echo "=== Image sizes ==="
 for SERVICE in $SERVICES frontend; do
-  SIZE=$(docker image inspect "familyhobbies/$SERVICE:latest" --format '{{.Size}}')
+  SIZE=$(docker image inspect "family-hobbies/$SERVICE:latest" --format '{{.Size}}')
   SIZE_MB=$((SIZE / 1024 / 1024))
-  echo "  familyhobbies/$SERVICE: ${SIZE_MB} MB"
+  echo "  family-hobbies/$SERVICE: ${SIZE_MB} MB"
 done
 
 echo ""
 echo "=== Verifying non-root user ==="
 for SERVICE in $SERVICES; do
-  USER=$(docker inspect --format '{{.Config.User}}' "familyhobbies/$SERVICE:latest")
+  USER=$(docker inspect --format '{{.Config.User}}' "family-hobbies/$SERVICE:latest")
   echo "  $SERVICE runs as: $USER"
 done
-FRONTEND_USER=$(docker inspect --format '{{.Config.User}}' "familyhobbies/frontend:latest")
+FRONTEND_USER=$(docker inspect --format '{{.Config.User}}' "family-hobbies/frontend:latest")
 echo "  frontend runs as: $FRONTEND_USER"
 
 echo ""

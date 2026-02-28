@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 
+import java.util.ArrayList;
+
 /**
  * Writes reconciled payments to the database and publishes Kafka events.
  *
@@ -41,8 +43,12 @@ public class PaymentReconciliationWriter implements ItemWriter<Payment> {
     public void write(Chunk<? extends Payment> chunk) throws Exception {
         log.info("Writing {} reconciled payments", chunk.size());
 
-        for (Payment payment : chunk) {
-            paymentRepository.save(payment);
+        // Batch persist all payments at once
+        var payments = new ArrayList<>(chunk.getItems());
+        paymentRepository.saveAll(payments);
+
+        // Publish Kafka events individually (per-item)
+        for (Payment payment : payments) {
             publishEventForStatus(payment);
         }
 

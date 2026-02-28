@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: familyhobbies/frontend:latest
+          image: family-hobbies/frontend:latest
           ports:
             - containerPort: 80
               protocol: TCP

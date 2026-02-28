@@ -64,8 +64,8 @@ services:
 
   discovery-service:
     build:
-      context: ../backend/discovery-service
-      dockerfile: Dockerfile
+      context: ../backend
+      dockerfile: discovery-service/Dockerfile
     container_name: fhm-e2e-discovery
     ports:
       - "8761:8761"
@@ -82,8 +82,8 @@ services:
 
   api-gateway:
     build:
-      context: ../backend/api-gateway
-      dockerfile: Dockerfile
+      context: ../backend
+      dockerfile: api-gateway/Dockerfile
     container_name: fhm-e2e-gateway
     ports:
       - "8080:8080"
@@ -105,8 +105,8 @@ services:
 
   user-service:
     build:
-      context: ../backend/user-service
-      dockerfile: Dockerfile
+      context: ../backend
+      dockerfile: user-service/Dockerfile
     container_name: fhm-e2e-user
     ports:
       - "8081:8081"
@@ -136,8 +136,8 @@ services:
 
   association-service:
     build:
-      context: ../backend/association-service
-      dockerfile: Dockerfile
+      context: ../backend
+      dockerfile: association-service/Dockerfile
     container_name: fhm-e2e-association
     ports:
       - "8082:8082"
@@ -169,8 +169,8 @@ services:
 
   payment-service:
     build:
-      context: ../backend/payment-service
-      dockerfile: Dockerfile
+      context: ../backend
+      dockerfile: payment-service/Dockerfile
     container_name: fhm-e2e-payment
     ports:
       - "8083:8083"
@@ -203,8 +203,8 @@ services:
 
   notification-service:
     build:
-      context: ../backend/notification-service
-      dockerfile: Dockerfile
+      context: ../backend
+      dockerfile: notification-service/Dockerfile
     container_name: fhm-e2e-notification
     ports:
       - "8084:8084"

@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: familyhobbies/api-gateway:latest
+          image: family-hobbies/api-gateway:latest
           ports:
             - containerPort: 8080
               protocol: TCP

@@ -27,7 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *   <li>Publish {@link SubscriptionExpiredEvent} to Kafka after each chunk</li>
  * </ul>
  *
- * <p>Kafka topic: {@code subscription.expired}
+ * <p>Kafka topic: {@code family-hobbies.subscription.expired}
  * <p>Kafka key: subscriptionId (ensures ordering per subscription)
  *
  * <p>Thread safety: uses {@link CopyOnWriteArrayList} for the pending events
@@ -40,7 +40,7 @@ public class SubscriptionExpiryJobListener
     private static final Logger log =
             LoggerFactory.getLogger(SubscriptionExpiryJobListener.class);
 
-    private static final String TOPIC = "subscription.expired";
+    private static final String TOPIC = "family-hobbies.subscription.expired";
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 

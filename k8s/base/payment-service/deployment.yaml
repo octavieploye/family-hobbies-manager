@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: familyhobbies/payment-service:latest
+          image: family-hobbies/payment-service:latest
           ports:
             - containerPort: 8083
               protocol: TCP

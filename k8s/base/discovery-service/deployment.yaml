@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: discovery-service
-          image: familyhobbies/discovery-service:latest
+          image: family-hobbies/discovery-service:latest
           ports:
             - containerPort: 8761
               protocol: TCP

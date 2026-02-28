@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: association-service
-          image: familyhobbies/association-service:latest
+          image: family-hobbies/association-service:latest
           ports:
             - containerPort: 8082
               protocol: TCP

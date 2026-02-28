@@ -58,12 +58,13 @@ public class RgpdCleanupWriter implements ItemWriter<User> {
     public void write(Chunk<? extends User> chunk) throws Exception {
         log.info("Writing {} anonymized users", chunk.size());
 
-        for (User user : chunk) {
-            // 1. Persist the anonymized user locally
-            userRepository.save(user);
-            anonymizedCount.incrementAndGet();
+        // 1. Batch persist all anonymized users at once
+        var users = new ArrayList<>(chunk.getItems());
+        userRepository.saveAll(users);
+        anonymizedCount.addAndGet(users.size());
 
-            // 2. Trigger cross-service cleanup
+        // 2. Trigger cross-service cleanup per user
+        for (User user : users) {
             triggerCrossServiceCleanup(user.getId());
         }
 

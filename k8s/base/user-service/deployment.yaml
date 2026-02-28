@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: familyhobbies/user-service:latest
+          image: family-hobbies/user-service:latest
           ports:
             - containerPort: 8081
               protocol: TCP

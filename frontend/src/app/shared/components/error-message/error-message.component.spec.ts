@@ -46,7 +46,7 @@ describe('ErrorMessageComponent', () => {
     );
     expect(detailEl).toBeTruthy();
     expect(detailEl.textContent?.trim()).toBe(
-      'Veuillez reessayer ulterieurement.'
+      'Veuillez réessayer ultérieurement.'
     );
   });
 
@@ -68,7 +68,7 @@ describe('ErrorMessageComponent', () => {
 
   it('should not display retry button by default', () => {
     const retryBtn = fixture.nativeElement.querySelector(
-      'button[aria-label="Reessayer le chargement"]'
+      'button[aria-label="Réessayer le chargement"]'
     );
     expect(retryBtn).toBeFalsy();
   });
@@ -78,28 +78,24 @@ describe('ErrorMessageComponent', () => {
     fixture.detectChanges();
 
     const retryBtn: HTMLButtonElement = fixture.nativeElement.querySelector(
-      'button[aria-label="Reessayer le chargement"]'
+      'button[aria-label="Réessayer le chargement"]'
     );
     expect(retryBtn).toBeTruthy();
-    expect(retryBtn.textContent?.trim()).toContain('Reessayer');
+    expect(retryBtn.textContent?.trim()).toContain('Réessayer');
   });
 
-  it('should dispatch app:retry event when retry button is clicked', () => {
+  it('should emit retry event when retry button is clicked', () => {
     component.retryable = true;
     fixture.detectChanges();
 
-    const dispatchSpy = jest.spyOn(window, 'dispatchEvent');
+    const retrySpy = jest.spyOn(component.retry, 'emit');
 
     const retryBtn: HTMLButtonElement = fixture.nativeElement.querySelector(
-      'button[aria-label="Reessayer le chargement"]'
+      'button[aria-label="Réessayer le chargement"]'
     );
     retryBtn.click();
 
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'app:retry' })
-    );
-
-    dispatchSpy.mockRestore();
+    expect(retrySpy).toHaveBeenCalledTimes(1);
   });
 
   it('should have an error icon with aria-hidden', () => {
