@@ -2,14 +2,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { of } from 'rxjs';
 import { SubscriptionListComponent } from './subscription-list.component';
 import { SubscriptionState, initialSubscriptionState } from '../../store/subscription.reducer';
 import { Subscription } from '@shared/models/subscription.model';
+import { FamilyService } from '../../../family/services/family.service';
+import { Family } from '../../../family/models/family.model';
 
 describe('SubscriptionListComponent', () => {
   let component: SubscriptionListComponent;
   let fixture: ComponentFixture<SubscriptionListComponent>;
   let store: MockStore;
+
+  const mockFamily: Family = {
+    id: 3,
+    name: 'Dupont',
+    createdBy: 1,
+    members: [],
+    createdAt: '2024-01-01T10:00:00',
+    updatedAt: '2024-01-01T10:00:00',
+  };
 
   const mockSubscription: Subscription = {
     id: 1,
@@ -35,11 +47,16 @@ describe('SubscriptionListComponent', () => {
     subscriptions: { ...initialSubscriptionState },
   };
 
+  const familyServiceMock = {
+    getMyFamily: jest.fn().mockReturnValue(of(mockFamily)),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SubscriptionListComponent, NoopAnimationsModule],
       providers: [
         provideMockStore({ initialState }),
+        { provide: FamilyService, useValue: familyServiceMock },
       ],
     }).compileComponents();
 
@@ -55,7 +72,8 @@ describe('SubscriptionListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should dispatch loadSubscriptions on init', () => {
+  it('should fetch family and dispatch loadSubscriptions with real familyId on init', () => {
+    expect(familyServiceMock.getMyFamily).toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalled();
   });
 

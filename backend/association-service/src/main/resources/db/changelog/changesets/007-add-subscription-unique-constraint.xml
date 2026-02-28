@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="007-add-subscription-unique-constraint" author="family-hobbies-team">
+        <comment>Adds partial unique index on t_subscription to prevent duplicate active/pending
+            subscriptions for the same family member and activity. Uses PostgreSQL partial index
+            (WHERE clause). This constraint is also enforced at the application level in
+            SubscriptionServiceImpl.validateNoDuplicateSubscription() for H2 test compatibility.
+            Sprint 3-4 fix H-007.</comment>
+
+        <sql dbms="postgresql">
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_subscription_member_activity
+            ON t_subscription(family_member_id, activity_id)
+            WHERE status IN ('PENDING', 'ACTIVE');
+        </sql>
+
+        <rollback>
+            <sql dbms="postgresql">
+                DROP INDEX IF EXISTS uq_subscription_member_activity;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

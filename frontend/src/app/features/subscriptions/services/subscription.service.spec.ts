@@ -110,7 +110,7 @@ describe('SubscriptionService', () => {
   });
 
   describe('cancel', () => {
-    it('should send PUT request to /subscriptions/{id}/cancel', () => {
+    it('should send PUT request to /subscriptions/{id}/cancel without reason', () => {
       const cancelledSubscription: Subscription = {
         ...mockSubscription,
         status: 'CANCELLED',
@@ -124,6 +124,24 @@ describe('SubscriptionService', () => {
       });
 
       const req = httpMock.expectOne(`${API_BASE}/1/cancel`);
+      expect(req.request.method).toBe('PUT');
+      req.flush(cancelledSubscription);
+    });
+
+    it('should send PUT request to /subscriptions/{id}/cancel with reason query parameter', () => {
+      const cancelledSubscription: Subscription = {
+        ...mockSubscription,
+        status: 'CANCELLED',
+        cancellationReason: 'Demenagement',
+        cancelledAt: '2024-10-01T10:00:00',
+      };
+
+      service.cancel(1, 'Demenagement').subscribe((result) => {
+        expect(result.status).toBe('CANCELLED');
+        expect(result.cancellationReason).toBe('Demenagement');
+      });
+
+      const req = httpMock.expectOne(`${API_BASE}/1/cancel?reason=Demenagement`);
       expect(req.request.method).toBe('PUT');
       req.flush(cancelledSubscription);
     });

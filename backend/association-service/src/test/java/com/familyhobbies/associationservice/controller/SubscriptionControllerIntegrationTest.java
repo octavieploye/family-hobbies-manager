@@ -85,6 +85,8 @@ class SubscriptionControllerIntegrationTest {
             .familyMemberId(10L)
             .familyId(5L)
             .userId(100L)
+            .memberFirstName("Lucas")
+            .memberLastName("Dupont")
             .subscriptionType(SubscriptionType.ADHESION)
             .status(SubscriptionStatus.PENDING)
             .startDate(LocalDate.of(2025, 9, 1))
@@ -102,6 +104,8 @@ class SubscriptionControllerIntegrationTest {
                 "activityId": %d,
                 "familyMemberId": 20,
                 "familyId": 5,
+                "memberFirstName": "Emma",
+                "memberLastName": "Martin",
                 "subscriptionType": "COTISATION",
                 "startDate": "2025-09-01"
             }
@@ -129,6 +133,8 @@ class SubscriptionControllerIntegrationTest {
                 "activityId": %d,
                 "familyMemberId": 10,
                 "familyId": 5,
+                "memberFirstName": "Lucas",
+                "memberLastName": "Dupont",
                 "subscriptionType": "ADHESION",
                 "startDate": "2025-09-01"
             }

@@ -14,6 +14,8 @@ describe('RgpdService', () => {
   const API_BASE = `${environment.apiBaseUrl}/rgpd`;
 
   const mockConsent: ConsentStatus = {
+    id: 1,
+    userId: 1,
     consentType: 'TERMS_OF_SERVICE',
     granted: true,
     version: '1.0',

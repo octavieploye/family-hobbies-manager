@@ -82,7 +82,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'associations',
+    redirectTo: 'dashboard',
     pathMatch: 'full',
   },
 ];

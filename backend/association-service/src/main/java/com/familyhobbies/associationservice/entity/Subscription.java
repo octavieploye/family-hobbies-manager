@@ -71,6 +71,12 @@ public class Subscription {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @Column(name = "member_first_name", length = 100)
+    private String memberFirstName;
+
+    @Column(name = "member_last_name", length = 100)
+    private String memberLastName;
+
     @Column(name = "cancellation_reason", columnDefinition = "TEXT")
     private String cancellationReason;
 

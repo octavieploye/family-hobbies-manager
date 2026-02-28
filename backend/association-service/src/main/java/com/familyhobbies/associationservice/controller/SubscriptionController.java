@@ -3,6 +3,7 @@ package com.familyhobbies.associationservice.controller;
 import com.familyhobbies.associationservice.dto.request.SubscriptionRequest;
 import com.familyhobbies.associationservice.dto.response.SubscriptionResponse;
 import com.familyhobbies.associationservice.service.SubscriptionService;
+import com.familyhobbies.errorhandling.exception.web.ForbiddenException;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -112,7 +113,14 @@ public class SubscriptionController {
             @PathVariable Long subscriptionId,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateAdminRole(roles);
         SubscriptionResponse result = subscriptionService.activateSubscription(subscriptionId);
         return ResponseEntity.ok(result);
+    }
+
+    private void validateAdminRole(String roles) {
+        if (roles == null || !roles.contains("ADMIN")) {
+            throw new ForbiddenException("ADMIN role required to perform this action");
+        }
     }
 }

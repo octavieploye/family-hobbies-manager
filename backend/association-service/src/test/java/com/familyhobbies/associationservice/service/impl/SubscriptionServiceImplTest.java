@@ -93,6 +93,8 @@ class SubscriptionServiceImplTest {
             .familyMemberId(10L)
             .familyId(5L)
             .userId(100L)
+            .memberFirstName("Lucas")
+            .memberLastName("Dupont")
             .subscriptionType(SubscriptionType.ADHESION)
             .status(SubscriptionStatus.PENDING)
             .startDate(LocalDate.of(2025, 9, 1))
@@ -102,13 +104,13 @@ class SubscriptionServiceImplTest {
 
         testResponse = new SubscriptionResponse(
             1L, 1L, "Natation enfants", "Lyon Natation Metropole",
-            10L, 5L, 100L, SubscriptionType.ADHESION,
+            10L, "Lucas", "Dupont", 5L, 100L, SubscriptionType.ADHESION,
             SubscriptionStatus.PENDING, LocalDate.of(2025, 9, 1), null,
             null, null, Instant.now(), Instant.now()
         );
 
         testRequest = new SubscriptionRequest(
-            1L, 10L, 5L, SubscriptionType.ADHESION,
+            1L, 10L, 5L, "Lucas", "Dupont", SubscriptionType.ADHESION,
             LocalDate.of(2025, 9, 1), null
         );
     }
@@ -136,7 +138,7 @@ class SubscriptionServiceImplTest {
         when(activityRepository.findById(999L)).thenReturn(Optional.empty());
 
         SubscriptionRequest request = new SubscriptionRequest(
-            999L, 10L, 5L, SubscriptionType.ADHESION,
+            999L, 10L, 5L, "Lucas", "Dupont", SubscriptionType.ADHESION,
             LocalDate.of(2025, 9, 1), null
         );
 
@@ -157,7 +159,7 @@ class SubscriptionServiceImplTest {
         when(activityRepository.findById(2L)).thenReturn(Optional.of(cancelledActivity));
 
         SubscriptionRequest request = new SubscriptionRequest(
-            2L, 10L, 5L, SubscriptionType.ADHESION,
+            2L, 10L, 5L, "Lucas", "Dupont", SubscriptionType.ADHESION,
             LocalDate.of(2025, 9, 1), null
         );
 
@@ -235,7 +237,7 @@ class SubscriptionServiceImplTest {
     void should_cancelSubscription_when_validOwner() {
         SubscriptionResponse cancelledResponse = new SubscriptionResponse(
             1L, 1L, "Natation enfants", "Lyon Natation Metropole",
-            10L, 5L, 100L, SubscriptionType.ADHESION,
+            10L, "Lucas", "Dupont", 5L, 100L, SubscriptionType.ADHESION,
             SubscriptionStatus.CANCELLED, LocalDate.of(2025, 9, 1), null,
             "Personal reasons", Instant.now(), Instant.now(), Instant.now()
         );
@@ -269,7 +271,7 @@ class SubscriptionServiceImplTest {
     void should_activateSubscription_when_pendingStatus() {
         SubscriptionResponse activeResponse = new SubscriptionResponse(
             1L, 1L, "Natation enfants", "Lyon Natation Metropole",
-            10L, 5L, 100L, SubscriptionType.ADHESION,
+            10L, "Lucas", "Dupont", 5L, 100L, SubscriptionType.ADHESION,
             SubscriptionStatus.ACTIVE, LocalDate.of(2025, 9, 1), null,
             null, null, Instant.now(), Instant.now()
         );

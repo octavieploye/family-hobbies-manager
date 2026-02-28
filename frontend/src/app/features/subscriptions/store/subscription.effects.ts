@@ -88,8 +88,8 @@ export const cancelSubscription$ = createEffect(
   (actions$ = inject(Actions), service = inject(SubscriptionService)) =>
     actions$.pipe(
       ofType(SubscriptionActions.cancelSubscription),
-      switchMap(({ subscriptionId }) =>
-        service.cancel(subscriptionId).pipe(
+      switchMap(({ subscriptionId, reason }) =>
+        service.cancel(subscriptionId, reason).pipe(
           map((subscription) =>
             SubscriptionActions.cancelSubscriptionSuccess({ subscription })
           ),

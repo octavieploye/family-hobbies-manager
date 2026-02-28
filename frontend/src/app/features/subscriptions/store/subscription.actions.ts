@@ -31,7 +31,7 @@ export const SubscriptionActions = createActionGroup({
     'Create Subscription Failure': props<{ error: string }>(),
 
     // --- Cancel ---
-    'Cancel Subscription': props<{ subscriptionId: number }>(),
+    'Cancel Subscription': props<{ subscriptionId: number; reason?: string }>(),
     'Cancel Subscription Success': props<{ subscription: Subscription }>(),
     'Cancel Subscription Failure': props<{ error: string }>(),
 

@@ -4,6 +4,7 @@ import {
   Attendance,
   AttendanceSummary,
   BulkAttendanceRequest,
+  UpdateAttendanceRequest,
 } from '@shared/models/attendance.model';
 
 /**
@@ -36,7 +37,7 @@ export const AttendanceActions = createActionGroup({
     'Bulk Mark Attendance Failure': props<{ error: string }>(),
 
     // --- Update ---
-    'Update Attendance': props<{ attendanceId: number; changes: Partial<Attendance> }>(),
+    'Update Attendance': props<{ attendanceId: number; changes: UpdateAttendanceRequest }>(),
     'Update Attendance Success': props<{ record: Attendance }>(),
     'Update Attendance Failure': props<{ error: string }>(),
 

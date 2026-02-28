@@ -5,9 +5,11 @@ export type ConsentType = 'TERMS_OF_SERVICE' | 'DATA_PROCESSING' | 'MARKETING_EM
 
 /**
  * Current consent status for a single consent type.
- * Maps to backend ConsentStatusResponse DTO.
+ * Maps to backend ConsentResponse DTO.
  */
 export interface ConsentStatus {
+  id: number;
+  userId: number;
   consentType: ConsentType;
   granted: boolean;
   version: string;

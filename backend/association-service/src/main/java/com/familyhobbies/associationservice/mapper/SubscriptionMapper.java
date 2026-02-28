@@ -30,6 +30,8 @@ public class SubscriptionMapper {
             activity != null ? activity.getName() : null,
             association != null ? association.getName() : null,
             entity.getFamilyMemberId(),
+            entity.getMemberFirstName(),
+            entity.getMemberLastName(),
             entity.getFamilyId(),
             entity.getUserId(),
             entity.getSubscriptionType(),
@@ -56,6 +58,8 @@ public class SubscriptionMapper {
             .familyMemberId(request.familyMemberId())
             .familyId(request.familyId())
             .userId(userId)
+            .memberFirstName(request.memberFirstName())
+            .memberLastName(request.memberLastName())
             .subscriptionType(request.subscriptionType())
             .startDate(request.startDate())
             .endDate(request.endDate())

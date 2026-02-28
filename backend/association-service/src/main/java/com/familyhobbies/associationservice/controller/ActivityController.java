@@ -8,6 +8,7 @@ import com.familyhobbies.associationservice.dto.response.SessionResponse;
 import com.familyhobbies.associationservice.entity.enums.ActivityLevel;
 import com.familyhobbies.associationservice.entity.enums.AssociationCategory;
 import com.familyhobbies.associationservice.service.ActivityService;
+import com.familyhobbies.errorhandling.exception.web.ForbiddenException;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -88,6 +89,7 @@ public class ActivityController {
             @Valid @RequestBody ActivityRequest request,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateAdminOrAssociationRole(roles);
         ActivityDetailResponse result = activityService.createActivity(associationId, request);
         URI location = URI.create("/api/v1/associations/" + associationId + "/activities/" + result.id());
         return ResponseEntity.created(location).body(result);
@@ -104,6 +106,7 @@ public class ActivityController {
             @Valid @RequestBody ActivityRequest request,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateAdminOrAssociationRole(roles);
         ActivityDetailResponse result = activityService.updateActivity(associationId, activityId, request);
         return ResponseEntity.ok(result);
     }
@@ -118,6 +121,7 @@ public class ActivityController {
             @PathVariable Long activityId,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateAdminOrAssociationRole(roles);
         activityService.deleteActivity(associationId, activityId);
         return ResponseEntity.noContent().build();
     }
@@ -146,6 +150,7 @@ public class ActivityController {
             @Valid @RequestBody SessionRequest request,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateAdminOrAssociationRole(roles);
         SessionResponse result = activityService.createSession(associationId, activityId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
@@ -162,6 +167,7 @@ public class ActivityController {
             @Valid @RequestBody SessionRequest request,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateAdminOrAssociationRole(roles);
         SessionResponse result = activityService.updateSession(associationId, activityId, sessionId, request);
         return ResponseEntity.ok(result);
     }
@@ -177,7 +183,14 @@ public class ActivityController {
             @PathVariable Long sessionId,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateAdminOrAssociationRole(roles);
         activityService.deleteSession(associationId, activityId, sessionId);
         return ResponseEntity.noContent().build();
+    }
+
+    private void validateAdminOrAssociationRole(String roles) {
+        if (roles == null || (!roles.contains("ADMIN") && !roles.contains("ASSOCIATION"))) {
+            throw new ForbiddenException("ADMIN or ASSOCIATION role required to perform this action");
+        }
     }
 }

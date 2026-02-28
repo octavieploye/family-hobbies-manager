@@ -52,7 +52,19 @@ public class ActivityServiceImpl implements ActivityService {
                                                   ActivityLevel level, Pageable pageable) {
         verifyAssociationExists(associationId);
 
-        Page<Activity> activities = activityRepository.findByAssociation_Id(associationId, pageable);
+        Page<Activity> activities;
+        if (category != null && level != null) {
+            activities = activityRepository.findByAssociation_IdAndCategoryAndLevel(
+                associationId, category, level, pageable);
+        } else if (category != null) {
+            activities = activityRepository.findByAssociation_IdAndCategory(
+                associationId, category, pageable);
+        } else if (level != null) {
+            activities = activityRepository.findByAssociation_IdAndLevel(
+                associationId, level, pageable);
+        } else {
+            activities = activityRepository.findByAssociation_Id(associationId, pageable);
+        }
         return activities.map(activityMapper::toResponse);
     }
 

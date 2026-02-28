@@ -9,6 +9,7 @@ import {
   Attendance,
   AttendanceSummary,
   BulkAttendanceRequest,
+  UpdateAttendanceRequest,
 } from '@shared/models/attendance.model';
 import { environment } from '../../../../environments/environment';
 
@@ -118,15 +119,17 @@ describe('AttendanceService', () => {
 
   describe('update', () => {
     it('should send PUT request to /attendance/{attendanceId}', () => {
-      const updated: Attendance = { ...mockAttendance, status: 'EXCUSED', note: 'Certificat m\u00e9dical' };
+      const updated: Attendance = { ...mockAttendance, status: 'EXCUSED', note: 'Certificat medical' };
+      const updateRequest: UpdateAttendanceRequest = { status: 'EXCUSED', note: 'Certificat medical' };
 
-      service.update(1, { status: 'EXCUSED', note: 'Certificat m\u00e9dical' }).subscribe((result) => {
+      service.update(1, updateRequest).subscribe((result) => {
         expect(result.status).toBe('EXCUSED');
-        expect(result.note).toBe('Certificat m\u00e9dical');
+        expect(result.note).toBe('Certificat medical');
       });
 
       const req = httpMock.expectOne(`${API_BASE}/1`);
       expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(updateRequest);
       req.flush(updated);
     });
   });

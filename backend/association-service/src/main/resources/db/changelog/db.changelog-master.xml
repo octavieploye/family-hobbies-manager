@@ -10,6 +10,8 @@
     <include file="db/changelog/changesets/003-create-session-table.xml"/>
     <include file="db/changelog/changesets/004-create-subscription-table.xml"/>
     <include file="db/changelog/changesets/005-create-attendance-table.xml"/>
+    <include file="db/changelog/changesets/006-add-member-names-to-subscription.xml"/>
+    <include file="db/changelog/changesets/007-add-subscription-unique-constraint.xml"/>
     <include file="db/changelog/changesets/010-seed-associations.xml"/>
     <include file="db/changelog/changesets/011-seed-activities.xml"/>
 

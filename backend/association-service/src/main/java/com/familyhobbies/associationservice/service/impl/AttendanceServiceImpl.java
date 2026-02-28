@@ -125,6 +125,14 @@ public class AttendanceServiceImpl implements AttendanceService {
         List<Attendance> records = attendanceRepository.findByFamilyMemberId(memberId);
         validateMemberOwnership(records, userId);
 
+        // Extract member names from the first attendance record's subscription
+        String memberFirstName = null;
+        String memberLastName = null;
+        if (!records.isEmpty() && records.get(0).getSubscription() != null) {
+            memberFirstName = records.get(0).getSubscription().getMemberFirstName();
+            memberLastName = records.get(0).getSubscription().getMemberLastName();
+        }
+
         int total = (int) attendanceRepository.countByFamilyMemberId(memberId);
         int presentCount = (int) attendanceRepository.countByFamilyMemberIdAndStatus(
             memberId, AttendanceStatus.PRESENT);
@@ -139,8 +147,8 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         return new AttendanceSummaryResponse(
             memberId,
-            null, // memberFirstName - cross-service, populated if available
-            null, // memberLastName - cross-service, populated if available
+            memberFirstName,
+            memberLastName,
             total,
             presentCount,
             absentCount,

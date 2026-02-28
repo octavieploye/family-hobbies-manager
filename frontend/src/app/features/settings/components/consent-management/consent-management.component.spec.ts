@@ -13,24 +13,32 @@ describe('ConsentManagementComponent', () => {
 
   const mockConsents: ConsentStatus[] = [
     {
+      id: 1,
+      userId: 1,
       consentType: 'TERMS_OF_SERVICE',
       granted: true,
       version: '1.0',
       consentedAt: '2024-09-15T10:00:00',
     },
     {
+      id: 2,
+      userId: 1,
       consentType: 'DATA_PROCESSING',
       granted: true,
       version: '1.0',
       consentedAt: '2024-09-15T10:00:00',
     },
     {
+      id: 3,
+      userId: 1,
       consentType: 'MARKETING_EMAIL',
       granted: false,
       version: '1.0',
       consentedAt: '2024-09-15T10:00:00',
     },
     {
+      id: 4,
+      userId: 1,
       consentType: 'THIRD_PARTY_SHARING',
       granted: false,
       version: '1.0',

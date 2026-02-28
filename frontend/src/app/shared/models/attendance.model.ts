@@ -23,7 +23,29 @@ export interface Attendance {
 }
 
 /**
- * Request payload for marking a single attendance.
+ * Request payload for marking a single attendance record.
+ * Used by AttendanceService.markSingle() — maps to backend MarkAttendanceRequest DTO.
+ */
+export interface MarkAttendanceRequest {
+  sessionId: number;
+  familyMemberId: number;
+  subscriptionId: number;
+  sessionDate: string;
+  status: AttendanceStatus;
+  note?: string;
+}
+
+/**
+ * Request payload for updating an existing attendance record.
+ * Used by AttendanceService.update() — maps to backend UpdateAttendanceRequest DTO.
+ */
+export interface UpdateAttendanceRequest {
+  status: AttendanceStatus;
+  note?: string;
+}
+
+/**
+ * Request payload for marking a single attendance within a bulk request.
  * Maps to backend AttendanceMark DTO.
  */
 export interface AttendanceMark {

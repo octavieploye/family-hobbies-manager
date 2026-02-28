@@ -53,10 +53,14 @@ export class SubscriptionService {
   }
 
   /**
-   * Cancel a subscription.
-   * PUT /api/v1/subscriptions/{subscriptionId}/cancel
+   * Cancel a subscription with an optional reason.
+   * PUT /api/v1/subscriptions/{subscriptionId}/cancel?reason=...
    */
-  cancel(subscriptionId: number): Observable<Subscription> {
-    return this.http.put<Subscription>(`${this.API_BASE}/${subscriptionId}/cancel`, {});
+  cancel(subscriptionId: number, reason?: string): Observable<Subscription> {
+    let url = `${this.API_BASE}/${subscriptionId}/cancel`;
+    if (reason) {
+      url += `?reason=${encodeURIComponent(reason)}`;
+    }
+    return this.http.put<Subscription>(url, {});
   }
 }

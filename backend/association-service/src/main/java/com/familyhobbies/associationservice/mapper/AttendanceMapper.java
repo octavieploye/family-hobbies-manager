@@ -11,31 +11,29 @@ import org.springframework.stereotype.Component;
  * Maps {@link Attendance} entities to/from DTOs.
  * Manual mapper (no MapStruct) for full control and transparency.
  *
- * Note: memberFirstName and memberLastName are cross-service fields
- * that must be populated by the caller (e.g., service layer),
- * since attendance lives in association-service but member names
- * live in user-service. For now, they are set to null in the mapper
- * and populated by the service when available.
+ * Member names are pulled from the Subscription entity, which stores
+ * memberFirstName and memberLastName at subscription creation time
+ * (denormalized to avoid cross-service calls).
  */
 @Component
 public class AttendanceMapper {
 
     /**
      * Maps an attendance entity to a response DTO.
-     * Member names are set to null here -- the service layer populates them
-     * if cross-service data is available.
+     * Member names are pulled from the subscription entity.
      */
     public AttendanceResponse toResponse(Attendance entity) {
         if (entity == null) {
             return null;
         }
+        Subscription subscription = entity.getSubscription();
         return new AttendanceResponse(
             entity.getId(),
             entity.getSession() != null ? entity.getSession().getId() : null,
             entity.getFamilyMemberId(),
-            null, // memberFirstName - cross-service, populated by service if available
-            null, // memberLastName - cross-service, populated by service if available
-            entity.getSubscription() != null ? entity.getSubscription().getId() : null,
+            subscription != null ? subscription.getMemberFirstName() : null,
+            subscription != null ? subscription.getMemberLastName() : null,
+            subscription != null ? subscription.getId() : null,
             entity.getSessionDate(),
             entity.getStatus(),
             entity.getNote(),

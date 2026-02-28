@@ -15,6 +15,8 @@ import java.time.LocalDate;
  * @param activityName       activity name (denormalized)
  * @param associationName    association name (denormalized)
  * @param familyMemberId     family member ID
+ * @param memberFirstName    member first name (stored at creation time)
+ * @param memberLastName     member last name (stored at creation time)
  * @param familyId           family ID
  * @param userId             user who created the subscription
  * @param subscriptionType   ADHESION or COTISATION
@@ -32,6 +34,8 @@ public record SubscriptionResponse(
     String activityName,
     String associationName,
     Long familyMemberId,
+    String memberFirstName,
+    String memberLastName,
     Long familyId,
     Long userId,
     SubscriptionType subscriptionType,

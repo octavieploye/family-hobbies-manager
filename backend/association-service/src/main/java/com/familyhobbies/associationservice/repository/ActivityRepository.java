@@ -1,7 +1,9 @@
 package com.familyhobbies.associationservice.repository;
 
 import com.familyhobbies.associationservice.entity.Activity;
+import com.familyhobbies.associationservice.entity.enums.ActivityLevel;
 import com.familyhobbies.associationservice.entity.enums.ActivityStatus;
+import com.familyhobbies.associationservice.entity.enums.AssociationCategory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +20,13 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     Page<Activity> findByAssociation_IdAndStatus(Long associationId, ActivityStatus status, Pageable pageable);
 
     Page<Activity> findByAssociation_Id(Long associationId, Pageable pageable);
+
+    Page<Activity> findByAssociation_IdAndCategory(Long associationId, AssociationCategory category, Pageable pageable);
+
+    Page<Activity> findByAssociation_IdAndLevel(Long associationId, ActivityLevel level, Pageable pageable);
+
+    Page<Activity> findByAssociation_IdAndCategoryAndLevel(Long associationId, AssociationCategory category,
+                                                            ActivityLevel level, Pageable pageable);
 
     List<Activity> findByAssociation_IdAndStatusOrderByNameAsc(Long associationId, ActivityStatus status);
 

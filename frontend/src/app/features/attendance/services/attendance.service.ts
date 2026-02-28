@@ -7,6 +7,8 @@ import {
   Attendance,
   AttendanceSummary,
   BulkAttendanceRequest,
+  MarkAttendanceRequest,
+  UpdateAttendanceRequest,
 } from '@shared/models/attendance.model';
 
 /**
@@ -25,7 +27,7 @@ export class AttendanceService {
    * Mark a single attendance record.
    * POST /api/v1/attendance
    */
-  markSingle(request: Attendance): Observable<Attendance> {
+  markSingle(request: MarkAttendanceRequest): Observable<Attendance> {
     return this.http.post<Attendance>(this.API_BASE, request);
   }
 
@@ -74,7 +76,7 @@ export class AttendanceService {
    * Update an existing attendance record.
    * PUT /api/v1/attendance/{attendanceId}
    */
-  update(attendanceId: number, request: Partial<Attendance>): Observable<Attendance> {
+  update(attendanceId: number, request: UpdateAttendanceRequest): Observable<Attendance> {
     return this.http.put<Attendance>(`${this.API_BASE}/${attendanceId}`, request);
   }
 }

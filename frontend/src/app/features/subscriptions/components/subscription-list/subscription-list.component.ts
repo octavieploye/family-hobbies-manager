@@ -1,6 +1,7 @@
 // frontend/src/app/features/subscriptions/components/subscription-list/subscription-list.component.ts
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
@@ -23,6 +24,7 @@ import {
   SubscriptionStatus,
   SUBSCRIPTION_STATUS_CONFIG,
 } from '@shared/models/subscription.model';
+import { FamilyService } from '../../../family/services/family.service';
 
 /**
  * Standalone list component displaying user's subscriptions.
@@ -55,6 +57,8 @@ import {
 })
 export class SubscriptionListComponent implements OnInit, OnDestroy {
   private readonly store = inject(Store);
+  private readonly familyService = inject(FamilyService);
+  private readonly destroy$ = new Subject<void>();
 
   /** Observable of filtered subscriptions from the store. */
   subscriptions$ = this.store.select(selectFilteredSubscriptions);
@@ -86,17 +90,32 @@ export class SubscriptionListComponent implements OnInit, OnDestroy {
   statusFilter = new FormControl<SubscriptionStatus | null>(null);
 
   ngOnInit(): void {
-    // Load subscriptions for the user's family
-    // familyId would normally come from auth state; using 1 as default for now
-    this.store.dispatch(SubscriptionActions.loadSubscriptions({ familyId: 1 }));
+    // Fetch the authenticated user's family to get the real familyId
+    this.familyService.getMyFamily()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (family) => {
+          this.store.dispatch(SubscriptionActions.loadSubscriptions({ familyId: family.id }));
+        },
+        error: () => {
+          // If family cannot be loaded, dispatch with error state handled by reducer
+          this.store.dispatch(SubscriptionActions.loadSubscriptionsFailure({
+            error: 'Impossible de charger votre famille. Veuillez vous reconnecter.',
+          }));
+        },
+      });
 
     // Listen to filter changes
-    this.statusFilter.valueChanges.subscribe((status) => {
-      this.store.dispatch(SubscriptionActions.setStatusFilter({ status: status || null }));
-    });
+    this.statusFilter.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((status) => {
+        this.store.dispatch(SubscriptionActions.setStatusFilter({ status: status || null }));
+      });
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.store.dispatch(SubscriptionActions.clearSubscriptions());
   }
 
@@ -122,10 +141,22 @@ export class SubscriptionListComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Cancel a subscription.
+   * Cancel a subscription after prompting for a reason.
    */
   onCancel(subscription: Subscription): void {
-    this.store.dispatch(SubscriptionActions.cancelSubscription({ subscriptionId: subscription.id }));
+    const reason = window.prompt(
+      'Veuillez indiquer la raison de l\'annulation (optionnel) :'
+    );
+    // If the user clicked "Cancel" on the prompt, abort the operation
+    if (reason === null) {
+      return;
+    }
+    this.store.dispatch(
+      SubscriptionActions.cancelSubscription({
+        subscriptionId: subscription.id,
+        reason: reason || undefined,
+      })
+    );
   }
 
   /**
