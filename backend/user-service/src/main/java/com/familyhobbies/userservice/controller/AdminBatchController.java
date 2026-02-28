@@ -1,5 +1,9 @@
 package com.familyhobbies.userservice.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -23,6 +27,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/v1/admin/batch")
+@Tag(name = "Admin Batch (User)", description = "Admin-only batch job triggers for user-service")
 public class AdminBatchController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminBatchController.class);
@@ -45,6 +50,13 @@ public class AdminBatchController {
      */
     @PostMapping("/rgpd-cleanup")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Trigger RGPD data cleanup",
+               description = "Manually triggers the RGPD data cleanup batch job to purge expired user data")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Job triggered successfully"),
+        @ApiResponse(responseCode = "403", description = "ADMIN role required"),
+        @ApiResponse(responseCode = "500", description = "Failed to trigger job")
+    })
     public ResponseEntity<Map<String, Object>> triggerRgpdCleanup() {
         log.info("Admin triggered RGPD data cleanup job");
 

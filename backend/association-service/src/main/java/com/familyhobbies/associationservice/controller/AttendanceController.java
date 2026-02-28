@@ -6,6 +6,10 @@ import com.familyhobbies.associationservice.dto.response.AttendanceResponse;
 import com.familyhobbies.associationservice.dto.response.AttendanceSummaryResponse;
 import com.familyhobbies.associationservice.service.AttendanceService;
 import com.familyhobbies.errorhandling.exception.web.ForbiddenException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +37,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/attendance")
+@Tag(name = "Attendance", description = "Attendance tracking: mark, view, and summarize attendance records")
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
@@ -46,6 +51,14 @@ public class AttendanceController {
      * POST /api/v1/attendance
      */
     @PostMapping
+    @Operation(summary = "Mark attendance",
+               description = "Records a single attendance entry for a member at a session")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Attendance recorded"),
+        @ApiResponse(responseCode = "400", description = "Invalid attendance data"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required"),
+        @ApiResponse(responseCode = "409", description = "Attendance already recorded for this session and date")
+    })
     public ResponseEntity<AttendanceResponse> markAttendance(
             @Valid @RequestBody MarkAttendanceRequest request,
             @RequestHeader("X-User-Id") Long userId,
@@ -62,6 +75,13 @@ public class AttendanceController {
      * POST /api/v1/attendance/bulk
      */
     @PostMapping("/bulk")
+    @Operation(summary = "Bulk mark attendance",
+               description = "Records attendance for multiple members at a session in one request")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Bulk attendance recorded"),
+        @ApiResponse(responseCode = "400", description = "Invalid bulk attendance data"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required")
+    })
     public ResponseEntity<List<AttendanceResponse>> markBulkAttendance(
             @Valid @RequestBody BulkAttendanceRequest request,
             @RequestHeader("X-User-Id") Long userId,
@@ -77,6 +97,12 @@ public class AttendanceController {
      * GET /api/v1/attendance/session/{sessionId}?date=YYYY-MM-DD
      */
     @GetMapping("/session/{sessionId}")
+    @Operation(summary = "Get attendance by session",
+               description = "Returns attendance records for a session on a specific date")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Attendance records returned"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required")
+    })
     public ResponseEntity<List<AttendanceResponse>> findBySessionAndDate(
             @PathVariable Long sessionId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -93,6 +119,12 @@ public class AttendanceController {
      * GET /api/v1/attendance/member/{memberId}
      */
     @GetMapping("/member/{memberId}")
+    @Operation(summary = "Get attendance by member",
+               description = "Returns all attendance records for a family member")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Attendance history returned"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required")
+    })
     public ResponseEntity<List<AttendanceResponse>> findByMemberId(
             @PathVariable Long memberId,
             @RequestHeader("X-User-Id") Long userId,
@@ -108,6 +140,12 @@ public class AttendanceController {
      * GET /api/v1/attendance/member/{memberId}/summary
      */
     @GetMapping("/member/{memberId}/summary")
+    @Operation(summary = "Get member attendance summary",
+               description = "Returns attendance summary statistics for a family member")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Attendance summary returned"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required")
+    })
     public ResponseEntity<AttendanceSummaryResponse> getMemberSummary(
             @PathVariable Long memberId,
             @RequestHeader("X-User-Id") Long userId,
@@ -123,6 +161,12 @@ public class AttendanceController {
      * GET /api/v1/attendance/subscription/{subscriptionId}
      */
     @GetMapping("/subscription/{subscriptionId}")
+    @Operation(summary = "Get attendance by subscription",
+               description = "Returns all attendance records linked to a subscription")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Attendance records returned"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required")
+    })
     public ResponseEntity<List<AttendanceResponse>> findBySubscriptionId(
             @PathVariable Long subscriptionId,
             @RequestHeader("X-User-Id") Long userId,
@@ -138,6 +182,14 @@ public class AttendanceController {
      * PUT /api/v1/attendance/{attendanceId}
      */
     @PutMapping("/{attendanceId}")
+    @Operation(summary = "Update attendance",
+               description = "Updates an existing attendance record")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Attendance updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid attendance data"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required"),
+        @ApiResponse(responseCode = "404", description = "Attendance record not found")
+    })
     public ResponseEntity<AttendanceResponse> updateAttendance(
             @PathVariable Long attendanceId,
             @Valid @RequestBody MarkAttendanceRequest request,

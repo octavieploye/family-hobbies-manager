@@ -1,5 +1,9 @@
 package com.familyhobbies.paymentservice.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -24,6 +28,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/admin/batch")
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Admin Batch (Payment)", description = "Admin-only batch job triggers for payment-service")
 public class AdminBatchController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminBatchController.class);
@@ -45,6 +50,13 @@ public class AdminBatchController {
      * @return 202 Accepted with the job execution ID and status
      */
     @PostMapping("/payment-reconciliation")
+    @Operation(summary = "Trigger payment reconciliation",
+               description = "Launches the payment reconciliation batch job to sync with HelloAsso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "202", description = "Job launched"),
+        @ApiResponse(responseCode = "403", description = "ADMIN role required"),
+        @ApiResponse(responseCode = "500", description = "Failed to launch job")
+    })
     public ResponseEntity<Map<String, Object>> triggerPaymentReconciliation() {
         log.info("Admin triggered payment reconciliation job");
 

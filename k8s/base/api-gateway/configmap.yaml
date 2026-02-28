@@ -1,0 +1,14 @@
+# k8s/base/api-gateway/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+  labels:
+    app: api-gateway
+    app.kubernetes.io/part-of: family-hobbies-manager
+data:
+  SPRING_PROFILES_ACTIVE: "k8s"
+  SERVER_PORT: "8080"
+  EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://discovery-service:8761/eureka/"
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics"
+  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"

@@ -9,6 +9,10 @@ import com.familyhobbies.associationservice.entity.enums.ActivityLevel;
 import com.familyhobbies.associationservice.entity.enums.AssociationCategory;
 import com.familyhobbies.associationservice.service.ActivityService;
 import com.familyhobbies.errorhandling.exception.web.ForbiddenException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,6 +45,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/associations/{associationId}/activities")
+@Tag(name = "Activities", description = "Activity and session CRUD operations scoped under associations")
 public class ActivityController {
 
     private final ActivityService activityService;
@@ -54,6 +59,12 @@ public class ActivityController {
      * GET /api/v1/associations/{associationId}/activities
      */
     @GetMapping
+    @Operation(summary = "List activities",
+               description = "Lists activities for an association with optional category and level filters")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Activities list returned"),
+        @ApiResponse(responseCode = "404", description = "Association not found")
+    })
     public ResponseEntity<Page<ActivityResponse>> listActivities(
             @PathVariable Long associationId,
             @RequestParam(required = false) AssociationCategory category,
@@ -71,6 +82,12 @@ public class ActivityController {
      * GET /api/v1/associations/{associationId}/activities/{activityId}
      */
     @GetMapping("/{activityId}")
+    @Operation(summary = "Get activity detail",
+               description = "Returns detailed activity information including sessions")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Activity detail returned"),
+        @ApiResponse(responseCode = "404", description = "Activity not found")
+    })
     public ResponseEntity<ActivityDetailResponse> getActivityDetail(
             @PathVariable Long associationId,
             @PathVariable Long activityId) {
@@ -84,6 +101,14 @@ public class ActivityController {
      * POST /api/v1/associations/{associationId}/activities
      */
     @PostMapping
+    @Operation(summary = "Create activity",
+               description = "Creates a new activity for an association (ADMIN or ASSOCIATION role)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Activity created"),
+        @ApiResponse(responseCode = "400", description = "Invalid activity data"),
+        @ApiResponse(responseCode = "403", description = "ADMIN or ASSOCIATION role required"),
+        @ApiResponse(responseCode = "404", description = "Association not found")
+    })
     public ResponseEntity<ActivityDetailResponse> createActivity(
             @PathVariable Long associationId,
             @Valid @RequestBody ActivityRequest request,
@@ -100,6 +125,14 @@ public class ActivityController {
      * PUT /api/v1/associations/{associationId}/activities/{activityId}
      */
     @PutMapping("/{activityId}")
+    @Operation(summary = "Update activity",
+               description = "Updates an existing activity (ADMIN or ASSOCIATION role)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Activity updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid activity data"),
+        @ApiResponse(responseCode = "403", description = "ADMIN or ASSOCIATION role required"),
+        @ApiResponse(responseCode = "404", description = "Activity not found")
+    })
     public ResponseEntity<ActivityDetailResponse> updateActivity(
             @PathVariable Long associationId,
             @PathVariable Long activityId,
@@ -116,6 +149,13 @@ public class ActivityController {
      * DELETE /api/v1/associations/{associationId}/activities/{activityId}
      */
     @DeleteMapping("/{activityId}")
+    @Operation(summary = "Delete activity",
+               description = "Soft-deletes an activity by setting status to CANCELLED")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Activity deleted"),
+        @ApiResponse(responseCode = "403", description = "ADMIN or ASSOCIATION role required"),
+        @ApiResponse(responseCode = "404", description = "Activity not found")
+    })
     public ResponseEntity<Void> deleteActivity(
             @PathVariable Long associationId,
             @PathVariable Long activityId,
@@ -131,6 +171,12 @@ public class ActivityController {
      * GET /api/v1/associations/{associationId}/activities/{activityId}/sessions
      */
     @GetMapping("/{activityId}/sessions")
+    @Operation(summary = "List sessions",
+               description = "Lists all sessions for an activity")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Sessions list returned"),
+        @ApiResponse(responseCode = "404", description = "Activity not found")
+    })
     public ResponseEntity<List<SessionResponse>> listSessions(
             @PathVariable Long associationId,
             @PathVariable Long activityId) {
@@ -144,6 +190,14 @@ public class ActivityController {
      * POST /api/v1/associations/{associationId}/activities/{activityId}/sessions
      */
     @PostMapping("/{activityId}/sessions")
+    @Operation(summary = "Create session",
+               description = "Creates a new session/course for an activity")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Session created"),
+        @ApiResponse(responseCode = "400", description = "Invalid session data"),
+        @ApiResponse(responseCode = "403", description = "ADMIN or ASSOCIATION role required"),
+        @ApiResponse(responseCode = "404", description = "Activity not found")
+    })
     public ResponseEntity<SessionResponse> createSession(
             @PathVariable Long associationId,
             @PathVariable Long activityId,
@@ -160,6 +214,14 @@ public class ActivityController {
      * PUT /api/v1/associations/{associationId}/activities/{activityId}/sessions/{sessionId}
      */
     @PutMapping("/{activityId}/sessions/{sessionId}")
+    @Operation(summary = "Update session",
+               description = "Updates an existing session/course")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Session updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid session data"),
+        @ApiResponse(responseCode = "403", description = "ADMIN or ASSOCIATION role required"),
+        @ApiResponse(responseCode = "404", description = "Session not found")
+    })
     public ResponseEntity<SessionResponse> updateSession(
             @PathVariable Long associationId,
             @PathVariable Long activityId,
@@ -177,6 +239,13 @@ public class ActivityController {
      * DELETE /api/v1/associations/{associationId}/activities/{activityId}/sessions/{sessionId}
      */
     @DeleteMapping("/{activityId}/sessions/{sessionId}")
+    @Operation(summary = "Delete session",
+               description = "Deactivates a session by setting active to false")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Session deactivated"),
+        @ApiResponse(responseCode = "403", description = "ADMIN or ASSOCIATION role required"),
+        @ApiResponse(responseCode = "404", description = "Session not found")
+    })
     public ResponseEntity<Void> deleteSession(
             @PathVariable Long associationId,
             @PathVariable Long activityId,

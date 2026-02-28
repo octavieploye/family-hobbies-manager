@@ -1,0 +1,17 @@
+# k8s/base/association-service/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: association-service
+  labels:
+    app: association-service
+    app.kubernetes.io/part-of: family-hobbies-manager
+spec:
+  type: ClusterIP
+  selector:
+    app: association-service
+  ports:
+    - name: http
+      port: 8082
+      targetPort: 8082
+      protocol: TCP

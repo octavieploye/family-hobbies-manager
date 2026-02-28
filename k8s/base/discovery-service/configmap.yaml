@@ -1,0 +1,16 @@
+# k8s/base/discovery-service/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: discovery-service-config
+  labels:
+    app: discovery-service
+    app.kubernetes.io/part-of: family-hobbies-manager
+data:
+  SPRING_PROFILES_ACTIVE: "k8s"
+  SERVER_PORT: "8761"
+  EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+  EUREKA_CLIENT_FETCH_REGISTRY: "false"
+  EUREKA_SERVER_ENABLE_SELF_PRESERVATION: "false"
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics"
+  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"

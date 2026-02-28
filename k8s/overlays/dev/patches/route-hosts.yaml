@@ -1,0 +1,8 @@
+# k8s/overlays/dev/patches/route-hosts.yaml
+# Dev: use dev subdomain for routes
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: not-important
+spec:
+  host: ""

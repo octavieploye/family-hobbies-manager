@@ -1,0 +1,163 @@
+# .github/workflows/e2e-tests.yml
+# Playwright E2E test pipeline for Family Hobbies Manager.
+#
+# Triggers: push to main, pull requests to main
+# Environment: Docker Compose (all services + databases)
+# Browsers: Chromium, Firefox, WebKit
+# Artifacts: HTML report, screenshots, videos, traces
+
+name: E2E Tests (Playwright)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  BASE_URL: http://localhost:4200
+  API_URL: http://localhost:8080
+
+jobs:
+  e2e-tests:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      # -- Checkout ------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -- Java Setup (for building backend services) --------------------------
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # -- Node.js Setup (for Playwright) --------------------------------------
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'e2e/package-lock.json'
+
+      # -- Install E2E dependencies --------------------------------------------
+      - name: Install E2E dependencies
+        working-directory: e2e
+        run: npm ci
+
+      # -- Install Playwright browsers -----------------------------------------
+      - name: Install Playwright browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      # -- Build backend services ----------------------------------------------
+      - name: Build backend services
+        working-directory: backend
+        run: |
+          mvn clean package -DskipTests -pl \
+            error-handling,\
+            common,\
+            discovery-service,\
+            api-gateway,\
+            user-service,\
+            association-service,\
+            payment-service,\
+            notification-service \
+            -am
+
+      # -- Start Docker Compose E2E environment --------------------------------
+      - name: Start E2E environment
+        working-directory: docker
+        run: |
+          docker compose -f docker-compose.e2e.yml up -d --build --wait
+        timeout-minutes: 10
+
+      # -- Wait for all services to be healthy ---------------------------------
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for all services to be healthy..."
+
+          # Wait for each service endpoint
+          services=(
+            "http://localhost:8761/actuator/health:discovery-service"
+            "http://localhost:8080/actuator/health:api-gateway"
+            "http://localhost:8081/actuator/health:user-service"
+            "http://localhost:8082/actuator/health:association-service"
+            "http://localhost:8083/actuator/health:payment-service"
+            "http://localhost:8084/actuator/health:notification-service"
+            "http://localhost:4200:frontend"
+          )
+
+          for service_entry in "${services[@]}"; do
+            IFS=":" read -r url name <<< "$service_entry"
+            echo "Waiting for $name at $url..."
+            for i in $(seq 1 60); do
+              if curl -sf "$url" > /dev/null 2>&1; then
+                echo "$name is healthy!"
+                break
+              fi
+              if [ "$i" -eq 60 ]; then
+                echo "TIMEOUT: $name did not become healthy within 5 minutes"
+                docker compose -f docker/docker-compose.e2e.yml logs "$name"
+                exit 1
+              fi
+              sleep 5
+            done
+          done
+
+          echo "All services are healthy!"
+        timeout-minutes: 10
+
+      # -- Run Playwright tests ------------------------------------------------
+      - name: Run Playwright E2E tests
+        working-directory: e2e
+        run: npx playwright test
+        timeout-minutes: 20
+
+      # -- Upload test results (always, even on failure) -----------------------
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: e2e/playwright-report/
+          retention-days: 14
+
+      - name: Upload test results (screenshots, videos, traces)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: e2e/test-results/
+          retention-days: 14
+
+      - name: Upload JUnit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-junit-results
+          path: e2e/test-results/junit-results.xml
+          retention-days: 14
+
+      # -- Tear down Docker Compose --------------------------------------------
+      - name: Stop E2E environment
+        if: always()
+        working-directory: docker
+        run: docker compose -f docker-compose.e2e.yml down -v --remove-orphans
+
+      # -- Docker logs on failure ----------------------------------------------
+      - name: Dump Docker logs on failure
+        if: failure()
+        working-directory: docker
+        run: docker compose -f docker-compose.e2e.yml logs --tail=200

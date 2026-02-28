@@ -1,0 +1,18 @@
+# k8s/overlays/prod/patches/resource-limits.yaml
+# Prod: higher resource limits for production workloads
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: not-important
+spec:
+  template:
+    spec:
+      containers:
+        - name: not-important
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

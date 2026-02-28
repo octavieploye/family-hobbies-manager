@@ -1,6 +1,24 @@
 server:
   port: 8083
 
+# -- OpenAPI / Swagger UI --
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  info:
+    title: "Payment Service API"
+    description: "HelloAsso Checkout integration, payment webhooks, and invoices"
+    version: "1.0.0"
+    contact:
+      name: "Family Hobbies Manager"
+      url: "https://github.com/octavieploye/family-hobbies-manager"
+
 spring:
   application:
     name: payment-service

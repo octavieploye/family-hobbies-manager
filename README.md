@@ -1,113 +1,183 @@
 # Family Hobbies Manager
 
-Multi-association management platform integrating with the [HelloAsso](https://www.helloasso.com) API. French families discover associations (sport, dance, music, theater, etc.) across any location in France, register, manage subscriptions, track events/courses/attendance.
+[![CI/CD](https://github.com/octavieploye/family-hobbies-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/octavieploye/family-hobbies-manager/actions)
+[![E2E Tests](https://github.com/octavieploye/family-hobbies-manager/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/octavieploye/family-hobbies-manager/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Value-add on top of HelloAsso**: family grouping, cross-association dashboards, attendance tracking, course scheduling, notification orchestration, and RGPD compliance.
+A fullstack multi-association management platform integrating with the [HelloAsso](https://www.helloasso.com/) API. Families discover associations (sport, dance, music, theatre, etc.) across France, register members, manage subscriptions, track attendance, and process payments -- all from a unified dashboard.
+
+**Value proposition**: HelloAsso handles association directories and payments. This app adds family grouping, multi-association dashboards, attendance tracking, course scheduling, and notification orchestration -- features HelloAsso does not offer.
+
+---
+
+## Architecture
+
+| Service | Port | Role |
+|---------|------|------|
+| **discovery-service** | 8761 | Eureka service registry |
+| **api-gateway** | 8080 | Spring Cloud Gateway, JWT validation |
+| **user-service** | 8081 | Auth, users, families, RGPD compliance |
+| **association-service** | 8082 | HelloAsso directory proxy, activities, sessions, subscriptions, attendance |
+| **payment-service** | 8083 | HelloAsso Checkout, payment webhooks, invoices |
+| **notification-service** | 8084 | Email + in-app notifications, Kafka consumers |
+| **frontend** | 4200 | Angular 17+ SPA |
+
+> Architecture diagram: [docs/architecture/architecture-overview.md](docs/architecture/architecture-overview.md)
 
 ## Tech Stack
 
 | Layer | Technology |
-|---|---|
-| **Backend** | Java 17 / Spring Boot 3.2 / Spring Cloud 2023.0.x |
-| **Frontend** | Angular 17+ / Angular Material / NgRx / SCSS |
-| **Database** | PostgreSQL 16 (one DB per microservice, Liquibase migrations) |
-| **Messaging** | Apache Kafka (inter-service events) |
-| **External API** | HelloAsso API v5 (OAuth2, sandbox for dev) |
-| **Infrastructure** | Docker / Docker Compose |
-| **Testing** | JUnit 5 / Jest / Playwright |
-| **CI/CD** | GitHub Actions |
+|-------|-----------|
+| Backend | Java 17, Spring Boot 3.2, Spring Cloud 2023.0 |
+| Frontend | Angular 17+ (standalone components, NgRx, Angular Material, SCSS) |
+| Database | PostgreSQL 16 (one DB per service, Liquibase migrations) |
+| Messaging | Apache Kafka (inter-service events) |
+| External API | HelloAsso API v5 (OAuth2, REST/JSON) |
+| Testing | JUnit 5, Mockito, Playwright (E2E), axe-core (a11y) |
+| Infrastructure | Docker, Docker Compose, Kustomize (OpenShift-ready) |
+| CI/CD | GitHub Actions |
+| Accessibility | RGAA / WCAG 2.1 AA compliant |
 
-## HelloAsso Integration
+## Quick Start
 
-- **Development**: HelloAsso Sandbox (`api.helloasso-sandbox.com/v5`) — free, no approval needed
-- **Demo**: Realistic French association data seeded via Liquibase
-- **Production-ready**: switching to production = config change (URL + credentials), zero code changes
+### Prerequisites
+
+- Docker 24+ and Docker Compose v2
+- 8 GB RAM available for Docker
+
+### Run with Docker Compose
+
+```bash
+# Clone the repository
+git clone https://github.com/octavieploye/family-hobbies-manager.git
+cd family-hobbies-manager
+
+# Copy environment template
+cp docker/.env.example docker/.env
+
+# Start all services
+docker compose -f docker/docker-compose.yml up -d
+
+# Wait for all services to be healthy (~90 seconds)
+docker compose -f docker/docker-compose.yml ps
+```
+
+Once all services are healthy:
+
+| URL | Description |
+|-----|-------------|
+| http://localhost:4200 | Angular frontend |
+| http://localhost:8080 | API Gateway |
+| http://localhost:8761 | Eureka dashboard |
+| http://localhost:8081/swagger-ui.html | User Service API docs |
+| http://localhost:8082/swagger-ui.html | Association Service API docs |
+| http://localhost:8083/swagger-ui.html | Payment Service API docs |
+| http://localhost:8084/swagger-ui.html | Notification Service API docs |
+
+### Stop
+
+```bash
+docker compose -f docker/docker-compose.yml down -v
+```
+
+## Development Setup
+
+### Backend
+
+```bash
+# Prerequisites: Java 17, Maven 3.9+
+
+# Build all modules
+cd backend
+mvn clean install
+
+# Run a specific service (example: user-service)
+mvn spring-boot:run -pl user-service
+```
+
+### Frontend
+
+```bash
+# Prerequisites: Node.js 18+, npm 9+
+
+cd frontend
+npm install
+npm start
+# Open http://localhost:4200
+```
+
+### Running Tests
+
+```bash
+# Backend unit tests
+cd backend && mvn test
+
+# Frontend unit tests
+cd frontend && npm test
+
+# E2E tests (requires Docker Compose running)
+cd e2e && npm install && npx playwright install
+npx playwright test
+
+# Accessibility tests
+npx playwright test specs/a11y/
+```
+
+## API Documentation
+
+Interactive API documentation is available via Swagger UI when each service is running:
+
+- **User Service**: `http://localhost:8081/swagger-ui.html`
+- **Association Service**: `http://localhost:8082/swagger-ui.html`
+- **Payment Service**: `http://localhost:8083/swagger-ui.html`
+- **Notification Service**: `http://localhost:8084/swagger-ui.html`
+
+A Postman collection with all endpoints is available in [`docs/api/postman/`](docs/api/postman/).
 
 ## Project Structure
 
 ```
 family-hobbies-manager/
-├── backend/
-│   ├── error-handling/         # Dedicated error handling module
-│   ├── common/                 # Shared DTOs, events, security, audit
-│   ├── discovery-service/      # Eureka service registry
-│   ├── api-gateway/            # Spring Cloud Gateway + JWT validation
-│   ├── user-service/           # Auth, users, families, RGPD
-│   ├── association-service/    # Associations, activities, sessions, subscriptions, attendance
-│   ├── payment-service/        # HelloAsso Checkout, webhooks, invoices
-│   └── notification-service/   # Notifications, email templates, Kafka listeners
-├── frontend/                   # Angular 17+ SPA
-│   └── src/app/core/
-│       └── error-handling/     # Error models, handlers, interceptor (RGAA-compliant)
-├── docker/                     # Docker Compose, init scripts, env
-├── docs/architecture/          # 13 architecture documents
-├── e2e/                        # Playwright E2E tests
-└── .github/workflows/          # CI/CD pipeline
++-- backend/
+|   +-- error-handling/         # Shared error handling module
+|   +-- common/                 # Shared DTOs, events, security, audit
+|   +-- discovery-service/      # Eureka registry
+|   +-- api-gateway/            # Spring Cloud Gateway
+|   +-- user-service/           # Auth, users, families
+|   +-- association-service/    # Associations, activities, attendance
+|   +-- payment-service/        # Payments, invoices
+|   +-- notification-service/   # Notifications, emails
++-- frontend/                   # Angular 17+ SPA
++-- e2e/                        # Playwright E2E tests
++-- docker/                     # Docker Compose, init scripts
++-- docs/                       # Architecture docs, ADRs, API specs
++-- .github/workflows/          # CI/CD pipelines
 ```
 
-## Microservices
+## Key Features
 
-| Service | Port | Database | Description |
-|---|---|---|---|
-| discovery-service | 8761 | — | Eureka service registry |
-| api-gateway | 8080 | — | Spring Cloud Gateway, JWT validation, rate limiting |
-| user-service | 8081 | familyhobbies_users | Authentication, users, families, RGPD |
-| association-service | 8082 | familyhobbies_associations | HelloAsso directory proxy + cache, activities, sessions, subscriptions, attendance |
-| payment-service | 8083 | familyhobbies_payments | HelloAsso Checkout integration, payment webhooks, invoices |
-| notification-service | 8084 | familyhobbies_notifications | Notifications, email templates, Kafka listeners |
+- **Family Management**: Create family profiles, add/remove members, assign roles
+- **Association Discovery**: Search French associations by keyword, city, category via HelloAsso directory
+- **Subscription Management**: Subscribe family members to association activities
+- **Attendance Tracking**: Calendar view, mark present/absent, attendance history
+- **Payment Processing**: HelloAsso Checkout integration, payment status, invoices
+- **Notifications**: Real-time in-app notifications, email alerts via Kafka events
+- **RGPD Compliance**: Consent management, data export, account deletion
+- **Accessibility**: RGAA / WCAG 2.1 AA compliant with axe-core validation
 
-## Shared Modules
+## Documentation
 
-| Module | Purpose | Dependency Chain |
-|---|---|---|
-| `error-handling` | Exceptions (web/server/container), GlobalExceptionHandler, ErrorResponse, ErrorCode | Standalone |
-| `common` | Shared DTOs, Kafka events, JWT security, audit base entity | Depends on `error-handling` |
+| Document | Description |
+|----------|-------------|
+| [Architecture Overview](docs/architecture/architecture-overview.md) | System architecture and service interactions |
+| [Error Handling](docs/architecture/error-handling/13-error-handling.md) | Error handling module specification |
+| [HelloAsso Integration](docs/architecture/) | HelloAsso API integration strategy |
+| [Deployment Guide](docs/phases/phase-4-polish/sprint-8-e2e-rgaa-production/S8-005-openshift-manifests.md) | OpenShift deployment instructions |
 
-## Architecture Documentation
+## License
 
-See [`docs/architecture/`](docs/architecture/) for the full 13-document architecture suite:
+This project is licensed under the MIT License -- see the [LICENSE](LICENSE) file for details.
 
-- System Overview, Service Catalog, Data Model, API Contracts
-- Kafka Events, Security, HelloAsso Integration, Batch Processing
-- Frontend Architecture, Infrastructure, Testing Strategy
-- Naming Conventions, Delivery Roadmap, Error Handling
+---
 
-## Getting Started
-
-### Prerequisites
-
-- Java 17+
-- Node.js 20+
-- Docker & Docker Compose
-
-### Quick Start
-
-```bash
-# Start infrastructure (PostgreSQL, Kafka, Zookeeper)
-docker compose up -d postgres zookeeper kafka
-
-# Start backend services (in order)
-cd backend/discovery-service && ./mvnw spring-boot:run &
-cd backend/api-gateway && ./mvnw spring-boot:run &
-cd backend/user-service && ./mvnw spring-boot:run &
-cd backend/association-service && ./mvnw spring-boot:run &
-cd backend/payment-service && ./mvnw spring-boot:run &
-cd backend/notification-service && ./mvnw spring-boot:run &
-
-# Start frontend
-cd frontend && npm install && ng serve
-```
-
-### Run Tests
-
-```bash
-# Backend unit tests
-cd backend/error-handling && ./mvnw test
-cd backend/user-service && ./mvnw test
-
-# Frontend unit tests
-cd frontend && npm test
-
-# E2E tests
-cd e2e && npx playwright test
-```
+Built with Java 17, Spring Boot, Angular 17, PostgreSQL, Kafka, and HelloAsso API.

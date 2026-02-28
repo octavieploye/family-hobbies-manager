@@ -1,0 +1,272 @@
+# docker/docker-compose.e2e.yml
+# Full stack for Playwright E2E tests.
+# Usage: docker compose -f docker-compose.e2e.yml up -d --wait
+
+version: "3.9"
+
+services:
+  # -- Infrastructure --------------------------------------------------------
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: fhm-e2e-postgres
+    environment:
+      POSTGRES_USER: fhm_admin
+      POSTGRES_PASSWORD: fhm_e2e_password
+      POSTGRES_MULTIPLE_DATABASES: >-
+        familyhobbies_users,
+        familyhobbies_associations,
+        familyhobbies_payments,
+        familyhobbies_notifications
+    volumes:
+      - ./init-scripts/create-multiple-databases.sh:/docker-entrypoint-initdb.d/01-create-databases.sh
+      - ./init-scripts/e2e-seed-users.sql:/docker-entrypoint-initdb.d/10-seed-users.sql
+      - ./init-scripts/e2e-seed-associations.sql:/docker-entrypoint-initdb.d/11-seed-associations.sql
+      - ./init-scripts/e2e-seed-payments.sql:/docker-entrypoint-initdb.d/12-seed-payments.sql
+      - ./init-scripts/e2e-seed-notifications.sql:/docker-entrypoint-initdb.d/13-seed-notifications.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fhm_admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - fhm-e2e
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: fhm-e2e-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: "e2e-test-cluster-id-001"
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+    networks:
+      - fhm-e2e
+
+  # -- Microservices ---------------------------------------------------------
+
+  discovery-service:
+    build:
+      context: ../backend/discovery-service
+      dockerfile: Dockerfile
+    container_name: fhm-e2e-discovery
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks:
+      - fhm-e2e
+
+  api-gateway:
+    build:
+      context: ../backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: fhm-e2e-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka
+      JWT_SECRET: e2e-test-jwt-secret-key-at-least-256-bits-long-for-hs256
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks:
+      - fhm-e2e
+
+  user-service:
+    build:
+      context: ../backend/user-service
+      dockerfile: Dockerfile
+    container_name: fhm-e2e-user
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/familyhobbies_users
+      SPRING_DATASOURCE_USERNAME: fhm_admin
+      SPRING_DATASOURCE_PASSWORD: fhm_e2e_password
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: e2e-test-jwt-secret-key-at-least-256-bits-long-for-hs256
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 45s
+    networks:
+      - fhm-e2e
+
+  association-service:
+    build:
+      context: ../backend/association-service
+      dockerfile: Dockerfile
+    container_name: fhm-e2e-association
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/familyhobbies_associations
+      SPRING_DATASOURCE_USERNAME: fhm_admin
+      SPRING_DATASOURCE_PASSWORD: fhm_e2e_password
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      HELLOASSO_CLIENT_ID: e2e-sandbox-client-id
+      HELLOASSO_CLIENT_SECRET: e2e-sandbox-client-secret
+      HELLOASSO_BASE_URL: https://api.helloasso-sandbox.com/v5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 45s
+    networks:
+      - fhm-e2e
+
+  payment-service:
+    build:
+      context: ../backend/payment-service
+      dockerfile: Dockerfile
+    container_name: fhm-e2e-payment
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/familyhobbies_payments
+      SPRING_DATASOURCE_USERNAME: fhm_admin
+      SPRING_DATASOURCE_PASSWORD: fhm_e2e_password
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      HELLOASSO_CLIENT_ID: e2e-sandbox-client-id
+      HELLOASSO_CLIENT_SECRET: e2e-sandbox-client-secret
+      HELLOASSO_BASE_URL: https://api.helloasso-sandbox.com/v5
+      HELLOASSO_WEBHOOK_SECRET: e2e-webhook-secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 45s
+    networks:
+      - fhm-e2e
+
+  notification-service:
+    build:
+      context: ../backend/notification-service
+      dockerfile: Dockerfile
+    container_name: fhm-e2e-notification
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/familyhobbies_notifications
+      SPRING_DATASOURCE_USERNAME: fhm_admin
+      SPRING_DATASOURCE_PASSWORD: fhm_e2e_password
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 45s
+    networks:
+      - fhm-e2e
+
+  # -- Frontend --------------------------------------------------------------
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        API_URL: http://api-gateway:8080
+    container_name: fhm-e2e-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - fhm-e2e
+
+  # -- Supporting Services ---------------------------------------------------
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: fhm-e2e-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - fhm-e2e
+
+networks:
+  fhm-e2e:
+    driver: bridge
+    name: fhm-e2e-network

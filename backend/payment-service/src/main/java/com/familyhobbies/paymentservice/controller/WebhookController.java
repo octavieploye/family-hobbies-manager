@@ -5,6 +5,10 @@ import com.familyhobbies.paymentservice.dto.response.WebhookAckResponse;
 import com.familyhobbies.paymentservice.security.WebhookSignatureValidator;
 import com.familyhobbies.paymentservice.webhook.HelloAssoWebhookHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/v1/payments/webhook")
+@Tag(name = "Webhooks", description = "HelloAsso webhook receiver for payment events")
 public class WebhookController {
 
     private static final Logger log = LoggerFactory.getLogger(WebhookController.class);
@@ -43,6 +48,11 @@ public class WebhookController {
      * POST /api/v1/payments/webhook
      */
     @PostMapping
+    @Operation(summary = "Receive HelloAsso webhook",
+               description = "Receives and processes a webhook event from HelloAsso (always returns 200)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Webhook acknowledged")
+    })
     public ResponseEntity<WebhookAckResponse> handleWebhook(
             @RequestBody String rawBody,
             @RequestHeader(value = "X-HelloAsso-Signature", required = false) String signature) {

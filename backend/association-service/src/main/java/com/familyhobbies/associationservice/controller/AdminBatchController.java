@@ -1,5 +1,9 @@
 package com.familyhobbies.associationservice.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -32,6 +36,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/admin/batch")
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Admin Batch (Association)", description = "Admin-only batch job triggers for association-service")
 public class AdminBatchController {
 
     private static final Logger log =
@@ -56,6 +61,13 @@ public class AdminBatchController {
      * @return 202 Accepted with job execution ID
      */
     @PostMapping("/helloasso-sync")
+    @Operation(summary = "Trigger HelloAsso sync job",
+               description = "Launches the HelloAsso directory sync batch job asynchronously")
+    @ApiResponses({
+        @ApiResponse(responseCode = "202", description = "Job launched"),
+        @ApiResponse(responseCode = "403", description = "ADMIN role required"),
+        @ApiResponse(responseCode = "500", description = "Failed to launch job")
+    })
     public ResponseEntity<Map<String, Object>> triggerHelloAssoSync() {
         return launchJob("helloAssoSyncJob", helloAssoSyncJob);
     }
@@ -69,6 +81,13 @@ public class AdminBatchController {
      * @return 202 Accepted with job execution ID
      */
     @PostMapping("/subscription-expiry")
+    @Operation(summary = "Trigger subscription expiry job",
+               description = "Launches the subscription expiry batch job to process expired subscriptions")
+    @ApiResponses({
+        @ApiResponse(responseCode = "202", description = "Job launched"),
+        @ApiResponse(responseCode = "403", description = "ADMIN role required"),
+        @ApiResponse(responseCode = "500", description = "Failed to launch job")
+    })
     public ResponseEntity<Map<String, Object>> triggerSubscriptionExpiry() {
         return launchJob("subscriptionExpiryJob", subscriptionExpiryJob);
     }

@@ -1,0 +1,20 @@
+# k8s/base/frontend/route.yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+    app.kubernetes.io/part-of: family-hobbies-manager
+spec:
+  host: family-hobbies.dev.example.com
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: frontend
+    weight: 100
+  wildcardPolicy: None

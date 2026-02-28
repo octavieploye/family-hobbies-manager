@@ -1,6 +1,24 @@
 server:
   port: 8081
 
+# -- OpenAPI / Swagger UI --
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  info:
+    title: "User Service API"
+    description: "Authentication, user management, family management, and RGPD compliance"
+    version: "1.0.0"
+    contact:
+      name: "Family Hobbies Manager"
+      url: "https://github.com/octavieploye/family-hobbies-manager"
+
 spring:
   application:
     name: user-service

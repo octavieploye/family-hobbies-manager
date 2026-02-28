@@ -1,0 +1,14 @@
+# k8s/base/postgresql/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-pvc
+  labels:
+    app: postgresql
+    app.kubernetes.io/part-of: family-hobbies-manager
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

@@ -1,0 +1,72 @@
+# k8s/base/association-service/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: association-service
+  labels:
+    app: association-service
+    app.kubernetes.io/part-of: family-hobbies-manager
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: association-service
+  template:
+    metadata:
+      labels:
+        app: association-service
+    spec:
+      containers:
+        - name: association-service
+          image: familyhobbies/association-service:latest
+          ports:
+            - containerPort: 8082
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: association-service-config
+          env:
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: family-hobbies-secrets
+                  key: db-association-password
+            - name: HELLOASSO_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: family-hobbies-secrets
+                  key: helloasso-client-id
+            - name: HELLOASSO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: family-hobbies-secrets
+                  key: helloasso-client-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+      restartPolicy: Always

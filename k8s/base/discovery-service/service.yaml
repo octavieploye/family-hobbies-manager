@@ -1,0 +1,17 @@
+# k8s/base/discovery-service/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-service
+  labels:
+    app: discovery-service
+    app.kubernetes.io/part-of: family-hobbies-manager
+spec:
+  type: ClusterIP
+  selector:
+    app: discovery-service
+  ports:
+    - name: http
+      port: 8761
+      targetPort: 8761
+      protocol: TCP

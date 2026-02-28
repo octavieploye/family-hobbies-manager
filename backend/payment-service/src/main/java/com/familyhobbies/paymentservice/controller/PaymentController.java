@@ -5,6 +5,10 @@ import com.familyhobbies.paymentservice.dto.response.CheckoutResponse;
 import com.familyhobbies.paymentservice.dto.response.PaymentResponse;
 import com.familyhobbies.paymentservice.entity.enums.PaymentStatus;
 import com.familyhobbies.paymentservice.service.PaymentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +33,7 @@ import java.time.OffsetDateTime;
  */
 @RestController
 @RequestMapping("/api/v1/payments")
+@Tag(name = "Payments", description = "Payment checkout, status, and family payment history")
 public class PaymentController {
 
     private final PaymentService paymentService;
@@ -42,6 +47,13 @@ public class PaymentController {
      * POST /api/v1/payments/checkout
      */
     @PostMapping("/checkout")
+    @Operation(summary = "Initiate checkout",
+               description = "Creates a HelloAsso checkout session and returns the checkout URL")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Checkout session created"),
+        @ApiResponse(responseCode = "400", description = "Invalid checkout data"),
+        @ApiResponse(responseCode = "502", description = "HelloAsso API unavailable")
+    })
     public ResponseEntity<CheckoutResponse> initiateCheckout(
             @Valid @RequestBody CheckoutRequest request,
             @RequestHeader("X-User-Id") Long familyId) {
@@ -54,6 +66,12 @@ public class PaymentController {
      * GET /api/v1/payments/{id}
      */
     @GetMapping("/{id}")
+    @Operation(summary = "Get payment by ID",
+               description = "Returns a single payment with optional invoice details")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Payment found"),
+        @ApiResponse(responseCode = "404", description = "Payment not found")
+    })
     public ResponseEntity<PaymentResponse> getPayment(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long familyId,
@@ -67,6 +85,11 @@ public class PaymentController {
      * GET /api/v1/payments/family/{familyId}?status=COMPLETED&from=...&to=...&page=0&size=20
      */
     @GetMapping("/family/{familyId}")
+    @Operation(summary = "Get payments by family",
+               description = "Lists payments for a family with optional status and date range filters")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Payments list returned")
+    })
     public ResponseEntity<Page<PaymentResponse>> getPaymentsByFamily(
             @PathVariable Long familyId,
             @RequestParam(required = false) PaymentStatus status,

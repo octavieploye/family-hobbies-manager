@@ -1,0 +1,23 @@
+{
+  "name": "family-hobbies-manager-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright E2E tests for Family Hobbies Manager",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:chromium": "npx playwright test --project=chromium",
+    "test:firefox": "npx playwright test --project=firefox",
+    "test:webkit": "npx playwright test --project=webkit",
+    "test:mobile": "npx playwright test --project=mobile-chrome",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:ui": "npx playwright test --ui",
+    "report": "npx playwright show-report",
+    "install:browsers": "npx playwright install --with-deps"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.42.0",
+    "@axe-core/playwright": "^4.8.0",
+    "dotenv": "^16.4.0"
+  }
+}

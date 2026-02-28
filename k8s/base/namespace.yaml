@@ -1,0 +1,8 @@
+# k8s/base/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: family-hobbies-dev
+  labels:
+    app.kubernetes.io/part-of: family-hobbies-manager
+    environment: dev

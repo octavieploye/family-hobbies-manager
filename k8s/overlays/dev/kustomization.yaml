@@ -1,0 +1,37 @@
+# k8s/overlays/dev/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: family-hobbies-dev
+
+namePrefix: ""
+
+commonLabels:
+  environment: dev
+
+resources:
+  - ../../base
+
+patches:
+  - path: patches/resource-limits.yaml
+    target:
+      kind: Deployment
+  - path: patches/route-hosts.yaml
+    target:
+      kind: Route
+
+images:
+  - name: familyhobbies/discovery-service
+    newTag: latest
+  - name: familyhobbies/api-gateway
+    newTag: latest
+  - name: familyhobbies/user-service
+    newTag: latest
+  - name: familyhobbies/association-service
+    newTag: latest
+  - name: familyhobbies/payment-service
+    newTag: latest
+  - name: familyhobbies/notification-service
+    newTag: latest
+  - name: familyhobbies/frontend
+    newTag: latest

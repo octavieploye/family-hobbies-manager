@@ -1,0 +1,17 @@
+# k8s/base/payment-service/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  labels:
+    app: payment-service
+    app.kubernetes.io/part-of: family-hobbies-manager
+spec:
+  type: ClusterIP
+  selector:
+    app: payment-service
+  ports:
+    - name: http
+      port: 8083
+      targetPort: 8083
+      protocol: TCP

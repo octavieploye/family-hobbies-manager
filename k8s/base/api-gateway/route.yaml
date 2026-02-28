@@ -1,0 +1,20 @@
+# k8s/base/api-gateway/route.yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: api-gateway
+  labels:
+    app: api-gateway
+    app.kubernetes.io/part-of: family-hobbies-manager
+spec:
+  host: api.family-hobbies.dev.example.com
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: api-gateway
+    weight: 100
+  wildcardPolicy: None

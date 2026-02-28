@@ -1,0 +1,7 @@
+# k8s/overlays/prod/patches/route-hosts-api.yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: api-gateway
+spec:
+  host: api.family-hobbies.fr

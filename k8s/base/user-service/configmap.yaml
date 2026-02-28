@@ -1,0 +1,17 @@
+# k8s/base/user-service/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-config
+  labels:
+    app: user-service
+    app.kubernetes.io/part-of: family-hobbies-manager
+data:
+  SPRING_PROFILES_ACTIVE: "k8s"
+  SERVER_PORT: "8081"
+  EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://discovery-service:8761/eureka/"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/familyhobbies_users"
+  SPRING_DATASOURCE_USERNAME: "familyhobbies_user"
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics"
+  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"

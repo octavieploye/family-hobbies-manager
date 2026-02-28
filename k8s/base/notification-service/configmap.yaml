@@ -1,0 +1,20 @@
+# k8s/base/notification-service/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-service-config
+  labels:
+    app: notification-service
+    app.kubernetes.io/part-of: family-hobbies-manager
+data:
+  SPRING_PROFILES_ACTIVE: "k8s"
+  SERVER_PORT: "8084"
+  EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://discovery-service:8761/eureka/"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/familyhobbies_notifications"
+  SPRING_DATASOURCE_USERNAME: "familyhobbies_notif"
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  SPRING_MAIL_HOST: "smtp.example.com"
+  SPRING_MAIL_PORT: "587"
+  SPRING_MAIL_USERNAME: "noreply@family-hobbies.fr"
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics"
+  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"

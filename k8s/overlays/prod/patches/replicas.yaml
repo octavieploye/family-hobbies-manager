@@ -1,0 +1,8 @@
+# k8s/overlays/prod/patches/replicas.yaml
+# Prod: 2 replicas for high availability
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: not-important
+spec:
+  replicas: 2

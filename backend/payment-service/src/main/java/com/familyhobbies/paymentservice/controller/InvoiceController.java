@@ -3,6 +3,10 @@ package com.familyhobbies.paymentservice.controller;
 import com.familyhobbies.paymentservice.dto.response.InvoiceResponse;
 import com.familyhobbies.paymentservice.dto.response.InvoiceSummaryResponse;
 import com.familyhobbies.paymentservice.service.InvoiceService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,6 +28,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/invoices")
+@Tag(name = "Invoices", description = "Invoice retrieval and PDF download")
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
@@ -37,6 +42,12 @@ public class InvoiceController {
      * GET /api/v1/invoices/{id}
      */
     @GetMapping("/{id}")
+    @Operation(summary = "Get invoice by ID",
+               description = "Returns a single invoice by its ID")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Invoice found"),
+        @ApiResponse(responseCode = "404", description = "Invoice not found")
+    })
     public ResponseEntity<InvoiceResponse> getInvoice(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long userId) {
@@ -49,6 +60,12 @@ public class InvoiceController {
      * GET /api/v1/invoices/{id}/download
      */
     @GetMapping("/{id}/download")
+    @Operation(summary = "Download invoice PDF",
+               description = "Downloads an invoice as a PDF file")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "PDF file returned"),
+        @ApiResponse(responseCode = "404", description = "Invoice not found")
+    })
     public ResponseEntity<byte[]> downloadInvoicePdf(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long userId) {
@@ -65,6 +82,11 @@ public class InvoiceController {
      * GET /api/v1/invoices/payment/{paymentId}
      */
     @GetMapping("/payment/{paymentId}")
+    @Operation(summary = "Get invoices by payment",
+               description = "Returns all invoices associated with a specific payment")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Invoices list returned")
+    })
     public ResponseEntity<List<InvoiceSummaryResponse>> getInvoicesByPayment(
             @PathVariable Long paymentId) {
         List<InvoiceSummaryResponse> invoices = invoiceService.getInvoicesByPayment(paymentId);
@@ -76,6 +98,11 @@ public class InvoiceController {
      * GET /api/v1/invoices/user/{userId}
      */
     @GetMapping("/user/{userId}")
+    @Operation(summary = "Get invoices by user",
+               description = "Returns paginated invoices for a specific user")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Invoices page returned")
+    })
     public ResponseEntity<Page<InvoiceSummaryResponse>> getInvoicesByUser(
             @PathVariable Long userId,
             @RequestParam(required = false, defaultValue = "0") int page,

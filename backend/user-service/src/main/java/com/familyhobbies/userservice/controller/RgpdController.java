@@ -6,6 +6,10 @@ import com.familyhobbies.userservice.dto.request.DeletionConfirmationRequest;
 import com.familyhobbies.userservice.dto.response.ConsentResponse;
 import com.familyhobbies.userservice.dto.response.UserDataExportResponse;
 import com.familyhobbies.userservice.service.RgpdService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +31,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/rgpd")
+@Tag(name = "RGPD", description = "RGPD compliance: consent management, data export, and account deletion")
 public class RgpdController {
 
     private final RgpdService rgpdService;
@@ -40,6 +45,13 @@ public class RgpdController {
      * POST /api/v1/rgpd/consent
      */
     @PostMapping("/consent")
+    @Operation(summary = "Record consent decision",
+               description = "Records a user's consent decision for a specific data processing type")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Consent recorded"),
+        @ApiResponse(responseCode = "400", description = "Invalid consent data"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required")
+    })
     public ResponseEntity<ConsentResponse> recordConsent(
             @Valid @RequestBody ConsentRequest request,
             @RequestHeader("X-User-Id") Long userId,
@@ -55,6 +67,12 @@ public class RgpdController {
      * GET /api/v1/rgpd/consent
      */
     @GetMapping("/consent")
+    @Operation(summary = "Get current consent status",
+               description = "Returns current consent status for all consent types")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Consent status returned"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required")
+    })
     public ResponseEntity<List<ConsentResponse>> getCurrentConsents(
             @RequestHeader("X-User-Id") Long userId,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
@@ -69,6 +87,12 @@ public class RgpdController {
      * GET /api/v1/rgpd/consent/history
      */
     @GetMapping("/consent/history")
+    @Operation(summary = "Get consent history",
+               description = "Returns the full consent audit trail for the authenticated user")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Consent history returned"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required")
+    })
     public ResponseEntity<List<ConsentResponse>> getConsentHistory(
             @RequestHeader("X-User-Id") Long userId,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
@@ -83,6 +107,12 @@ public class RgpdController {
      * GET /api/v1/rgpd/export
      */
     @GetMapping("/export")
+    @Operation(summary = "Export user data",
+               description = "Exports all user data as JSON (RGPD data portability right)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Data export returned"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required")
+    })
     public ResponseEntity<UserDataExportResponse> exportUserData(
             @RequestHeader("X-User-Id") Long userId,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
@@ -97,6 +127,13 @@ public class RgpdController {
      * DELETE /api/v1/rgpd/account
      */
     @DeleteMapping("/account")
+    @Operation(summary = "Delete user account",
+               description = "Permanently deletes the user account and all associated data (RGPD right to erasure)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Account deleted"),
+        @ApiResponse(responseCode = "400", description = "Deletion confirmation mismatch"),
+        @ApiResponse(responseCode = "403", description = "FAMILY role required")
+    })
     public ResponseEntity<Void> deleteAccount(
             @Valid @RequestBody DeletionConfirmationRequest request,
             @RequestHeader("X-User-Id") Long userId,

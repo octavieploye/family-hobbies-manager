@@ -1,0 +1,38 @@
+# Dependencies (installed fresh via npm ci)
+node_modules/
+
+# Build output (built inside container)
+dist/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Git
+.git
+.gitignore
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Test files
+coverage/
+e2e/
+*.spec.ts
+
+# Documentation
+README.md
+docs/
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Angular cache
+.angular/

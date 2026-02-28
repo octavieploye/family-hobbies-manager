@@ -1,0 +1,7 @@
+# k8s/overlays/prod/patches/namespace-override.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: family-hobbies-prod
+  labels:
+    environment: prod

@@ -1,0 +1,17 @@
+# k8s/base/user-service/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  labels:
+    app: user-service
+    app.kubernetes.io/part-of: family-hobbies-manager
+spec:
+  type: ClusterIP
+  selector:
+    app: user-service
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+      protocol: TCP

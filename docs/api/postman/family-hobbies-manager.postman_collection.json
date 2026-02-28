@@ -1,0 +1,920 @@
+{
+  "info": {
+    "name": "Family Hobbies Manager",
+    "description": "Complete API collection for the Family Hobbies Manager platform.\n\nSetup:\n1. Import this collection\n2. Import the matching environment (local or docker)\n3. Run 'Auth > Register' then 'Auth > Login' to get tokens\n4. All subsequent requests auto-attach the JWT token",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "family-hobbies-manager"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-refresh token if expired",
+          "const tokenExpiry = pm.environment.get('token_expiry');",
+          "if (tokenExpiry && Date.now() > parseInt(tokenExpiry)) {",
+          "    const refreshToken = pm.environment.get('refresh_token');",
+          "    if (refreshToken) {",
+          "        pm.sendRequest({",
+          "            url: pm.environment.get('base_url') + '/api/v1/auth/refresh',",
+          "            method: 'POST',",
+          "            header: { 'Content-Type': 'application/json' },",
+          "            body: { mode: 'raw', raw: JSON.stringify({ refreshToken: refreshToken }) }",
+          "        }, function (err, response) {",
+          "            if (!err && response.code === 200) {",
+          "                const body = response.json();",
+          "                pm.environment.set('access_token', body.accessToken);",
+          "                pm.environment.set('refresh_token', body.refreshToken);",
+          "                pm.environment.set('token_expiry', Date.now() + 14 * 60 * 1000);",
+          "            }",
+          "        });",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints (user-service:8081)",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"marie.dupont@example.com\",\n  \"password\": \"SecureP@ss123\",\n  \"firstName\": \"Marie\",\n  \"lastName\": \"Dupont\",\n  \"phone\": \"+33612345678\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "auth": { "type": "noauth" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('access_token', body.accessToken);",
+                  "    pm.environment.set('refresh_token', body.refreshToken);",
+                  "    pm.environment.set('token_expiry', Date.now() + 14 * 60 * 1000);",
+                  "    pm.environment.set('user_id', body.userId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"marie.dupont@example.com\",\n  \"password\": \"SecureP@ss123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "auth": { "type": "noauth" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.environment.set('access_token', body.accessToken);",
+                  "    pm.environment.set('refresh_token', body.refreshToken);",
+                  "    pm.environment.set('token_expiry', Date.now() + 14 * 60 * 1000);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "auth": { "type": "noauth" }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Families",
+      "description": "Family management endpoints (user-service:8081)",
+      "item": [
+        {
+          "name": "Get My Family",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/families/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "families", "me"]
+            }
+          }
+        },
+        {
+          "name": "Create Family",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Famille Dupont\",\n  \"address\": \"12 Rue de la Paix, 75002 Paris\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/families",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "families"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.set('family_id', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Family by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/families/{{family_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "families", "{{family_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Family",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Famille Dupont-Martin\",\n  \"address\": \"15 Avenue des Champs-Elysees, 75008 Paris\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/families/{{family_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "families", "{{family_id}}"]
+            }
+          }
+        },
+        {
+          "name": "List Family Members",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/families/{{family_id}}/members",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "families", "{{family_id}}", "members"]
+            }
+          }
+        },
+        {
+          "name": "Add Family Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Lucas\",\n  \"lastName\": \"Dupont\",\n  \"dateOfBirth\": \"2015-06-20\",\n  \"role\": \"CHILD\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/families/{{family_id}}/members",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "families", "{{family_id}}", "members"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.set('member_id', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Family Member",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Lucas\",\n  \"lastName\": \"Dupont\",\n  \"dateOfBirth\": \"2015-06-20\",\n  \"role\": \"CHILD\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/families/{{family_id}}/members/{{member_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "families", "{{family_id}}", "members", "{{member_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Remove Family Member",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/v1/families/{{family_id}}/members/{{member_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "families", "{{family_id}}", "members", "{{member_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RGPD",
+      "description": "RGPD compliance endpoints (user-service:8081)",
+      "item": [
+        {
+          "name": "Get Consent Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/rgpd/consent",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "rgpd", "consent"]
+            }
+          }
+        },
+        {
+          "name": "Record Consent",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consentType\": \"DATA_PROCESSING\",\n  \"granted\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/rgpd/consent",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "rgpd", "consent"]
+            }
+          }
+        },
+        {
+          "name": "Get Consent History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/rgpd/consent/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "rgpd", "consent", "history"]
+            }
+          }
+        },
+        {
+          "name": "Export My Data",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/rgpd/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "rgpd", "export"]
+            }
+          }
+        },
+        {
+          "name": "Delete My Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"confirmEmail\": \"marie.dupont@example.com\",\n  \"confirmText\": \"DELETE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/rgpd/account",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "rgpd", "account"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Associations",
+      "description": "Association directory endpoints (association-service:8082)",
+      "item": [
+        {
+          "name": "Search Associations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/associations?city=Paris&category=SPORT&keyword=danse&page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "associations"],
+              "query": [
+                { "key": "city", "value": "Paris" },
+                { "key": "category", "value": "SPORT" },
+                { "key": "keyword", "value": "danse" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            },
+            "auth": { "type": "noauth" }
+          }
+        },
+        {
+          "name": "Get Association by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/associations/{{association_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "associations", "{{association_id}}"]
+            },
+            "auth": { "type": "noauth" }
+          }
+        },
+        {
+          "name": "Get Association by Slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/associations/slug/mon-association-paris",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "associations", "slug", "mon-association-paris"]
+            },
+            "auth": { "type": "noauth" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activities",
+      "description": "Activity and session endpoints (association-service:8082)",
+      "item": [
+        {
+          "name": "List Activities",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/associations/{{association_id}}/activities?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "associations", "{{association_id}}", "activities"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            },
+            "auth": { "type": "noauth" }
+          }
+        },
+        {
+          "name": "Get Activity Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/associations/{{association_id}}/activities/{{activity_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "associations", "{{association_id}}", "activities", "{{activity_id}}"]
+            },
+            "auth": { "type": "noauth" }
+          }
+        },
+        {
+          "name": "List Sessions for Activity",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/associations/{{association_id}}/activities/{{activity_id}}/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "associations", "{{association_id}}", "activities", "{{activity_id}}", "sessions"]
+            },
+            "auth": { "type": "noauth" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Subscription management endpoints (association-service:8082)",
+      "item": [
+        {
+          "name": "Create Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": {{member_id}},\n  \"activityId\": {{activity_id}},\n  \"familyId\": {{family_id}},\n  \"season\": \"2025-2026\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subscriptions"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.set('subscription_id', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Subscriptions by Family",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/family/{{family_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subscriptions", "family", "{{family_id}}"]
+            }
+          }
+        },
+        {
+          "name": "List Subscriptions by Member",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/member/{{member_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subscriptions", "member", "{{member_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Subscription by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/{{subscription_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subscriptions", "{{subscription_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/{{subscription_id}}/cancel?reason=Demenagement",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subscriptions", "{{subscription_id}}", "cancel"],
+              "query": [
+                { "key": "reason", "value": "Demenagement" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "description": "Attendance tracking endpoints (association-service:8082)",
+      "item": [
+        {
+          "name": "Mark Attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": {{session_id}},\n  \"memberId\": {{member_id}},\n  \"subscriptionId\": {{subscription_id}},\n  \"status\": \"PRESENT\",\n  \"attendanceDate\": \"2025-09-15\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/attendance",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "attendance"]
+            }
+          }
+        },
+        {
+          "name": "Get Attendance by Session",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/attendance/session/{{session_id}}?date=2025-09-15",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "attendance", "session", "{{session_id}}"],
+              "query": [
+                { "key": "date", "value": "2025-09-15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Attendance by Member",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/attendance/member/{{member_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "attendance", "member", "{{member_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Member Attendance Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/attendance/member/{{member_id}}/summary",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "attendance", "member", "{{member_id}}", "summary"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "description": "Payment endpoints (payment-service:8083)",
+      "item": [
+        {
+          "name": "Initiate Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subscriptionId\": {{subscription_id}},\n  \"amount\": 15000,\n  \"description\": \"Adhesion Danse Classique - Saison 2025-2026\",\n  \"payerEmail\": \"marie.dupont@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/checkout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "checkout"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.set('payment_id', pm.response.json().paymentId);",
+                  "    pm.environment.set('checkout_url', pm.response.json().checkoutUrl);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Payment by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/{{payment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "{{payment_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Payments by Family",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/family/{{family_id}}?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "family", "{{family_id}}"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "HelloAsso Webhook (test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventType\": \"Payment\",\n  \"data\": {\n    \"id\": 12345,\n    \"amount\": 15000,\n    \"state\": \"Authorized\",\n    \"payer\": {\n      \"email\": \"marie.dupont@example.com\"\n    },\n    \"order\": {\n      \"id\": 67890\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/webhook",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "webhook"]
+            },
+            "auth": { "type": "noauth" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoices",
+      "description": "Invoice endpoints (payment-service:8083)",
+      "item": [
+        {
+          "name": "Get Invoice by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "1"]
+            }
+          }
+        },
+        {
+          "name": "Download Invoice PDF",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/1/download",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "1", "download"]
+            }
+          }
+        },
+        {
+          "name": "Get Invoices by Payment",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/payment/{{payment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "payment", "{{payment_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Invoices by User",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/user/{{user_id}}?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "user", "{{user_id}}"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "Notification endpoints (notification-service:8084)",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notifications"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notifications", "unread-count"]
+            }
+          }
+        },
+        {
+          "name": "Mark as Read",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/{{notification_id}}/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notifications", "{{notification_id}}", "read"]
+            }
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/read-all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notifications", "read-all"]
+            }
+          }
+        },
+        {
+          "name": "Get Notification Preferences",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/preferences",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notifications", "preferences"]
+            }
+          }
+        },
+        {
+          "name": "Update Notification Preferences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailEnabled\": true,\n  \"inAppEnabled\": true,\n  \"paymentAlerts\": true,\n  \"attendanceReminders\": true,\n  \"subscriptionAlerts\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/preferences",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notifications", "preferences"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Batch Jobs",
+      "description": "Admin-only batch job triggers (all services)",
+      "item": [
+        {
+          "name": "[User] RGPD Data Cleanup",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{user_service_url}}/api/v1/admin/batch/rgpd-cleanup",
+              "host": ["{{user_service_url}}"],
+              "path": ["api", "v1", "admin", "batch", "rgpd-cleanup"]
+            }
+          }
+        },
+        {
+          "name": "[Association] HelloAsso Sync",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{association_service_url}}/api/v1/admin/batch/helloasso-sync",
+              "host": ["{{association_service_url}}"],
+              "path": ["api", "v1", "admin", "batch", "helloasso-sync"]
+            }
+          }
+        },
+        {
+          "name": "[Association] Subscription Expiry",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{association_service_url}}/api/v1/admin/batch/subscription-expiry",
+              "host": ["{{association_service_url}}"],
+              "path": ["api", "v1", "admin", "batch", "subscription-expiry"]
+            }
+          }
+        },
+        {
+          "name": "[Payment] Payment Reconciliation",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{payment_service_url}}/api/v1/admin/batch/payment-reconciliation",
+              "host": ["{{payment_service_url}}"],
+              "path": ["api", "v1", "admin", "batch", "payment-reconciliation"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Sync",
+      "description": "Admin HelloAsso sync endpoints (association-service:8082)",
+      "item": [
+        {
+          "name": "Sync Full Directory",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{association_service_url}}/api/v1/admin/associations/sync",
+              "host": ["{{association_service_url}}"],
+              "path": ["api", "v1", "admin", "associations", "sync"]
+            }
+          }
+        },
+        {
+          "name": "Sync Single Organization",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{association_service_url}}/api/v1/admin/associations/sync/mon-association-paris",
+              "host": ["{{association_service_url}}"],
+              "path": ["api", "v1", "admin", "associations", "sync", "mon-association-paris"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

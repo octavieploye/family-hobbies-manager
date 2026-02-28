@@ -5,6 +5,10 @@ import com.familyhobbies.associationservice.dto.response.AssociationDetailRespon
 import com.familyhobbies.associationservice.dto.response.AssociationResponse;
 import com.familyhobbies.associationservice.entity.enums.AssociationCategory;
 import com.familyhobbies.associationservice.service.AssociationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/v1/associations")
+@Tag(name = "Associations", description = "Association directory search and retrieval via HelloAsso")
 public class AssociationController {
 
     private final AssociationService associationService;
@@ -32,6 +37,11 @@ public class AssociationController {
      * GET /api/v1/associations?city=Lyon&category=SPORT&keyword=natation&page=0&size=20
      */
     @GetMapping
+    @Operation(summary = "Search associations",
+               description = "Search French associations by city, category, and keyword with pagination")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Search results returned")
+    })
     public ResponseEntity<Page<AssociationResponse>> searchAssociations(
             @RequestParam(required = false) String city,
             @RequestParam(required = false) AssociationCategory category,
@@ -52,6 +62,12 @@ public class AssociationController {
      * GET /api/v1/associations/{id}
      */
     @GetMapping("/{id}")
+    @Operation(summary = "Get association by ID",
+               description = "Returns detailed information about a single association")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Association found"),
+        @ApiResponse(responseCode = "404", description = "Association not found")
+    })
     public ResponseEntity<AssociationDetailResponse> getAssociationById(
             @PathVariable Long id) {
         AssociationDetailResponse response = associationService.getAssociationById(id);
@@ -63,6 +79,12 @@ public class AssociationController {
      * GET /api/v1/associations/slug/{slug}
      */
     @GetMapping("/slug/{slug}")
+    @Operation(summary = "Get association by slug",
+               description = "Returns detailed information about a single association using its HelloAsso slug")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Association found"),
+        @ApiResponse(responseCode = "404", description = "Association not found")
+    })
     public ResponseEntity<AssociationDetailResponse> getAssociationBySlug(
             @PathVariable String slug) {
         AssociationDetailResponse response = associationService.getAssociationBySlug(slug);

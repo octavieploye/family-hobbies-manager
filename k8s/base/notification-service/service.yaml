@@ -1,0 +1,17 @@
+# k8s/base/notification-service/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  labels:
+    app: notification-service
+    app.kubernetes.io/part-of: family-hobbies-manager
+spec:
+  type: ClusterIP
+  selector:
+    app: notification-service
+  ports:
+    - name: http
+      port: 8084
+      targetPort: 8084
+      protocol: TCP
