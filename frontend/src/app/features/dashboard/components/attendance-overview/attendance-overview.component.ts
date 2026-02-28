@@ -8,6 +8,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatListModule } from '@angular/material/list';
 
 import { MemberAttendance } from '@shared/models/dashboard.model';
+import { getProgressColor } from '@shared/utils/attendance-display.utils';
 
 /**
  * Widget: Attendance rate per member as progress bars.
@@ -38,12 +39,6 @@ export class AttendanceOverviewComponent {
    * Get progress bar color based on attendance rate.
    */
   getProgressColor(rate: number): string {
-    if (rate >= 80) {
-      return 'primary';
-    }
-    if (rate >= 50) {
-      return 'accent';
-    }
-    return 'warn';
+    return getProgressColor(rate);
   }
 }

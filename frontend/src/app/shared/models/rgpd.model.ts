@@ -23,6 +23,10 @@ export interface ConsentStatus {
 export interface ConsentRequest {
   consentType: ConsentType;
   granted: boolean;
+  /** Server-side populated — client IP address at the time of consent. */
+  ipAddress?: string;
+  /** Server-side populated — browser user agent string at the time of consent. */
+  userAgent?: string;
 }
 
 /**

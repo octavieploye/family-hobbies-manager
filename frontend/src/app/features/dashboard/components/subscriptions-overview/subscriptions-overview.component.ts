@@ -9,6 +9,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 
 import { SubscriptionSummary } from '@shared/models/dashboard.model';
+import { SubscriptionStatus, SUBSCRIPTION_STATUS_CONFIG } from '@shared/models/subscription.model';
 
 /**
  * Widget: Active subscriptions overview.
@@ -37,13 +38,9 @@ export class SubscriptionsOverviewComponent {
   @Input() subscriptions: SubscriptionSummary[] = [];
 
   /**
-   * Get status label in French.
+   * Get status label in French using shared subscription status config.
    */
   getStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      ACTIVE: 'Active',
-      PENDING: 'En attente',
-    };
-    return labels[status] || status;
+    return SUBSCRIPTION_STATUS_CONFIG[status as SubscriptionStatus]?.label || status;
   }
 }

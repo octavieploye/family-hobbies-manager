@@ -1,5 +1,6 @@
 package com.familyhobbies.userservice.controller;
 
+import com.familyhobbies.errorhandling.exception.web.ForbiddenException;
 import com.familyhobbies.userservice.dto.request.ConsentRequest;
 import com.familyhobbies.userservice.dto.request.DeletionConfirmationRequest;
 import com.familyhobbies.userservice.dto.response.ConsentResponse;
@@ -41,8 +42,10 @@ public class RgpdController {
     @PostMapping("/consent")
     public ResponseEntity<ConsentResponse> recordConsent(
             @Valid @RequestBody ConsentRequest request,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         ConsentResponse result = rgpdService.recordConsent(request, userId);
         return ResponseEntity.ok(result);
     }
@@ -53,8 +56,10 @@ public class RgpdController {
      */
     @GetMapping("/consent")
     public ResponseEntity<List<ConsentResponse>> getCurrentConsents(
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         List<ConsentResponse> results = rgpdService.getCurrentConsents(userId);
         return ResponseEntity.ok(results);
     }
@@ -65,8 +70,10 @@ public class RgpdController {
      */
     @GetMapping("/consent/history")
     public ResponseEntity<List<ConsentResponse>> getConsentHistory(
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         List<ConsentResponse> results = rgpdService.getConsentHistory(userId);
         return ResponseEntity.ok(results);
     }
@@ -77,8 +84,10 @@ public class RgpdController {
      */
     @GetMapping("/export")
     public ResponseEntity<UserDataExportResponse> exportUserData(
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         UserDataExportResponse result = rgpdService.exportUserData(userId);
         return ResponseEntity.ok(result);
     }
@@ -90,9 +99,23 @@ public class RgpdController {
     @DeleteMapping("/account")
     public ResponseEntity<Void> deleteAccount(
             @Valid @RequestBody DeletionConfirmationRequest request,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         rgpdService.deleteAccount(request, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Validates that the caller has the FAMILY role (or ADMIN which inherits FAMILY).
+     *
+     * @param roles comma-separated roles from X-User-Roles header
+     * @throws ForbiddenException if FAMILY role is not present
+     */
+    private void validateFamilyRole(String roles) {
+        if (roles == null || (!roles.contains("FAMILY") && !roles.contains("ADMIN"))) {
+            throw new ForbiddenException("FAMILY role required to access RGPD endpoints");
+        }
     }
 }

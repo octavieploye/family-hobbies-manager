@@ -5,6 +5,7 @@ import com.familyhobbies.associationservice.dto.request.MarkAttendanceRequest;
 import com.familyhobbies.associationservice.dto.response.AttendanceResponse;
 import com.familyhobbies.associationservice.dto.response.AttendanceSummaryResponse;
 import com.familyhobbies.associationservice.service.AttendanceService;
+import com.familyhobbies.errorhandling.exception.web.ForbiddenException;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -47,8 +48,10 @@ public class AttendanceController {
     @PostMapping
     public ResponseEntity<AttendanceResponse> markAttendance(
             @Valid @RequestBody MarkAttendanceRequest request,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         AttendanceResponse result = attendanceService.markAttendance(request, userId);
         URI location = URI.create("/api/v1/attendance/" + result.id());
         return ResponseEntity.created(location).body(result);
@@ -61,8 +64,10 @@ public class AttendanceController {
     @PostMapping("/bulk")
     public ResponseEntity<List<AttendanceResponse>> markBulkAttendance(
             @Valid @RequestBody BulkAttendanceRequest request,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         List<AttendanceResponse> results = attendanceService.markBulkAttendance(request, userId);
         return ResponseEntity.ok(results);
     }
@@ -75,8 +80,10 @@ public class AttendanceController {
     public ResponseEntity<List<AttendanceResponse>> findBySessionAndDate(
             @PathVariable Long sessionId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         List<AttendanceResponse> results = attendanceService.findBySessionAndDate(sessionId, date, userId);
         return ResponseEntity.ok(results);
     }
@@ -88,8 +95,10 @@ public class AttendanceController {
     @GetMapping("/member/{memberId}")
     public ResponseEntity<List<AttendanceResponse>> findByMemberId(
             @PathVariable Long memberId,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         List<AttendanceResponse> results = attendanceService.findByMemberId(memberId, userId);
         return ResponseEntity.ok(results);
     }
@@ -101,8 +110,10 @@ public class AttendanceController {
     @GetMapping("/member/{memberId}/summary")
     public ResponseEntity<AttendanceSummaryResponse> getMemberSummary(
             @PathVariable Long memberId,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         AttendanceSummaryResponse result = attendanceService.getMemberSummary(memberId, userId);
         return ResponseEntity.ok(result);
     }
@@ -114,8 +125,10 @@ public class AttendanceController {
     @GetMapping("/subscription/{subscriptionId}")
     public ResponseEntity<List<AttendanceResponse>> findBySubscriptionId(
             @PathVariable Long subscriptionId,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         List<AttendanceResponse> results = attendanceService.findBySubscriptionId(subscriptionId, userId);
         return ResponseEntity.ok(results);
     }
@@ -128,9 +141,23 @@ public class AttendanceController {
     public ResponseEntity<AttendanceResponse> updateAttendance(
             @PathVariable Long attendanceId,
             @Valid @RequestBody MarkAttendanceRequest request,
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {
 
+        validateFamilyRole(roles);
         AttendanceResponse result = attendanceService.updateAttendance(attendanceId, request, userId);
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Validates that the caller has the FAMILY role (or ADMIN which inherits FAMILY).
+     *
+     * @param roles comma-separated roles from X-User-Roles header
+     * @throws ForbiddenException if FAMILY role is not present
+     */
+    private void validateFamilyRole(String roles) {
+        if (roles == null || (!roles.contains("FAMILY") && !roles.contains("ADMIN"))) {
+            throw new ForbiddenException("FAMILY role required to access attendance endpoints");
+        }
     }
 }

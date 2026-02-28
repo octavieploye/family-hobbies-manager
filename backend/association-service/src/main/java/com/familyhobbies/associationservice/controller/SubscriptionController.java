@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -92,9 +91,9 @@ public class SubscriptionController {
 
     /**
      * Cancel a subscription.
-     * PUT /api/v1/subscriptions/{subscriptionId}/cancel
+     * POST /api/v1/subscriptions/{subscriptionId}/cancel
      */
-    @PutMapping("/{subscriptionId}/cancel")
+    @PostMapping("/{subscriptionId}/cancel")
     public ResponseEntity<SubscriptionResponse> cancelSubscription(
             @PathVariable Long subscriptionId,
             @RequestHeader("X-User-Id") Long userId,
@@ -106,9 +105,9 @@ public class SubscriptionController {
 
     /**
      * Activate a pending subscription (ADMIN only).
-     * PUT /api/v1/subscriptions/{subscriptionId}/activate
+     * POST /api/v1/subscriptions/{subscriptionId}/activate
      */
-    @PutMapping("/{subscriptionId}/activate")
+    @PostMapping("/{subscriptionId}/activate")
     public ResponseEntity<SubscriptionResponse> activateSubscription(
             @PathVariable Long subscriptionId,
             @RequestHeader(value = "X-User-Roles", defaultValue = "") String roles) {

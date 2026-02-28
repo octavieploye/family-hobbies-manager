@@ -15,6 +15,7 @@ import {
   selectAttendanceError,
 } from '../../store/attendance.selectors';
 import { ATTENDANCE_STATUS_CONFIG } from '@shared/models/attendance.model';
+import { getProgressColor } from '@shared/utils/attendance-display.utils';
 
 /**
  * Attendance summary component showing stats cards.
@@ -71,12 +72,6 @@ export class AttendanceSummaryComponent implements OnInit, OnDestroy {
    * Get progress bar color based on attendance rate.
    */
   getProgressColor(rate: number): string {
-    if (rate >= 80) {
-      return 'primary';
-    }
-    if (rate >= 50) {
-      return 'accent';
-    }
-    return 'warn';
+    return getProgressColor(rate);
   }
 }

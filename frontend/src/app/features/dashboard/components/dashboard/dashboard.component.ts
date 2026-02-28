@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject, takeUntil, switchMap, of } from 'rxjs';
+import { Subject, takeUntil, switchMap, forkJoin, of } from 'rxjs';
 
 import { DashboardService } from '../../services/dashboard.service';
 import { UpcomingSessionsComponent } from '../upcoming-sessions/upcoming-sessions.component';
@@ -67,6 +67,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   /**
    * Load all dashboard data by aggregating multiple API calls.
+   * First fetches family info, then loads subscriptions and attendance in parallel.
    */
   private loadDashboardData(): void {
     this.loading.set(true);
@@ -78,21 +79,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.familyName.set(family.name);
         this.memberCount.set(family.members?.length ?? 0);
 
-        // Load subscriptions for the family
-        return this.dashboardService.getFamilySubscriptions(family.id).pipe(
-          switchMap((subscriptions) => {
-            this.activeSubscriptions.set(
-              this.dashboardService.mapToSubscriptionSummaries(subscriptions)
-            );
+        const memberIds = (family.members || []).map((m) => m.id);
 
-            // Load attendance summaries for all members
-            const memberIds = (family.members || []).map((m) => m.id);
-            return this.dashboardService.getMemberAttendanceSummaries(memberIds);
-          })
-        );
+        return forkJoin({
+          subscriptions: this.dashboardService.getFamilySubscriptions(family.id),
+          summaries: this.dashboardService.getMemberAttendanceSummaries(memberIds),
+        });
       })
     ).subscribe({
-      next: (summaries) => {
+      next: ({ subscriptions, summaries }) => {
+        this.activeSubscriptions.set(
+          this.dashboardService.mapToSubscriptionSummaries(subscriptions)
+        );
         this.attendanceOverview.set(
           this.dashboardService.mapToMemberAttendance(summaries)
         );

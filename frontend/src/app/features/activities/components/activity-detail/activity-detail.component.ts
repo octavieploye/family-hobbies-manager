@@ -19,6 +19,7 @@ import {
   selectActivityError,
 } from '../../store/activity.selectors';
 import { ActivityDetail } from '@shared/models/activity.model';
+import { formatAgeRange, formatPriceInEuros } from '@shared/utils/activity-format.utils';
 
 /**
  * Standalone detail component showing full information about an activity.
@@ -106,23 +107,14 @@ export class ActivityDetailComponent implements OnInit, OnDestroy {
    * Format price from cents to euros.
    */
   priceInEuros(priceCents: number): number {
-    return priceCents / 100;
+    return formatPriceInEuros(priceCents);
   }
 
   /**
    * Build age range display string.
    */
   ageRange(activity: ActivityDetail): string | null {
-    if (activity.minAge !== null && activity.maxAge !== null) {
-      return `${activity.minAge} - ${activity.maxAge} ans`;
-    }
-    if (activity.minAge !== null) {
-      return `A partir de ${activity.minAge} ans`;
-    }
-    if (activity.maxAge !== null) {
-      return `Jusqu'a ${activity.maxAge} ans`;
-    }
-    return null;
+    return formatAgeRange(activity.minAge, activity.maxAge);
   }
 
   /**

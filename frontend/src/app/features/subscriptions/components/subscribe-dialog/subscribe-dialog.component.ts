@@ -1,5 +1,5 @@
 // frontend/src/app/features/subscriptions/components/subscribe-dialog/subscribe-dialog.component.ts
-import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -10,8 +10,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 import { SubscriptionActions } from '../../store/subscription.actions';
 import { selectSubscriptionLoading } from '../../store/subscription.selectors';
@@ -55,12 +53,11 @@ export interface SubscribeDialogData {
   styleUrl: './subscribe-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SubscribeDialogComponent implements OnInit, OnDestroy {
+export class SubscribeDialogComponent implements OnInit {
   private readonly store = inject(Store);
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<SubscribeDialogComponent>);
   readonly data: SubscribeDialogData = inject(MAT_DIALOG_DATA);
-  private readonly destroy$ = new Subject<void>();
 
   /** Observable of loading state. */
   loading$ = this.store.select(selectSubscriptionLoading);
@@ -80,11 +77,6 @@ export class SubscribeDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Dialog data is injected via MAT_DIALOG_DATA
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   /**

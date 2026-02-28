@@ -19,6 +19,11 @@ import {
   AttendanceStatus,
   ATTENDANCE_STATUS_CONFIG,
 } from '@shared/models/attendance.model';
+import {
+  getAttendanceStatusLabel,
+  getAttendanceStatusIcon,
+  getAttendanceStatusColor,
+} from '@shared/utils/attendance-display.utils';
 
 /**
  * Timeline view for a single member's attendance history.
@@ -81,20 +86,20 @@ export class AttendanceHistoryComponent implements OnInit, OnDestroy {
    * Get the French label for a status.
    */
   getStatusLabel(status: AttendanceStatus): string {
-    return this.statusConfig[status]?.label || status;
+    return getAttendanceStatusLabel(status);
   }
 
   /**
    * Get the icon for a status.
    */
   getStatusIcon(status: AttendanceStatus): string {
-    return this.statusConfig[status]?.icon || 'help';
+    return getAttendanceStatusIcon(status);
   }
 
   /**
    * Get the color for a status.
    */
   getStatusColor(status: AttendanceStatus): string {
-    return this.statusConfig[status]?.color || '#999';
+    return getAttendanceStatusColor(status);
   }
 }

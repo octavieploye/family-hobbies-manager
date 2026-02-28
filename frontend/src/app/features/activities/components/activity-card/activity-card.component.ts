@@ -6,6 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { Activity } from '@shared/models/activity.model';
+import { formatAgeRange, formatPriceInEuros } from '@shared/utils/activity-format.utils';
 
 /**
  * Standalone card component displaying an activity summary.
@@ -33,25 +34,16 @@ export class ActivityCardComponent {
   @Input({ required: true }) associationId!: number;
 
   /**
-   * Format price from cents to euros string.
+   * Format price from cents to euros.
    */
   get priceInEuros(): number {
-    return this.activity.priceCents / 100;
+    return formatPriceInEuros(this.activity.priceCents);
   }
 
   /**
    * Build age range display string.
    */
   get ageRange(): string | null {
-    if (this.activity.minAge !== null && this.activity.maxAge !== null) {
-      return `${this.activity.minAge} - ${this.activity.maxAge} ans`;
-    }
-    if (this.activity.minAge !== null) {
-      return `A partir de ${this.activity.minAge} ans`;
-    }
-    if (this.activity.maxAge !== null) {
-      return `Jusqu'a ${this.activity.maxAge} ans`;
-    }
-    return null;
+    return formatAgeRange(this.activity.minAge, this.activity.maxAge);
   }
 }

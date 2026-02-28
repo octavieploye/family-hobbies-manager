@@ -27,6 +27,11 @@ import {
   BulkAttendanceRequest,
   ATTENDANCE_STATUS_CONFIG,
 } from '@shared/models/attendance.model';
+import {
+  getAttendanceStatusLabel,
+  getAttendanceStatusIcon,
+  getAttendanceStatusColor,
+} from '@shared/utils/attendance-display.utils';
 
 /**
  * Spreadsheet-style attendance sheet component.
@@ -119,21 +124,21 @@ export class AttendanceSheetComponent implements OnInit, OnDestroy {
    * Get the French label for a status.
    */
   getStatusLabel(status: AttendanceStatus): string {
-    return this.statusConfig[status]?.label || status;
+    return getAttendanceStatusLabel(status);
   }
 
   /**
    * Get the icon for a status.
    */
   getStatusIcon(status: AttendanceStatus): string {
-    return this.statusConfig[status]?.icon || 'help';
+    return getAttendanceStatusIcon(status);
   }
 
   /**
    * Get the color for a status.
    */
   getStatusColor(status: AttendanceStatus): string {
-    return this.statusConfig[status]?.color || '#999';
+    return getAttendanceStatusColor(status);
   }
 
   /**

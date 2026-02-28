@@ -71,6 +71,12 @@ public class ConsentRecord {
 
     /**
      * Sets consentedAt and createdAt to the current instant before initial persist.
+     *
+     * <p>Uses {@code @PrePersist} instead of {@code @CreationTimestamp} for append-only
+     * audit semantics. Consent records are never updated after creation -- each consent
+     * change creates a new record. This callback approach guarantees both timestamps
+     * are set atomically from the same {@link Instant}, which is required for
+     * RGPD compliance auditing.</p>
      */
     @PrePersist
     protected void onCreate() {

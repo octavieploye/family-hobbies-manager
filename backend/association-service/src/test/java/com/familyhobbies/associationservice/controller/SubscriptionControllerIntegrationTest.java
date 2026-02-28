@@ -222,7 +222,7 @@ class SubscriptionControllerIntegrationTest {
 
         ResponseEntity<String> response = restTemplate.exchange(
             "/api/v1/subscriptions/" + testSubscription.getId() + "/cancel?reason=Moving%20away",
-            HttpMethod.PUT, entity, String.class);
+            HttpMethod.POST, entity, String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -238,7 +238,7 @@ class SubscriptionControllerIntegrationTest {
 
         ResponseEntity<String> response = restTemplate.exchange(
             "/api/v1/subscriptions/" + testSubscription.getId() + "/activate",
-            HttpMethod.PUT, entity, String.class);
+            HttpMethod.POST, entity, String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
