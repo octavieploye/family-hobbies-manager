@@ -10,6 +10,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+  batch:
+    jdbc:
+      initialize-schema: embedded
+    job:
+      enabled: false
   liquibase:
     enabled: false
   kafka:

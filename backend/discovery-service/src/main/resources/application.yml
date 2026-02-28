@@ -11,3 +11,47 @@ eureka:
     fetch-registry: false
   server:
     enable-self-preservation: false
+
+# -- Spring Actuator Configuration --
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+      show-components: when_authorized
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState
+      validate-group-membership: false
+    info:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  health:
+    defaults:
+      enabled: true
+  info:
+    git:
+      mode: full
+    build:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+    tags:
+      application: family-hobbies-manager
+      service: ${spring.application.name}

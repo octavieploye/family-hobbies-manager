@@ -17,7 +17,91 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - fhm-network
+
+  # ============================================================
+  # ELK Stack -- activated with: docker compose --profile monitoring up
+  # ============================================================
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    container_name: fhm-elasticsearch
+    profiles:
+      - monitoring
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - cluster.name=family-hobbies
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - fhm-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.2
+    container_name: fhm-logstash
+    profiles:
+      - monitoring
+    volumes:
+      - ./elk/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    environment:
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+      - xpack.monitoring.enabled=false
+    networks:
+      - fhm-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.2
+    container_name: fhm-kibana
+    profiles:
+      - monitoring
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
+      - server.name=fhm-kibana
+      - telemetry.optIn=false
+    ports:
+      - "5601:5601"
+    networks:
+      - fhm-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
 
 volumes:
   postgres_data:
     driver: local
+  elasticsearch-data:
+    driver: local
+
+networks:
+  fhm-network:
+    driver: bridge

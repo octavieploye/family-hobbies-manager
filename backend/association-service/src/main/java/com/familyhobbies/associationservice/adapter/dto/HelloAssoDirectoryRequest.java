@@ -15,5 +15,6 @@ public record HelloAssoDirectoryRequest(
     String zipCode,
     String category,
     Integer pageIndex,
-    Integer pageSize
+    Integer pageSize,
+    String continuationToken
 ) {}

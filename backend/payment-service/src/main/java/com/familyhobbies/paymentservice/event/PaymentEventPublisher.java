@@ -2,10 +2,13 @@ package com.familyhobbies.paymentservice.event;
 
 import com.familyhobbies.common.event.PaymentCompletedEvent;
 import com.familyhobbies.common.event.PaymentFailedEvent;
+import com.familyhobbies.paymentservice.entity.Payment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 /**
  * Publishes payment domain events to Kafka topics.
@@ -57,5 +60,49 @@ public class PaymentEventPublisher {
             log.error("Failed to publish PaymentFailedEvent for paymentId={}: {}",
                     event.getPaymentId(), e.getMessage(), e);
         }
+    }
+
+    /**
+     * Publishes a payment completed event from a Payment entity.
+     * Convenience overload used by the batch reconciliation writer.
+     * Fire-and-forget: catches all exceptions to avoid disrupting the main flow.
+     *
+     * @param payment the completed payment entity
+     */
+    public void publishPaymentCompleted(Payment payment) {
+        Instant paidAt = payment.getPaidAt() != null
+                ? payment.getPaidAt().toInstant() : Instant.now();
+        String paymentMethod = payment.getPaymentMethod() != null
+                ? payment.getPaymentMethod().name() : null;
+
+        PaymentCompletedEvent event = new PaymentCompletedEvent(
+                payment.getId(),
+                payment.getSubscriptionId(),
+                payment.getFamilyId(),
+                payment.getAmount(),
+                payment.getCurrency(),
+                paymentMethod,
+                paidAt);
+        publishPaymentCompleted(event);
+    }
+
+    /**
+     * Publishes a payment failed event from a Payment entity.
+     * Convenience overload used by the batch reconciliation writer.
+     * Fire-and-forget: catches all exceptions to avoid disrupting the main flow.
+     *
+     * @param payment the failed payment entity
+     */
+    public void publishPaymentFailed(Payment payment) {
+        Instant failedAt = payment.getFailedAt() != null
+                ? payment.getFailedAt().toInstant() : Instant.now();
+
+        PaymentFailedEvent event = new PaymentFailedEvent(
+                payment.getId(),
+                payment.getSubscriptionId(),
+                payment.getFamilyId(),
+                "Reconciliation: payment failed on HelloAsso",
+                failedAt);
+        publishPaymentFailed(event);
     }
 }

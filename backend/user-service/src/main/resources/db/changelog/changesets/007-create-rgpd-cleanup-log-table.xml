@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="007-create-rgpd-cleanup-log-table" author="family-hobbies-team">
+        <comment>
+            RGPD compliance audit table. Records each data cleanup batch execution
+            with processed/anonymized counts, cross-service cleanup status, and errors.
+        </comment>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="t_rgpd_cleanup_log"/>
+            </not>
+        </preConditions>
+        <createTable tableName="t_rgpd_cleanup_log">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_rgpd_cleanup_log" nullable="false"/>
+            </column>
+            <column name="execution_timestamp" type="TIMESTAMPTZ">
+                <constraints nullable="false"/>
+            </column>
+            <column name="users_processed" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="users_anonymized" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cross_service_cleanup_status" type="VARCHAR(20)" defaultValue="SUCCESS">
+                <constraints nullable="false"/>
+            </column>
+            <column name="error_details" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE t_rgpd_cleanup_log
+            ADD CONSTRAINT chk_cross_service_cleanup_status
+            CHECK (cross_service_cleanup_status IN ('SUCCESS', 'PARTIAL_FAILURE', 'FAILED'));
+        </sql>
+        <createIndex tableName="t_rgpd_cleanup_log" indexName="idx_rgpd_cleanup_log_execution_timestamp">
+            <column name="execution_timestamp" descending="true"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

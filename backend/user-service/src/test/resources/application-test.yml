@@ -19,6 +19,24 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
   liquibase:
     enabled: false
+  batch:
+    jdbc:
+      initialize-schema: embedded
+    job:
+      enabled: false
+
+batch:
+  scheduling:
+    enabled: false
+  rgpd-cleanup:
+    chunk-size: 5
+    retention-days: 30
+
+services:
+  association-service:
+    url: http://localhost:8082
+  payment-service:
+    url: http://localhost:8083
 
 jwt:
   secret: test-secret-key-that-is-at-least-256-bits-long-for-hmac-sha256-signing

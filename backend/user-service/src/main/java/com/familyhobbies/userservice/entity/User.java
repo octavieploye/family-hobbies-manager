@@ -60,6 +60,10 @@ public class User {
     @Builder.Default
     private boolean emailVerified = false;
 
+    @Column(name = "anonymized", nullable = false)
+    @Builder.Default
+    private boolean anonymized = false;
+
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
 

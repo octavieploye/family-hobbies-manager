@@ -1,0 +1,206 @@
+// frontend/src/app/shared/styles/_a11y.scss
+// Global RGAA / WCAG 2.1 AA accessibility overrides
+// Imported in styles.scss
+
+@use 'variables' as v;
+
+// -- Screen-reader only text --
+// Use class="sr-only" for visually hidden text that screen readers must read.
+// RGAA criterion 10.2 -- content visible to assistive technologies
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+// Allow .sr-only elements to become visible on focus (for skip links)
+.sr-only--focusable {
+  &:focus,
+  &:active {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: inherit !important;
+    margin: inherit !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+  }
+}
+
+// -- Focus indicators -- RGAA 10.7, WCAG 2.4.7 --
+// Visible focus ring on all interactive elements when navigating with keyboard.
+// Uses :focus-visible to avoid outlines on mouse click.
+
+*:focus-visible {
+  outline: v.$focus-width v.$focus-style v.$focus-color !important;
+  outline-offset: v.$focus-offset !important;
+}
+
+// Programmatic focus ring class (used by FocusIndicatorDirective)
+.a11y-focus--ring {
+  outline: v.$focus-width v.$focus-style v.$focus-color !important;
+  outline-offset: v.$focus-offset !important;
+}
+
+// Remove default outline for mouse users (replaced by :focus-visible)
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+// -- Angular Material overrides for focus --
+// Ensure Material components show visible focus
+
+.mat-mdc-button:focus-visible,
+.mat-mdc-icon-button:focus-visible,
+.mat-mdc-fab:focus-visible,
+.mat-mdc-mini-fab:focus-visible,
+.mat-mdc-raised-button:focus-visible,
+.mat-mdc-outlined-button:focus-visible {
+  outline: v.$focus-width v.$focus-style v.$focus-color !important;
+  outline-offset: v.$focus-offset !important;
+}
+
+.mat-mdc-form-field:focus-within {
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: v.$focus-color !important;
+    border-width: v.$focus-width !important;
+  }
+}
+
+.mat-mdc-tab:focus-visible {
+  outline: v.$focus-width v.$focus-style v.$focus-color !important;
+  outline-offset: v.$focus-offset !important;
+}
+
+.mat-mdc-checkbox:focus-visible .mdc-checkbox {
+  outline: v.$focus-width v.$focus-style v.$focus-color !important;
+  outline-offset: v.$focus-offset !important;
+}
+
+.mat-mdc-radio-button:focus-visible .mdc-radio {
+  outline: v.$focus-width v.$focus-style v.$focus-color !important;
+  outline-offset: v.$focus-offset !important;
+}
+
+.mat-mdc-slide-toggle:focus-visible .mdc-switch {
+  outline: v.$focus-width v.$focus-style v.$focus-color !important;
+  outline-offset: v.$focus-offset !important;
+}
+
+.mat-mdc-select:focus-visible {
+  outline: v.$focus-width v.$focus-style v.$focus-color !important;
+  outline-offset: v.$focus-offset !important;
+}
+
+// -- Links --
+a:focus-visible {
+  outline: v.$focus-width v.$focus-style v.$focus-color !important;
+  outline-offset: v.$focus-offset !important;
+  border-radius: 2px;
+}
+
+// -- Status chips with text labels -- RGAA 3.1 (not color-only) --
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.5;
+
+  &--active,
+  &--confirmed {
+    background-color: v.$chip-active-bg;
+    color: v.$chip-active-text;
+  }
+
+  &--pending {
+    background-color: v.$chip-pending-bg;
+    color: v.$chip-pending-text;
+  }
+
+  &--expired {
+    background-color: v.$chip-expired-bg;
+    color: v.$chip-expired-text;
+  }
+
+  &--cancelled {
+    background-color: v.$chip-cancelled-bg;
+    color: v.$chip-cancelled-text;
+  }
+
+  &--completed,
+  &--paid {
+    background-color: v.$chip-completed-bg;
+    color: v.$chip-completed-text;
+  }
+
+  &--failed,
+  &--rejected {
+    background-color: v.$chip-failed-bg;
+    color: v.$chip-failed-text;
+  }
+}
+
+// -- Reduced motion --
+// RGAA 13.8 -- respect user preference for reduced motion
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// -- High contrast mode support --
+@media (forced-colors: active) {
+  .chip {
+    border: 1px solid currentColor;
+  }
+
+  *:focus-visible {
+    outline: 2px solid Highlight !important;
+  }
+}
+
+// -- Fieldset/Legend styling for radio groups -- RGAA 11.5 --
+.form__fieldset {
+  border: 1px solid v.$color-border;
+  border-radius: 4px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.form__legend {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: v.$color-text-secondary;
+  padding: 0 8px;
+}
+
+// -- Table caption for screen readers --
+// Captions are visually hidden but remain accessible
+table caption.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

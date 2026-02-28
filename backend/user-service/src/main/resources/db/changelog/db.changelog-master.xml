@@ -11,5 +11,8 @@
     <include file="db/changelog/changesets/003-create-family-table.xml"/>
     <include file="db/changelog/changesets/004-create-family-member-table.xml"/>
     <include file="db/changelog/changesets/005-create-consent-record-table.xml"/>
+    <include file="db/changelog/changesets/006-add-anonymized-to-user.xml"/>
+    <include file="db/changelog/changesets/007-create-rgpd-cleanup-log-table.xml"/>
+    <include file="db/changelog/changesets/008-spring-batch-metadata.xml"/>
 
 </databaseChangeLog>

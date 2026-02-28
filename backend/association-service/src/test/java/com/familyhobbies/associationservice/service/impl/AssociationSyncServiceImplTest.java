@@ -226,7 +226,7 @@ class AssociationSyncServiceImplTest {
     @DisplayName("should_skipOrganization_when_slugIsNull")
     void should_skipOrganization_when_slugIsNull() {
         HelloAssoOrganization orgWithoutSlug = new HelloAssoOrganization(
-            "No Slug Club", null, null, "Paris", null, null, null, null, null, null, null, null);
+            "No Slug Club", null, null, "Paris", null, null, null, null, null, null, null, null, null);
         HelloAssoDirectoryResponse response = buildDirectoryResponse(List.of(orgWithoutSlug), 1, 1);
 
         when(helloAssoClient.searchOrganizations(any())).thenReturn(Mono.just(response));
@@ -241,7 +241,7 @@ class AssociationSyncServiceImplTest {
     @DisplayName("should_skipOrganization_when_slugIsBlank")
     void should_skipOrganization_when_slugIsBlank() {
         HelloAssoOrganization orgBlankSlug = new HelloAssoOrganization(
-            "Blank Slug Club", "  ", null, "Paris", null, null, null, null, null, null, null, null);
+            "Blank Slug Club", "  ", null, "Paris", null, null, null, null, null, null, null, null, null);
         HelloAssoDirectoryResponse response = buildDirectoryResponse(List.of(orgBlankSlug), 1, 1);
 
         when(helloAssoClient.searchOrganizations(any())).thenReturn(Mono.just(response));
@@ -330,7 +330,7 @@ class AssociationSyncServiceImplTest {
 
     private HelloAssoOrganization buildOrganization(String slug, String name, String city, String category) {
         return new HelloAssoOrganization(
-            name, slug, null, city, null, null, null, null, null, category, null, null);
+            name, slug, null, city, null, null, null, null, null, category, null, null, null);
     }
 
     private HelloAssoDirectoryResponse buildDirectoryResponse(List<HelloAssoOrganization> orgs,

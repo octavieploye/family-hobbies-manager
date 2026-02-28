@@ -22,6 +22,16 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- Actuator + Prometheus metrics -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
         <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -71,6 +81,12 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
+        <!-- Spring Batch for payment reconciliation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-batch</artifactId>
+        </dependency>
+
         <!-- OpenPDF — invoice PDF generation -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
@@ -99,6 +115,11 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -77,6 +77,9 @@ public class Subscription {
     @Column(name = "member_last_name", length = 100)
     private String memberLastName;
 
+    @Column(name = "expired_at")
+    private Instant expiredAt;
+
     @Column(name = "cancellation_reason", columnDefinition = "TEXT")
     private String cancellationReason;
 

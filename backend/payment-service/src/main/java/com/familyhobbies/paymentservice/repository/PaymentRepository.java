@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -34,4 +35,17 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             @Param("fromDate") OffsetDateTime fromDate,
             @Param("toDate") OffsetDateTime toDate,
             Pageable pageable);
+
+    /**
+     * Find all payments with the given status that were created before the cutoff time.
+     * Used by the reconciliation batch to find stale PENDING payments (>24h old).
+     *
+     * @param status  the payment status to filter by (typically PENDING)
+     * @param cutoff  the timestamp cutoff (payments created before this time are returned)
+     * @return list of stale payments needing reconciliation
+     */
+    @Query("SELECT p FROM Payment p WHERE p.status = :status AND p.createdAt < :cutoff ORDER BY p.createdAt ASC")
+    List<Payment> findByStatusAndCreatedAtBefore(
+            @Param("status") PaymentStatus status,
+            @Param("cutoff") OffsetDateTime cutoff);
 }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="013-add-expired-at-to-subscription" author="family-hobbies">
+        <comment>S7-002: Add expired_at column to t_subscription for batch expiry tracking</comment>
+
+        <addColumn tableName="t_subscription">
+            <column name="expired_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <createIndex tableName="t_subscription" indexName="idx_subscription_status_end_date">
+            <column name="status"/>
+            <column name="end_date"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

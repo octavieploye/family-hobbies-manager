@@ -14,5 +14,7 @@
     <include file="db/changelog/changesets/007-add-subscription-unique-constraint.xml"/>
     <include file="db/changelog/changesets/010-seed-associations.xml"/>
     <include file="db/changelog/changesets/011-seed-activities.xml"/>
+    <include file="db/changelog/changesets/012-spring-batch-metadata.xml"/>
+    <include file="db/changelog/changesets/013-add-expired-at-to-subscription.xml"/>
 
 </databaseChangeLog>

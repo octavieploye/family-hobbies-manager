@@ -2,11 +2,15 @@ package com.familyhobbies.associationservice.adapter.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+
+import java.time.OffsetDateTime;
 
 /**
  * Represents a HelloAsso organization from the directory API.
  * Maps HelloAsso snake_case JSON fields to Java record components.
  */
+@Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record HelloAssoOrganization(
     @JsonProperty("name") String name,
@@ -20,5 +24,6 @@ public record HelloAssoOrganization(
     @JsonProperty("logo") String logo,
     @JsonProperty("category") String category,
     @JsonProperty("type") String type,
-    @JsonProperty("fiscal_receipt_eligibility") Boolean fiscalReceiptEligibility
+    @JsonProperty("fiscal_receipt_eligibility") Boolean fiscalReceiptEligibility,
+    @JsonProperty("updated_date") OffsetDateTime updatedDate
 ) {}

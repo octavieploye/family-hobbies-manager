@@ -61,6 +61,33 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Actuator (provided — used by health indicators and metrics) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Kafka (provided — used by KafkaHealthIndicator) -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Micrometer (provided — used by ApiMetricsFilter, KafkaMetricsService) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Structured JSON logging -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -17,6 +17,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+  batch:
+    jdbc:
+      initialize-schema: never
+    job:
+      enabled: false
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
   kafka:
@@ -38,8 +43,60 @@ eureka:
 jwt:
   secret: ${JWT_SECRET:default-dev-secret-that-is-at-least-256-bits-long-for-hmac-sha256}
 
+batch:
+  rgpd-cleanup:
+    chunk-size: 5
+    retention-days: 30
+    cron: "0 0 3 * * SUN"
+  scheduling:
+    enabled: true
+
+services:
+  association-service:
+    url: ${ASSOCIATION_SERVICE_URL:http://association-service:8082}
+  payment-service:
+    url: ${PAYMENT_SERVICE_URL:http://payment-service:8083}
+
+# -- Spring Actuator Configuration --
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+      show-components: when_authorized
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db,kafka
+      validate-group-membership: false
+    info:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  health:
+    defaults:
+      enabled: true
+  info:
+    git:
+      mode: full
+    build:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+    tags:
+      application: family-hobbies-manager
+      service: ${spring.application.name}

@@ -1,0 +1,25 @@
+// frontend/src/app/core/a11y/skip-to-content.component.scss
+
+.skip-to-content {
+  &__link {
+    position: absolute;
+    top: -100%;
+    left: 16px;
+    z-index: 10000;
+    padding: 12px 24px;
+    background-color: #1a237e;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: top 0.15s ease-in-out;
+
+    &:focus {
+      top: 0;
+      outline: 3px solid #ff6f00;
+      outline-offset: 2px;
+    }
+  }
+}

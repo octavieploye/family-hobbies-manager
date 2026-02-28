@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="006-add-anonymized-to-user" author="family-hobbies-team">
+        <comment>
+            Add anonymized boolean column to t_user for RGPD compliance.
+            When true, indicates the user's PII has been irreversibly anonymized
+            after the 30-day retention period following account deletion.
+        </comment>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="t_user" columnName="anonymized"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="t_user">
+            <column name="anonymized" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <createIndex tableName="t_user" indexName="idx_user_status_anonymized">
+            <column name="status"/>
+            <column name="anonymized"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

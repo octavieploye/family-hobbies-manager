@@ -10,5 +10,6 @@
     <include file="db/changelog/changesets/003-create-payment-webhook-log-table.xml"/>
     <include file="db/changelog/changesets/004-alter-invoice-add-columns.xml"/>
     <include file="db/changelog/changesets/005-create-invoice-number-sequence.xml"/>
+    <include file="db/changelog/changesets/006-spring-batch-metadata.xml"/>
 
 </databaseChangeLog>
