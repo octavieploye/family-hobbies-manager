@@ -55,7 +55,11 @@ export class ConfirmDialogComponent {
     public dialogRef: MatDialogRef<ConfirmDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData
   ) {
-    // Configure dialog ARIA attributes
+    // Configure dialog panel class and ARIA attributes.
+    // - role="dialog" is auto-set by Angular CDK on the overlay container.
+    // - aria-labelledby is auto-set by mat-dialog-title directive → id="confirm-dialog-title".
+    // - aria-describedby should be passed via MatDialogConfig when opening:
+    //   dialog.open(ConfirmDialogComponent, { ariaDescribedBy: 'confirm-dialog-description', data: ... })
     this.dialogRef.addPanelClass('confirm-dialog');
   }
 

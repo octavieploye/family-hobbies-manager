@@ -145,7 +145,7 @@ public class SubscriptionExpiryJobListener
             } catch (Exception e) {
                 log.error("Failed to publish SubscriptionExpiredEvent "
                         + "for subscriptionId={}: {}",
-                        subscription.getId(), e.getMessage());
+                        subscription.getId(), e.getMessage(), e);
             }
         }
 

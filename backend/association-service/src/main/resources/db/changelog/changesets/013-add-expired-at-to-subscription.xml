@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="013-add-expired-at-to-subscription" author="family-hobbies">
+    <changeSet id="013-add-expired-at-to-subscription" author="family-hobbies-team">
         <comment>S7-002: Add expired_at column to t_subscription for batch expiry tracking</comment>
 
         <addColumn tableName="t_subscription">

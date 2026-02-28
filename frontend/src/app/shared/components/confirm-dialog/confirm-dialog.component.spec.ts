@@ -68,4 +68,9 @@ describe('ConfirmDialogComponent', () => {
     const titleEl = fixture.nativeElement.querySelector('#confirm-dialog-title');
     expect(titleEl).toBeTruthy();
   });
+
+  it('should have the confirm-dialog-description ID for aria-describedby', () => {
+    const descriptionEl = fixture.nativeElement.querySelector('#confirm-dialog-description');
+    expect(descriptionEl).toBeTruthy();
+  });
 });

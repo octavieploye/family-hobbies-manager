@@ -2,6 +2,7 @@ package com.familyhobbies.associationservice.batch.writer;
 
 import com.familyhobbies.associationservice.entity.Association;
 import com.familyhobbies.associationservice.repository.AssociationRepository;
+import com.familyhobbies.common.event.AssociationSyncedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.Chunk;
@@ -56,15 +57,9 @@ public class HelloAssoItemWriter implements ItemWriter<Association> {
                         association.getHelloassoSlug());
             } catch (Exception e) {
                 log.error("Failed to publish AssociationSyncedEvent for slug={}: {}",
-                        association.getHelloassoSlug(), e.getMessage());
+                        association.getHelloassoSlug(), e.getMessage(), e);
             }
         }
     }
 
-    public record AssociationSyncedEvent(
-            Long associationId,
-            String helloAssoSlug,
-            String name,
-            String status
-    ) {}
 }

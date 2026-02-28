@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Family Hobbies Manager - Shared Logback Base Configuration
+
+    Include this file in each service's logback-spring.xml:
+      <include resource="logback-base.xml"/>
+
+    Profiles:
+      - "docker"  -> JSON via LogstashEncoder (for ELK/Logstash ingestion)
+      - "local"   -> Human-readable console pattern (for development)
+      - "test"    -> Reduced verbosity console pattern
+      - default   -> Console pattern (fallback)
+
+    MDC fields populated by MdcLoggingFilter (common module):
+      traceId, spanId, userId, serviceName
+-->
+<included>
+
+    <!-- Service name from Spring application.name (resolved at startup) -->
+    <springProperty scope="context" name="SERVICE_NAME"
+                    source="spring.application.name"
+                    defaultValue="unknown-service"/>
+
+    <!-- == Console Appender (local/default profile) == -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [${SERVICE_NAME}] [%X{traceId:-no-trace}] [%X{userId:-anonymous}] %cyan(%logger{36}) - %msg%n%throwable
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- == JSON Appender (docker profile) == -->
+    <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <includeMdcKeyName>serviceName</includeMdcKeyName>
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <version>[ignore]</version>
+            </fieldNames>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampPattern>
+            <customFields>{"application":"family-hobbies-manager"}</customFields>
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>2048</maxLength>
+                <shortenedClassNameLength>30</shortenedClassNameLength>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <!-- == Logstash TCP Appender (docker profile, for ELK ingestion) == -->
+    <appender name="LOGSTASH_TCP" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${LOGSTASH_HOST:-logstash}:${LOGSTASH_PORT:-5044}</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <includeMdcKeyName>serviceName</includeMdcKeyName>
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <version>[ignore]</version>
+            </fieldNames>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampPattern>
+            <customFields>{"application":"family-hobbies-manager"}</customFields>
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>2048</maxLength>
+                <shortenedClassNameLength>30</shortenedClassNameLength>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+        <reconnectionDelay>5 seconds</reconnectionDelay>
+        <keepAliveDuration>5 minutes</keepAliveDuration>
+    </appender>
+
+    <!-- == Profile: local (developer workstation) == -->
+    <springProfile name="local">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.familyhobbies" level="DEBUG"/>
+    </springProfile>
+
+    <!-- == Profile: docker (containerized, ELK ingestion) == -->
+    <springProfile name="docker">
+        <root level="INFO">
+            <appender-ref ref="JSON_STDOUT"/>
+            <appender-ref ref="LOGSTASH_TCP"/>
+        </root>
+        <logger name="com.familyhobbies" level="DEBUG"/>
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="org.apache.kafka" level="WARN"/>
+    </springProfile>
+
+    <!-- == Profile: test == -->
+    <springProfile name="test">
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.familyhobbies" level="INFO"/>
+    </springProfile>
+
+    <!-- == Default (no profile active) == -->
+    <springProfile name="default">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.familyhobbies" level="DEBUG"/>
+    </springProfile>
+
+</included>
